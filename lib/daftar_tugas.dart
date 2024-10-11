@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class DaftarTugasPage extends StatelessWidget {
   DaftarTugasPage({super.key});
@@ -6,20 +7,20 @@ class DaftarTugasPage extends StatelessWidget {
     {
       'title': 'Tugas Mikroorganisme',
       'description': 'Kumpulkan soal latihan halaman 20-25',
-      'class': 'Kelas 11 MIPA 2',
-      'deadline': '10 Oktober 2024',
+      'class': '11 MIPA 2',
+      'due to': '10 Oktober 2024',
     },
     {
       'title': 'Tugas Molekul',
       'description': 'Laporan praktikum mengenai molekul',
-      'class': 'Kelas 12 MIPA 1',
-      'deadline': '12 Oktober 2024',
+      'class': '12 MIPA 1',
+      'due to': '12 Oktober 2024',
     },
     {
       'title': 'Tugas Virus',
-      'description': 'Kerjakan soal materin virus pada buku halaman 50-55',
-      'class': 'Kelas 10 MIPA 3',
-      'deadline': '15 Oktober 2024',
+      'description': 'Kerjakan soal materi virus pada buku halaman 50-55',
+      'class': '10 MIPA 3',
+      'due to': '15 Oktober 2024',
     },
   ];
 
@@ -27,47 +28,45 @@ class DaftarTugasPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // Memberi warna biru langit pada AppBar
         backgroundColor: Colors.lightBlueAccent,
         title: Row(
           children: [
+            // Menambahkan logo di dalam AppBar
             Image.asset(
-              'assets/images/logo.png',
-              height: 40,
+              'assets/images/logo.png', // Ganti dengan path logo Anda
+              height: 40, // Sesuaikan ukuran logo
             ),
-            const SizedBox(width: 10),
-            const Text(
-              'SMA IT ULIL ALBAB',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 10), // Spasi antara logo dan nama website
+            const Flexible(
+              child: Text(
+                'SMA IT ULIL ALBAB', // Ganti dengan nama website Anda
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/edit_profile');
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () {
               // Tampilkan alert dialog ketika tombol logout ditekan
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text("Konfirmasi Logout"),
-                    content: Text("Apakah Anda Ingin Logout?"),
+                    title: const Text("Konfirmasi Logout"),
+                    content: const Text("Apakah Anda Ingin Logout?"),
                     actions: [
                       TextButton(
                         onPressed: () {
                           // Jika memilih "Batal", tutup dialog
                           Navigator.of(context).pop();
                         },
-                        child: Text("Batal"),
+                        child: const Text("Batal"),
                       ),
                       TextButton(
                         onPressed: () {
@@ -77,7 +76,7 @@ class DaftarTugasPage extends StatelessWidget {
                           Navigator.pushReplacementNamed(
                               context, '/login'); // Redirect ke login
                         },
-                        child: Text("Ya"),
+                        child: const Text("Ya"),
                       ),
                     ],
                   );
@@ -97,7 +96,7 @@ class DaftarTugasPage extends StatelessWidget {
               title: task['title']!,
               description: task['description']!,
               taskClass: task['class']!,
-              deadline: task['deadline']!,
+              deadline: task['due to']!,
             );
           },
         ),
@@ -106,7 +105,7 @@ class DaftarTugasPage extends StatelessWidget {
         currentIndex: 1,
         onTap: (index) {
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/pelajaran');
+            Navigator.pushReplacementNamed(context, '/daftar_quiz');
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/dashboard');
           } else if (index == 2) {
@@ -115,8 +114,8 @@ class DaftarTugasPage extends StatelessWidget {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Pelajaran',
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -220,13 +219,17 @@ class TaskItem extends StatelessWidget {
                 Text(
                   'Kelas: $taskClass',
                   style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w500),
+                      fontSize: 12, fontWeight: FontWeight.w500),
                 ),
-                Text(
-                  'Deadline: $deadline',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.redAccent,
+                Flexible(
+                  child: AutoSizeText(
+                    'Due to: $deadline',
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.redAccent,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

@@ -160,7 +160,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         currentIndex: 1,
         onTap: (index) {
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/pelajaran');
+            Navigator.pushReplacementNamed(context, '/daftar_quiz');
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/dashboard');
           } else if (index == 2) {
@@ -169,8 +169,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Pelajaran',
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -184,19 +184,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
     );
   }
+}
 
-  // Text field for profile input
-  Widget _buildTextField(TextEditingController controller, String label) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
+// Text field for profile input
+Widget _buildTextField(TextEditingController controller, String label) {
+  return TextField(
+    controller: controller,
+    decoration: InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
       ),
-    );
-  }
+    ),
+  );
 }

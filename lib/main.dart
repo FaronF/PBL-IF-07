@@ -5,6 +5,7 @@ import 'dbsiswa_page.dart';
 import 'edit_profile.dart';
 import 'daftar_tugas.dart';
 import 'daftar_quiz.dart';
+import 'quiz_siswa.dart';
 
 void main() {
   runApp(MyApp());
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         '/edit_profile': (context) => EditProfilePage(),
         '/daftar_tugas': (context) => DaftarTugasPage(),
         '/daftar_quiz': (context) => DaftarQuizPage(),
+        '/quiz_siswa': (context) => QuizPage(),
       },
     );
   }

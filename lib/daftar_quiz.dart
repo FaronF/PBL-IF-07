@@ -26,16 +26,18 @@ class DaftarQuizPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // Memberi warna biru langit pada AppBar
         backgroundColor: Colors.lightBlueAccent,
         title: Row(
           children: [
+            // Menambahkan logo di dalam AppBar
             Image.asset(
-              'assets/images/logo.png',
-              height: 40,
+              'assets/images/logo.png', // Ganti dengan path logo Anda
+              height: 40, // Sesuaikan ukuran logo
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 10), // Spasi antara logo dan nama website
             const Text(
-              'SMA IT ULIL ALBAB',
+              'SMA IT ULIL ALBAB', // Ganti dengan nama website Anda
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -44,12 +46,6 @@ class DaftarQuizPage extends StatelessWidget {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/edit_profile');
-            },
-          ),
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
@@ -105,7 +101,7 @@ class DaftarQuizPage extends StatelessWidget {
         currentIndex: 1,
         onTap: (index) {
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/pelajaran');
+            Navigator.pushReplacementNamed(context, '/daftar_quiz');
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/dashboard');
           } else if (index == 2) {
@@ -114,8 +110,8 @@ class DaftarQuizPage extends StatelessWidget {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Pelajaran',
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -267,14 +263,16 @@ class QuizItem extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                // Here, you would normally check the password entered
-                // For simplicity, we assume it's always correct
+                // Assuming password is '1234' for this example
                 if (passwordController.text == '1234') {
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Close the dialog
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('Password benar. Quiz dibuka!')),
+                        content:
+                            Text('Password benar. Mengarahkan ke quiz...')),
                   );
+                  // Navigate to the /quiz_siswa route
+                  Navigator.pushNamed(context, '/quiz_siswa');
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Password salah.')),

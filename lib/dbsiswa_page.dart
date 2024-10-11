@@ -28,30 +28,22 @@ class DashboardPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              // Implement the edit profile action
-              Navigator.pushReplacementNamed(
-                  context, '/edit_profile'); // Redirect to login
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () {
               // Tampilkan alert dialog ketika tombol logout ditekan
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text("Konfirmasi Logout"),
-                    content: Text("Apakah Anda Ingin Logout?"),
+                    title: const Text("Konfirmasi Logout"),
+                    content: const Text("Apakah Anda Ingin Logout?"),
                     actions: [
                       TextButton(
                         onPressed: () {
                           // Jika memilih "Batal", tutup dialog
                           Navigator.of(context).pop();
                         },
-                        child: Text("Batal"),
+                        child: const Text("Batal"),
                       ),
                       TextButton(
                         onPressed: () {
@@ -61,7 +53,7 @@ class DashboardPage extends StatelessWidget {
                           Navigator.pushReplacementNamed(
                               context, '/login'); // Redirect ke login
                         },
-                        child: Text("Ya"),
+                        child: const Text("Ya"),
                       ),
                     ],
                   );
@@ -74,6 +66,7 @@ class DashboardPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildDashboardBox(
@@ -82,19 +75,12 @@ class DashboardPage extends StatelessWidget {
               'Materi',
               '/materi', // Route to Materi page
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 50),
             _buildDashboardBox(
               context,
               'assets/images/background2.png', // Replace with your image
               'Tugas',
               '/daftar_tugas', // Route to Tugas page
-            ),
-            const SizedBox(height: 12),
-            _buildDashboardBox(
-              context,
-              'assets/images/background3.png', // Replace with your image
-              'Quiz',
-              '/daftar_quiz', // Route to Quiz page
             ),
           ],
         ),
@@ -103,7 +89,7 @@ class DashboardPage extends StatelessWidget {
         currentIndex: 1,
         onTap: (index) {
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/pelajaran');
+            Navigator.pushReplacementNamed(context, '/daftar_quiz');
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/dashboard');
           } else if (index == 2) {
@@ -112,8 +98,8 @@ class DashboardPage extends StatelessWidget {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Pelajaran',
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
