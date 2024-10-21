@@ -1,13 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:tester/materi_page.dart';
+import 'package:tester/teacher_page.dart';
 import 'login_page.dart';
 import 'register_page.dart';
-import 'dbsiswa_page.dart';
-import 'edit_profile.dart';
+import 'student_page.dart';
+import 'profile_page.dart';
 import 'daftar_tugas.dart';
 import 'daftar_quiz.dart';
-import 'quiz_siswa.dart';
+import 'quiz_page.dart';
+import 'daftar_siswa.dart';
+import 'kelola_materi_page.dart';
+import 'kelola_tugas_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi Firebase untuk platform web
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyDEfBtaQnT6s2xXiA6hj9bXXUiEdhuHvoc",
+        projectId: "pbl-if-07-a80a9",
+        storageBucket: "pbl-if-07-a80a9.appspot.com",
+        messagingSenderId: "982195135418",
+        appId: "1:982195135418:android:1e98ea88f921faa5203383",
+      ),
+    );
+  } else {
+    // Inisialisasi Firebase untuk platform mobile (Android/iOS)
+    await Firebase.initializeApp();
+  }
+
   runApp(MyApp());
 }
 
@@ -15,17 +40,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Quiz Application',
-      debugShowCheckedModeBanner: false, // Menonaktifkan label Debug
+      title: 'Learning PBL IF-07',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      debugShowCheckedModeBanner: false,
       initialRoute: '/login', // Set the initial route
       routes: {
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
-        '/dashboard': (context) => const DashboardPage(),
-        '/edit_profile': (context) => EditProfilePage(),
+        '/studentpage': (context) => const StudentPage(),
+        '/teacherpage': (context) => TeacherPage(),
+        '/edit_profile': (context) => ProfilePage(),
         '/daftar_tugas': (context) => DaftarTugasPage(),
         '/daftar_quiz': (context) => DaftarQuizPage(),
         '/quiz_siswa': (context) => QuizPage(),
+        '/materi': (context) => const MateriPage(),
+        '/kelolatugas': (context) => KelolaTugasPage(),
+        '/daftarsiswa': (context) => DaftarSiswaPage(),
+        '/kelolamateri': (context) => KelolaMateriPage(),
       },
     );
   }

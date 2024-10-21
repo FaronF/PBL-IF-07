@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class EditProfilePage extends StatefulWidget {
+class ProfilePage extends StatefulWidget {
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _EditProfilePageState extends State<ProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -36,61 +36,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Memberi warna biru langit pada AppBar
-        backgroundColor: Colors.lightBlueAccent,
-        title: Row(
-          children: [
-            // Menambahkan logo di dalam AppBar
-            Image.asset(
-              'assets/images/logo.png', // Ganti dengan path logo Anda
-              height: 40, // Sesuaikan ukuran logo
-            ),
-            const SizedBox(width: 10), // Spasi antara logo dan nama website
-            const Text(
-              'SMA IT ULIL ALBAB', // Ganti dengan nama website Anda
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              // Tampilkan alert dialog ketika tombol logout ditekan
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Konfirmasi Logout"),
-                    content: Text("Apakah Anda Ingin Logout?"),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          // Jika memilih "Batal", tutup dialog
-                          Navigator.of(context).pop();
-                        },
-                        child: Text("Batal"),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          // Jika memilih "Ya", lakukan logout dan redirect ke halaman login
-                          Navigator.of(context)
-                              .pop(); // Tutup dialog terlebih dahulu
-                          Navigator.pushReplacementNamed(
-                              context, '/login'); // Redirect ke login
-                        },
-                        child: Text("Ya"),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
+        toolbarHeight: 0, // Mengatur tinggi toolbar
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -155,32 +103,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/daftar_quiz');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/dashboard');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/edit_profile');
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.quiz),
-            label: 'Quiz',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

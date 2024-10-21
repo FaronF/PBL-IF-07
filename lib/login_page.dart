@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -9,14 +11,63 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   // Method to handle login action
-  void _login() {
+  void _login() async {
     final email = _emailController.text;
     final password = _passwordController.text;
 
-    // Simple validation
     if (email.isNotEmpty && password.isNotEmpty) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      try {
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        DocumentSnapshot studentSnapshot = await _firestore
+            .collection('Students')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        DocumentSnapshot teacherSnapshot = await _firestore
+            .collection('Teachers')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        if (studentSnapshot.exists) {
+          Navigator.pushReplacementNamed(context, '/studentpage');
+        } else if (teacherSnapshot.exists) {
+          Navigator.pushReplacementNamed(context, '/teacherpage');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User not found in the database.')),
+          );
+          await _auth.signOut();
+        }
+      } on FirebaseAuthException catch (e) {
+        print("Login error: ${e.code}, Message: ${e.message}");
+        String message;
+        switch (e.code) {
+          case 'user-not-found':
+            message = 'No user found for that email.';
+            break;
+          case 'wrong-password':
+            message = 'Wrong password provided for that user.';
+            break;
+          default:
+            message = 'An error occurred. Please try again.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      } catch (e) {
+        print("Unexpected error: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An unexpected error occurred: $e')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Email and Password cannot be empty')),

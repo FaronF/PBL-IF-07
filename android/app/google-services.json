@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "982195135418",
+    "project_id": "pbl-if-07-a80a9",
+    "storage_bucket": "pbl-if-07-a80a9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982195135418:android:1e98ea88f921faa5203383",
+        "android_client_info": {
+          "package_name": "com.example.tester"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEfBtaQnT6s2xXiA6hj9bXXUiEdhuHvoc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982195135418:android:c408ccca360743c8203383",
+        "android_client_info": {
+          "package_name": "com.mydomainname.aplikasilearning"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEfBtaQnT6s2xXiA6hj9bXXUiEdhuHvoc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
