@@ -18,7 +18,7 @@ class KelolaTugasPage extends StatelessWidget {
                     context,
                     'assets/images/background2.png', // Replace with your image
                     'Tugas',
-                    '/kelola_tugas_siswa', // Route to Tugas page
+                    '/kelolatugassiswa', // Route to Tugas page
                     height: 140, // Set height smaller
                     width: 250, // Set width smaller
                   ),

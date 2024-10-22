@@ -96,32 +96,33 @@ class _TeacherPageState extends State<TeacherPage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.task),
-            label: 'Manage Tasks',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Materi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: 'Student List',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: const Color.fromARGB(255, 255, 234, 0),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.black,
-        selectedFontSize: 14,
-        unselectedFontSize: 12,
-      ),
+  items: const <BottomNavigationBarItem>[
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.list_alt_rounded),
+      label: 'Manage Tasks',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.chrome_reader_mode_rounded),
+      label: 'Materi',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.group),
+      label: 'Student List',
+    ),
+  ],
+  currentIndex: _selectedIndex,
+  onTap: _onItemTapped,
+  backgroundColor: const Color.fromARGB(255, 253, 240, 69), // Menyamakan dengan header
+  selectedItemColor: Colors.white, // Warna teks/icon ketika item dipilih
+  unselectedItemColor: Colors.black, // Warna teks/icon ketika item tidak dipilih
+  selectedFontSize: 14,
+  type: BottomNavigationBarType.fixed, // Ini penting agar background color terlihat
+),
+
     );
   }
 }

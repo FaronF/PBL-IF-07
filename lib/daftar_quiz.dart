@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-import 'profile_page.dart';
 
-class DaftarQuizPage extends StatefulWidget {
-  @override
-  _DaftarQuizPageState createState() => _DaftarQuizPageState();
-}
-
-class _DaftarQuizPageState extends State<DaftarQuizPage> {
+class DaftarQuizPage extends StatelessWidget {
   final List<Map<String, String>> quizzes = [
     {
       'title': 'Mikroorganisme',
@@ -28,123 +22,112 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
     },
   ];
 
-  int _selectedIndex = 2; // For the bottom navigation
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 0) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
-    } else if (index == 1) {
-      Navigator.pushReplacementNamed(context, '/materi');
-    } else if (index == 2) {
-      Navigator.pushReplacementNamed(context, '/quiz');
-    }
-  }
+  DaftarQuizPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Mengatur tinggi toolbar
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Column(
-        children: <Widget>[
-          // Header setengah lingkaran
-          Container(
-            height: 150,
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 253, 240, 69),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(150),
-                bottomRight: Radius.circular(150),
+        backgroundColor: Colors.lightBlueAccent,
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              height: 40,
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'SMA IT ULIL ALBAB',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            child: Stack(
-              children: <Widget>[
-                Positioned(
-                  top: -30,
-                  left: 15,
-                  width: 200,
-                  height: 200,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/logo-ulilalbab.png'),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 40,
-                  right: 25,
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProfilePage(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.person,
-                      size: 40,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/edit_profile');
+            },
           ),
-          const SizedBox(height: 10),
-
-          // Daftar Quiz
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                itemCount: quizzes.length,
-                itemBuilder: (context, index) {
-                  final quiz = quizzes[index];
-                  return QuizItem(
-                    title: quiz['title']!,
-                    description: quiz['description']!,
-                    deadline: quiz['deadline']!,
-                    status: quiz['status']!,
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              // Tampilkan alert dialog ketika tombol logout ditekan
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Konfirmasi Logout"),
+                    content: const Text("Apakah Anda Ingin Logout?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          // Jika memilih "Batal", tutup dialog
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Batal"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // Jika memilih "Ya", lakukan logout dan redirect ke halaman login
+                          Navigator.of(context)
+                              .pop(); // Tutup dialog terlebih dahulu
+                          Navigator.pushReplacementNamed(
+                              context, '/login'); // Redirect ke login
+                        },
+                        child: const Text("Ya"),
+                      ),
+                    ],
                   );
                 },
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView.builder(
+          itemCount: quizzes.length,
+          itemBuilder: (context, index) {
+            final quiz = quizzes[index];
+            return QuizItem(
+              title: quiz['title']!,
+              description: quiz['description']!,
+              deadline: quiz['deadline']!,
+              status: quiz['status']!,
+            );
+          },
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        currentIndex: 1,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/pelajaran');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/dashboard');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/edit_profile');
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Pelajaran',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Beranda',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Materi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.quiz),
-            label: 'Quiz',
+            icon: Icon(Icons.account_circle),
+            label: 'Profile',
           ),
         ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: const Color.fromARGB(255, 255, 234, 0),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.black,
-        selectedFontSize: 14,
-        unselectedFontSize: 12,
       ),
     );
   }
@@ -156,7 +139,7 @@ class QuizItem extends StatelessWidget {
   final String deadline;
   final String status;
 
-  const QuizItem({
+  const QuizItem({super.key, 
     required this.title,
     required this.description,
     required this.deadline,
@@ -168,14 +151,24 @@ class QuizItem extends StatelessWidget {
     return InkWell(
       onTap: () {
         if (status == 'Dibuka') {
+          // Jika quiz dibuka, minta password untuk mengaksesnya
           _showPasswordDialog(context);
+        } else if (status == 'Terkunci') {
+          // Jika quiz terkunci, berikan informasi bahwa quiz terkunci
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('Quiz "$title" Terkunci. Silakan coba lagi nanti.')),
+          );
         } else if (status == 'Ditutup') {
+          // Jika quiz ditutup, berikan informasi bahwa quiz telah ditutup
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Quiz "$title" Telah Ditutup.')),
           );
         } else {
+          // Status default jika ada masalah
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Quiz "$title" Belum Dibuka.')),
+            const SnackBar(content: Text('Status quiz tidak diketahui.')),
           );
         }
       },
@@ -195,6 +188,7 @@ class QuizItem extends StatelessWidget {
         ),
         child: Row(
           children: [
+            // Left section: title, description, deadline
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,11 +210,15 @@ class QuizItem extends StatelessWidget {
                 ],
               ),
             ),
+            // Right section: status
             Container(
               alignment: Alignment.bottomRight,
               child: Text(
-                status,
+                status == 'Dibuka'
+                    ? 'Dibuka'
+                    : (status == 'Ditutup' ? 'Ditutup' : 'Belum Dibuka'),
                 style: TextStyle(
+                  // Menentukan warna sesuai status
                   color: _getStatusColor(status),
                   fontWeight: FontWeight.bold,
                 ),
@@ -232,14 +230,18 @@ class QuizItem extends StatelessWidget {
     );
   }
 
+  // Fungsi untuk menentukan warna berdasarkan status
   Color _getStatusColor(String status) {
     switch (status) {
       case 'Dibuka':
         return Colors.green;
+      case 'Belum Dibuka':
+      case 'Terkunci': // Jika ada status terkunci
+        return Colors.grey;
       case 'Ditutup':
         return Colors.red;
       default:
-        return Colors.grey;
+        return Colors.black; // Warna default jika status tidak diketahui
     }
   }
 
@@ -267,21 +269,21 @@ class QuizItem extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
+                // Here, you would normally check the password entered
+                // For simplicity, we assume it's always correct
                 if (passwordController.text == '1234') {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content:
-                            Text('Password benar. Mengarahkan ke quiz...')),
+                        content: Text('Password benar. Quiz dibuka!')),
                   );
-                  Navigator.pushNamed(context, '/quiz_siswa');
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Password salah.')),
                   );
                 }
               },
-              child: const Text('Mulai Quiz'),
+              child: const Text('Start attempt'),
             ),
           ],
         );

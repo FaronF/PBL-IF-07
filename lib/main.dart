@@ -13,6 +13,7 @@ import 'quiz_page.dart';
 import 'daftar_siswa.dart';
 import 'kelola_materi_page.dart';
 import 'kelola_tugas_page.dart';
+import 'kelola_tugas_siswa.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,16 +50,17 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
-        '/studentpage': (context) => const StudentPage(),
+        '/studentpage': (context) => StudentPage(),
         '/teacherpage': (context) => TeacherPage(),
         '/edit_profile': (context) => ProfilePage(),
         '/daftar_tugas': (context) => DaftarTugasPage(),
         '/daftar_quiz': (context) => DaftarQuizPage(),
         '/quiz_siswa': (context) => QuizPage(),
-        '/materi': (context) => const MateriPage(),
+        '/materi': (context) => MateriPage(),
         '/kelolatugas': (context) => KelolaTugasPage(),
         '/daftarsiswa': (context) => DaftarSiswaPage(),
         '/kelolamateri': (context) => KelolaMateriPage(),
+        '/kelolatugassiswa': (context) => KelolaTugasSiswa(),
       },
     );
   }
