@@ -104,11 +104,22 @@ class DaftarTugasPage extends StatelessWidget {
                     itemCount: tasks.length,
                     itemBuilder: (context, index) {
                       final task = tasks[index].data() as Map<String, dynamic>;
+
                       final String title = task['title'] ?? 'No Title';
                       final String description =
                           task['description'] ?? 'No Description';
                       final String taskClass = task['class'] ?? 'No Class';
-                      final String deadline = task['due_to'] ?? 'No Due Date';
+
+                      // Ambil due_to sebagai Timestamp dari Firestore
+                      final Timestamp? dueToTimestamp =
+                          task['due_to'] as Timestamp?;
+
+                      // Konversi Timestamp menjadi DateTime, dan buat string yang bisa dibaca
+                      final String deadline = dueToTimestamp != null
+                          ? dueToTimestamp
+                              .toDate()
+                              .toString() // Konversi DateTime ke String
+                          : 'No Due Date';
 
                       return TaskItem(
                         title: title,
