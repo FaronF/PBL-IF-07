@@ -139,7 +139,7 @@ class DaftarTugasPage extends StatelessWidget {
         currentIndex: 2,
         onTap: (index) {
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/dashboard');
+            Navigator.pushReplacementNamed(context, '/studentpage');
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/materi');
           } else if (index == 2) {

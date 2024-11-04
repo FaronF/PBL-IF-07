@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'kelola_materi_page.dart'; // Import halaman Materi
 import 'kelola_tugas_page.dart'; // Import halaman Manage Tasks
 import 'daftar_siswa.dart'; // Import halaman Student List
-import 'profile_page.dart'; // Import halaman Profile
+import 'profile_guru.dart'; // Import halaman Profile
 import 'login_page.dart';
 
 class TeacherPage extends StatefulWidget {
@@ -73,7 +73,7 @@ class _TeacherPageState extends State<TeacherPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProfilePage(),
+                          builder: (context) => ProfileGuruPage(),
                         ),
                       );
                     },
@@ -96,33 +96,35 @@ class _TeacherPageState extends State<TeacherPage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-  items: const <BottomNavigationBarItem>[
-    BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: 'Home',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.list_alt_rounded),
-      label: 'Manage Tasks',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.chrome_reader_mode_rounded),
-      label: 'Materi',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.group),
-      label: 'Student List',
-    ),
-  ],
-  currentIndex: _selectedIndex,
-  onTap: _onItemTapped,
-  backgroundColor: const Color.fromARGB(255, 253, 240, 69), // Menyamakan dengan header
-  selectedItemColor: Colors.white, // Warna teks/icon ketika item dipilih
-  unselectedItemColor: Colors.black, // Warna teks/icon ketika item tidak dipilih
-  selectedFontSize: 14,
-  type: BottomNavigationBarType.fixed, // Ini penting agar background color terlihat
-),
-
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_rounded),
+            label: 'Manage Tasks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chrome_reader_mode_rounded),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Student List',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        backgroundColor:
+            const Color.fromARGB(255, 253, 240, 69), // Menyamakan dengan header
+        selectedItemColor: Colors.white, // Warna teks/icon ketika item dipilih
+        unselectedItemColor:
+            Colors.black, // Warna teks/icon ketika item tidak dipilih
+        selectedFontSize: 14,
+        type: BottomNavigationBarType
+            .fixed, // Ini penting agar background color terlihat
+      ),
     );
   }
 }

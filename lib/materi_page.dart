@@ -7,7 +7,9 @@ class MateriPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Materi'), // Menambahkan judul untuk AppBar
+        toolbarHeight: 0, // Mengatur tinggi toolbar
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: Center(
         child: SingleChildScrollView(

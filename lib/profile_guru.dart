@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfileGuruPage extends StatefulWidget {
   @override
-  _EditProfilePageState createState() => _EditProfilePageState();
+  _EditProfileGuruPageState createState() => _EditProfileGuruPageState();
 }
 
-class _EditProfilePageState extends State<ProfilePage> {
+class _EditProfileGuruPageState extends State<ProfileGuruPage> {
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -26,7 +26,7 @@ class _EditProfilePageState extends State<ProfilePage> {
     final User? user = _auth.currentUser;
     if (user != null) {
       DocumentSnapshot userProfile =
-          await _firestore.collection('Students').doc(user.uid).get();
+          await _firestore.collection('Teachers').doc(user.uid).get();
 
       if (userProfile.exists) {
         setState(() {
@@ -49,7 +49,7 @@ class _EditProfilePageState extends State<ProfilePage> {
   Future<void> _saveProfile() async {
     final User? user = _auth.currentUser;
     if (user != null) {
-      await _firestore.collection('Students').doc(user.uid).update({
+      await _firestore.collection('Teachers').doc(user.uid).update({
         'nama': _namaController.text,
         'email': _emailController.text,
         'password': _passwordController.text,
@@ -88,6 +88,7 @@ class _EditProfilePageState extends State<ProfilePage> {
     );
   }
 
+  // Fungsi untuk logout
   void _logout() {
     FirebaseAuth.instance.signOut(); // Lakukan proses sign out
     Navigator.pushReplacementNamed(
@@ -188,32 +189,39 @@ class _EditProfilePageState extends State<ProfilePage> {
         currentIndex: 2,
         onTap: (index) {
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/studentpage');
+            Navigator.pushReplacementNamed(context, '/teacherpage');
           } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/materi');
+            Navigator.pushReplacementNamed(context, '/kelolatugas');
           } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/quiz');
+            Navigator.pushReplacementNamed(context, '/kelolamateri');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/daftarsiswa');
           }
         },
-        items: const [
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Beranda',
+            label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
+            icon: Icon(Icons.list_alt_rounded),
+            label: 'Manage Tasks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chrome_reader_mode_rounded),
             label: 'Materi',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.quiz),
-            label: 'Tugas',
+            icon: Icon(Icons.group),
+            label: 'Student List',
           ),
         ],
         backgroundColor: const Color.fromARGB(255, 255, 234, 0),
-        selectedItemColor: Colors.white,
+        selectedItemColor: Colors.black,
         unselectedItemColor: Colors.black,
         selectedFontSize: 14,
         unselectedFontSize: 12,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
