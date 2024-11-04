@@ -1,110 +1,101 @@
 import 'package:flutter/material.dart';
 
 class DaftarSiswaPage extends StatelessWidget {
-  const DaftarSiswaPage({super.key});
+  final List<Map<String, String>> siswaList = [
+    {
+      "nama": "Jhon tor Bin Atang",
+      "id": "2171145875436",
+      "gender": "Laki-laki",
+      "kelas": "Kelas 10",
+      "foto": "assets/avatar1.png",
+    },
+    {
+      "nama": "Jerome Jahit",
+      "id": "2171145875436",
+      "gender": "Perempuan",
+      "kelas": "Kelas 11",
+      "foto": "assets/avatar2.png",
+    },
+    {
+      "nama": "Demi Kian",
+      "id": "2171145875436",
+      "gender": "Perempuan",
+      "kelas": "Kelas 12",
+      "foto": "assets/avatar3.png",
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Materi'), // Menambahkan judul untuk AppBar
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.start, // Mengubah untuk merapat ke atas
-            children: [
-              const SizedBox(height: 20), // Padding atas
-              _buildMateriBox(context, "Matematika"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "Biologi"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "PKN"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "Fisika"),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMateriBox(BuildContext context, String subject) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => KelasPage(subject: subject),
-          ),
-        );
-      },
-      child: Container(
-        width: 300, // Lebar box
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.blueAccent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Center(
-          child: Text(
-            subject,
-            style: const TextStyle(
-              color: Colors.white, // Warna teks
-              fontSize: 24, // Ukuran teks
-              fontWeight: FontWeight.bold, // Ketebalan teks
+      body: Column(
+        children: [
+          // Hapus atau komentari bagian ini untuk menghilangkan tulisan "Daftar Siswa"
+          /*
+          Container(
+            color: Colors.yellow,
+            padding: EdgeInsets.symmetric(vertical: 40),
+            child: Center(
+              child: Text(
+                'Daftar Siswa',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class KelasPage extends StatelessWidget {
-  final String subject;
-
-  const KelasPage({super.key, required this.subject});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Kelas $subject'),
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.start, // Mengubah agar rapat ke atas
-            children: List.generate(3, (index) {
-              int kelasNumber = index + 10; // Kelas 10, 11, 12
-              return _buildKelasBox(kelasNumber);
-            }),
+          */
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Spacer(),
+                SizedBox(
+                  width: 200, // Perkecil lebar TextField
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Cari Siswa',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(color: Colors.blueAccent),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildKelasBox(int kelasNumber) {
-    return Container(
-      width: 300, // Lebar box
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.blueAccent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: Text(
-          'Kelas $kelasNumber',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+          Expanded(
+            child: ListView.builder(
+              itemCount: siswaList.length,
+              itemBuilder: (context, index) {
+                final siswa = siswaList[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blueAccent),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: AssetImage(siswa['foto']!),
+                      ),
+                      title: Text(siswa['nama']!),
+                      subtitle: Text(siswa['id']!),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(siswa['gender']!),
+                          Text(siswa['kelas']!),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

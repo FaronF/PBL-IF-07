@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'kelola_materi_page.dart'; // Import halaman Materi
-import 'kelola_tugas_page.dart'; // Import halaman Manage Tasks
+import 'kelola_akademik_page.dart'; // Import halaman Manage Tasks
 import 'daftar_siswa.dart'; // Import halaman Student List
 import 'profile_guru.dart'; // Import halaman Profile
 import 'login_page.dart';
@@ -23,7 +23,7 @@ class _TeacherPageState extends State<TeacherPage> {
 
   static List<Widget> _pages = <Widget>[
     HomeContent(), // Halaman Home
-    KelolaTugasPage(), // Halaman Manage Tasks
+    KelolaAkademikPage(), // Halaman Manage Tasks
     KelolaMateriPage(), // Halaman Materi
     DaftarSiswaPage(),
     LoginPage(), // Halaman Student List
@@ -103,7 +103,7 @@ class _TeacherPageState extends State<TeacherPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list_alt_rounded),
-            label: 'Manage Tasks',
+            label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chrome_reader_mode_rounded),
