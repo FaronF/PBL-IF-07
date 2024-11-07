@@ -25,7 +25,7 @@ class KelolaAkademikPage extends StatelessWidget {
                   _buildDashboardBox(
                     context,
                     'Kelola Quiz',
-                    '/kelola_quiz_siswa', // Route to Quiz page
+                    '/kelolaquizsiswa', // Route to Quiz page
                     height: 60, // Set height smaller
                     width: 140, // Set width smaller
                   ),

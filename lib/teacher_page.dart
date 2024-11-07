@@ -102,7 +102,7 @@ class _TeacherPageState extends State<TeacherPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
+            icon: Icon(Icons.school),
             label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
