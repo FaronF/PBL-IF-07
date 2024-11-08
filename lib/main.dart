@@ -15,6 +15,7 @@ import 'kelola_materi_page.dart';
 import 'kelola_akademik_page.dart';
 import 'kelola_tugas_siswa.dart';
 import 'kelola_quiz_siswa.dart';
+import 'kelola_penilaian_siswa.dart';
 import 'profile_guru.dart';
 
 void main() async {
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
         '/kelolamateri': (context) => KelolaMateriPage(),
         '/kelolatugassiswa': (context) => KelolaTugasSiswa(),
         '/kelolaquizsiswa': (context) => KelolaQuizSiswa(),
+        '/kelolapenilaiansiswa': (context) => KelolaPenilaianSiswa(),
       },
     );
   }

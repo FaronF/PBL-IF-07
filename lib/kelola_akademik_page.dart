@@ -41,7 +41,7 @@ class KelolaAkademikPage extends StatelessWidget {
                   _buildDashboardBox(
                     context,
                     'Kelola Penilaian',
-                    '/kelola_penilaian', // Route to Penilaian page
+                    '/kelolapenilaiansiswa', // Route to Penilaian page
                     height: 60, // Set height smaller
                     width: 140, // Set width smaller
                   ),

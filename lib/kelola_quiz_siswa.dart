@@ -75,27 +75,14 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
               ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.delete),
-                  color: Colors.blue,
-                  iconSize: 40,
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.add),
-                  color: Colors.blue,
-                  iconSize: 40,
-                ),
-              ],
-            ),
-          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Tambahkan fungsi untuk menambah quiz di sini
+        },
+        backgroundColor: Colors.yellow,
+        child: Icon(Icons.add, size: 32),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -104,8 +91,8 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
-            label: 'Manage Tasks',
+            icon: Icon(Icons.school),
+            label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chrome_reader_mode_rounded),
@@ -191,11 +178,25 @@ class QuizCard extends StatelessWidget {
           ),
           Column(
             children: [
-              if (status == 'Dibuka')
-                Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                ),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      // Fungsi untuk menghapus quiz
+                    },
+                    icon: Icon(Icons.delete),
+                    color: Colors.white,
+                  ),
+                  if (status == 'Dibuka')
+                    IconButton(
+                      onPressed: () {
+                        // Fungsi untuk mengedit quiz
+                      },
+                      icon: Icon(Icons.edit),
+                      color: Colors.white,
+                    ),
+                ],
+              ),
               Text(
                 status,
                 style: TextStyle(
