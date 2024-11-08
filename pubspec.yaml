@@ -82,6 +82,7 @@ flutter:
     - assets/Logo-SMPIT.png
     - assets/Logo-TK.png
     - assets/TPA_ua.png
+    - assets/login1.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

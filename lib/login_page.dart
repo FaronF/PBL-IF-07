@@ -47,7 +47,6 @@ class _LoginPageState extends State<LoginPage> {
           await _auth.signOut();
         }
       } on FirebaseAuthException catch (e) {
-        print("Login error: ${e.code}, Message: ${e.message}");
         String message;
         switch (e.code) {
           case 'user-not-found':
@@ -63,7 +62,6 @@ class _LoginPageState extends State<LoginPage> {
           SnackBar(content: Text(message)),
         );
       } catch (e) {
-        print("Unexpected error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An unexpected error occurred: $e')),
         );
@@ -78,85 +76,92 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.lightBlue.shade300,
-              Colors.lightBlue.shade500,
-              Colors.lightBlue.shade700,
-            ],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/images/logo.png', // Replace with your logo path
-                  height: 120,
-                  width: 120,
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Welcome!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Please login to continue',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-                const SizedBox(height: 40),
-                _buildTextField(_emailController, 'Email', Icons.email, false),
-                const SizedBox(height: 16),
-                _buildTextField(
-                    _passwordController, 'Password', Icons.lock, true),
-                const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: _login,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 80, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+      appBar: AppBar(
+        toolbarHeight: 0, // Mengatur tinggi toolbar
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Column(
+        children: <Widget>[
+          // Header setengah lingkaran
+          Container(
+            height: 150,
+            decoration: const BoxDecoration(
+              color: Color.fromARGB(255, 253, 240, 69),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(150),
+                bottomRight: Radius.circular(150),
+              ),
+            ),
+            child: Stack(
+              children: <Widget>[
+                Positioned(
+                  top: -30,
+                  left: 15,
+                  width: 200,
+                  height: 200,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/logo-ulilalbab.png'),
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.lightBlue.shade700,
-                  ),
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    // Navigate to the registration page
-                    Navigator.pushReplacementNamed(context, '/register');
-                  },
-                  child: const Text(
-                    'Don\'t have an account? Register here',
-                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ],
             ),
           ),
-        ),
+          Expanded(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/login1.png', // Replace with your logo path
+                      height: 80,
+                      width: 120,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'LOGIN',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildTextField(_emailController, 'Email', Icons.email, false),
+                    const SizedBox(height: 16),
+                    _buildTextField(_passwordController, 'Password', Icons.lock, true),
+                    const SizedBox(height: 40),
+                    ElevatedButton(
+                      onPressed: _login,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -167,11 +172,11 @@ class _LoginPageState extends State<LoginPage> {
       controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.white),
+        prefixIcon: Icon(icon, color: Colors.black),
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white),
+        labelStyle: const TextStyle(color: Colors.black),
         filled: true,
-        fillColor: Colors.white24,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
           borderSide: BorderSide.none,
@@ -179,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
         contentPadding:
             const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
       ),
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.black),
       keyboardType:
           label == 'Email' ? TextInputType.emailAddress : TextInputType.text,
     );

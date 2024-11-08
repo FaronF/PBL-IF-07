@@ -12,8 +12,9 @@ import 'daftar_quiz.dart';
 import 'quiz_page.dart';
 import 'daftar_siswa.dart';
 import 'kelola_materi_page.dart';
-import 'kelola_tugas_page.dart';
+import 'kelola_akademik_page.dart';
 import 'kelola_tugas_siswa.dart';
+import 'kelola_quiz_siswa.dart';
 import 'profile_guru.dart';
 
 void main() async {
@@ -59,10 +60,11 @@ class MyApp extends StatelessWidget {
         '/daftar_quiz': (context) => DaftarQuizPage(),
         '/quiz_siswa': (context) => QuizPage(),
         '/materi': (context) => MateriPage(),
-        '/kelolatugas': (context) => KelolaTugasPage(),
+        '/kelolatugas': (context) => KelolaAkademikPage(),
         '/daftarsiswa': (context) => DaftarSiswaPage(),
         '/kelolamateri': (context) => KelolaMateriPage(),
         '/kelolatugassiswa': (context) => KelolaTugasSiswa(),
+        '/kelolaquizsiswa': (context) => KelolaQuizSiswa(),
       },
     );
   }
