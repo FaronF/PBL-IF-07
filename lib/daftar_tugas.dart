@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'profile_page.dart';
@@ -109,23 +111,22 @@ class DaftarTugasPage extends StatelessWidget {
                       final String description =
                           task['description'] ?? 'No Description';
                       final String taskClass = task['class'] ?? 'No Class';
-
-                      // Ambil due_to sebagai Timestamp dari Firestore
                       final Timestamp? dueToTimestamp =
                           task['due_to'] as Timestamp?;
-
-                      // Konversi Timestamp menjadi DateTime, dan buat string yang bisa dibaca
                       final String deadline = dueToTimestamp != null
-                          ? dueToTimestamp
-                              .toDate()
-                              .toString() // Konversi DateTime ke String
+                          ? DateFormat('dd-mm-yyyy HH:mm')
+                              .format(dueToTimestamp.toDate())
                           : 'No Due Date';
+
+                      final String taskId =
+                          tasks[index].id; // Get the document ID as taskId
 
                       return TaskItem(
                         title: title,
                         description: description,
                         taskClass: taskClass,
                         deadline: deadline,
+                        taskId: taskId, // Pass the taskId here
                       );
                     },
                   );
@@ -172,12 +173,14 @@ class DaftarTugasPage extends StatelessWidget {
 
 // Define TaskItem class below DaftarTugasPage
 class TaskItem extends StatelessWidget {
+  final String taskId;
   final String title;
   final String description;
   final String taskClass;
   final String deadline;
 
   const TaskItem({
+    required this.taskId,
     required this.title,
     required this.description,
     required this.taskClass,
@@ -191,7 +194,10 @@ class TaskItem extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PdfUploadScreen(taskTitle: title),
+            builder: (context) => PdfUploadScreen(
+              taskTitle: title,
+              taskId: taskId,
+            ),
           ),
         );
       },
@@ -225,26 +231,20 @@ class TaskItem extends StatelessWidget {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Kelas: $taskClass',
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w500),
-                ),
-                Flexible(
-                  child: Text(
-                    'Due to: $deadline',
-                    maxLines: 1,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.redAccent,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            Text(
+              'Kelas: $taskClass',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4), // Jarak antara kelas dan deadline
+            Text(
+              'Due to: $deadline',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.redAccent,
+              ),
             ),
           ],
         ),
@@ -255,8 +255,9 @@ class TaskItem extends StatelessWidget {
 
 class PdfUploadScreen extends StatefulWidget {
   final String taskTitle;
+  final String taskId;
 
-  PdfUploadScreen({required this.taskTitle});
+  PdfUploadScreen({required this.taskTitle, required this.taskId});
 
   @override
   _PdfUploadScreenState createState() => _PdfUploadScreenState();
@@ -266,8 +267,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
   String? uploadedFileURL;
   String? uploadedFileName;
   String? selectedFileName;
-  Uint8List?
-      selectedFileBytes; // Variabel untuk menyimpan bytes file yang dipilih
+  Uint8List? selectedFileBytes;
 
   Future<void> selectPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -278,38 +278,56 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
     if (result != null) {
       PlatformFile file = result.files.first;
 
-      // Set nama file dan bytes yang dipilih
       setState(() {
-        selectedFileName = file.name; // Simpan nama file ke variabel
-        selectedFileBytes = file.bytes; // Simpan bytes file ke variabel
+        selectedFileName = file.name;
+        selectedFileBytes = file.bytes;
       });
     }
   }
 
   Future<void> uploadPdf() async {
     if (selectedFileBytes != null) {
-      // Pastikan ada file yang dipilih
       try {
-        // Upload file ke Firebase Storage
-        UploadTask uploadTask = FirebaseStorage.instance
-            .ref('pdfs/$selectedFileName')
-            .putData(selectedFileBytes!); // Gunakan bytes yang sudah disimpan
+        String filePath =
+            'submissions/${FirebaseAuth.instance.currentUser?.uid}/${widget.taskTitle}/$selectedFileName';
+        UploadTask uploadTask =
+            FirebaseStorage.instance.ref(filePath).putData(selectedFileBytes!);
 
         TaskSnapshot taskSnapshot = await uploadTask;
-
-        // Dapatkan URL dari file yang diunggah
         String downloadUrl = await taskSnapshot.ref.getDownloadURL();
 
-        setState(() {
-          uploadedFileURL = downloadUrl; // Simpan URL file yang diunggah
-          uploadedFileName = selectedFileName; // Simpan nama file yang diunggah
-          selectedFileName = null; // Reset nama file yang dipilih
-          selectedFileBytes = null; // Reset bytes setelah diunggah
-        });
+        String? studentId = FirebaseAuth.instance.currentUser?.uid;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File uploaded successfully!')),
-        );
+        if (studentId != null) {
+          DocumentReference studentDoc =
+              FirebaseFirestore.instance.collection('Students').doc(studentId);
+          CollectionReference submissions =
+              studentDoc.collection('submissions');
+
+          // Add taskId to the submission data
+          await submissions.add({
+            'taskTitle': widget.taskTitle,
+            'submissionDate': Timestamp.now(),
+            'fileUrl': downloadUrl,
+            'status': 'submitted',
+            'taskId': widget.taskId, // Include the taskId here
+          });
+
+          setState(() {
+            uploadedFileURL = downloadUrl;
+            uploadedFileName = selectedFileName;
+            selectedFileName = null;
+            selectedFileBytes = null;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('File uploaded successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('User  is not authenticated.')),
+          );
+        }
       } catch (e) {
         print("Error uploading file: $e");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -317,27 +335,34 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
         );
       }
     } else {
-      // Jika tidak ada file yang dipilih, berikan notifikasi
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Silakan pilih file terlebih dahulu.')),
+        SnackBar(content: Text('Please select a file first.')),
       );
     }
   }
 
-  Future<void> deletePdf() async {
-    if (uploadedFileURL != null) {
+  Future<void> deletePdf(String fileUrl, String documentId) async {
+    if (fileUrl.isNotEmpty) {
       try {
-        // Ambil referensi ke file yang akan dihapus
-        await FirebaseStorage.instance.refFromURL(uploadedFileURL!).delete();
+        // Get reference to the file to delete
+        await FirebaseStorage.instance.refFromURL(fileUrl).delete();
 
-        // Reset variabel setelah dihapus
+        // Delete the corresponding Firestore document
+        String? studentId = FirebaseAuth.instance.currentUser?.uid;
+        if (studentId != null) {
+          DocumentReference studentDoc =
+              FirebaseFirestore.instance.collection('Students').doc(studentId);
+          await studentDoc.collection('submissions').doc(documentId).delete();
+        }
+
+        // Reset variables after deletion
         setState(() {
           uploadedFileURL = null;
           uploadedFileName = null;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File deleted successfully!')),
+          SnackBar(content: Text('Submission deleted successfully!')),
         );
       } catch (e) {
         print("Error deleting file: $e");
@@ -347,7 +372,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tidak ada file yang diunggah untuk dihapus.')),
+        SnackBar(content: Text('No file uploaded to delete.')),
       );
     }
   }
@@ -358,156 +383,256 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String? studentId = FirebaseAuth.instance.currentUser?.uid;
+
+    // Check if the user is authenticated
+    if (studentId == null) {
+      return Center(child: Text('User  is not authenticated. Please log in.'));
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Unggah PDF: ${widget.taskTitle}',
-            style: TextStyle(fontSize: 18)),
-        backgroundColor: Colors.amber[600],
+        toolbarHeight: 0, // Mengatur tinggi toolbar
+        backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Jika ada URL yang diunggah, tampilkan informasi file
-              uploadedFileURL != null
-                  ? Card(
-                      elevation: 4,
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Stack(
+        children: [
+          Column(
+            children: <Widget>[
+              // Header setengah lingkaran
+              Container(
+                height: 150,
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(150),
+                    bottomRight: Radius.circular(150),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10), // Memberi jarak setelah header
+              // Konten utama
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Check for existing submissions
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('Students')
+                            .doc(studentId)
+                            .collection('submissions')
+                            .where('taskId', isEqualTo: widget.taskId)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return Column(
                               children: [
-                                Flexible(
-                                  child: Text(
-                                    'File yang diunggah: $uploadedFileName',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Icon(Icons.picture_as_pdf,
-                                    color: Colors.red, size: 30),
+                                // Upload options if no submission exists
+                                selectedFileName != null
+                                    ? Column(
+                                        children: [
+                                          Text(
+                                            'File dipilih: $selectedFileName',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          ElevatedButton.icon(
+                                            onPressed: uploadPdf,
+                                            icon: Icon(Icons.send),
+                                            label: Text(
+                                              'Kirim',
+                                              style: TextStyle(fontSize: 16),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 24, vertical: 12),
+                                              backgroundColor:
+                                                  const Color.fromARGB(
+                                                      255, 255, 251, 40),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : ElevatedButton.icon(
+                                        onPressed: selectPdf,
+                                        icon: Icon(
+                                          Icons.upload_file,
+                                          color: Colors
+                                              .black, // Mengubah warna ikon menjadi hitam
+                                        ),
+                                        label: Text(
+                                          'Pilih PDF untuk diunggah',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors
+                                                .black, // Mengubah warna teks menjadi hitam
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 24, vertical: 12),
+                                          backgroundColor: Colors.blue[300],
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                      ),
                               ],
-                            ),
-                            const SizedBox(height: 20),
+                            );
+                          } else {
+                            // If a submission exists, show the uploaded file info
+                            var submission = snapshot.data!.docs.first;
+                            String documentId =
+                                submission.id; // Get the document ID
+                            String fileUrl = submission['fileUrl'];
+                            Timestamp submissionDate =
+                                submission['submissionDate'];
+                            String status = submission['status'];
 
-                            // Tombol untuk membuka file PDF yang diunggah
-                            ElevatedButton.icon(
-                              onPressed: () => openPdf(uploadedFileURL!),
-                              icon: Icon(Icons.open_in_new),
-                              label: Text(
-                                'Buka File PDF',
-                                style: TextStyle(fontSize: 16),
+                            return Card(
+                              elevation: 4,
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
                               ),
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
-                                backgroundColor:
-                                    const Color.fromARGB(255, 255, 251, 40),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // Tombol untuk menghapus file PDF yang diunggah
-                            ElevatedButton.icon(
-                              onPressed: deletePdf,
-                              icon: Icon(Icons.delete),
-                              label: Text(
-                                'Hapus File PDF',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
-                                backgroundColor: Colors.red[400],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : Column(
-                      children: [
-                        // Tombol Pilih PDF
-                        ElevatedButton.icon(
-                          onPressed: selectPdf, // Fungsi untuk memilih file PDF
-                          icon: Icon(Icons.upload_file),
-                          label: Text(
-                            'Pilih PDF untuk diunggah',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                            backgroundColor: Colors.amber[600],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-
-                        // Menampilkan nama file yang dipilih
-                        selectedFileName != null
-                            ? Column(
-                                children: [
-                                  Text(
-                                    'File dipilih: $selectedFileName',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  // Tombol Kirim untuk mengunggah PDF ke Firebase
-                                  ElevatedButton.icon(
-                                    onPressed:
-                                        uploadPdf, // Fungsi untuk mengunggah file ke Firebase
-                                    icon: Icon(Icons.send),
-                                    label: Text(
-                                      'Kirim',
-                                      style: TextStyle(fontSize: 16),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'File yang diunggah: ${submission['taskTitle']}',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500),
                                     ),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 24, vertical: 12),
-                                      backgroundColor: const Color.fromARGB(
-                                          255, 255, 251, 40),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Dikirim pada: ${submissionDate.toDate().toLocal().toString().split(' ')[0]}',
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Status: $status',
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    ElevatedButton.icon(
+                                      onPressed: () => openPdf(fileUrl),
+                                      icon: Icon(
+                                        Icons.open_in_new,
+                                        color: Colors
+                                            .black, // Mengubah warna ikon menjadi hitam
+                                      ),
+                                      label: Text(
+                                        'Buka File PDF',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 24, vertical: 12),
+                                        backgroundColor: const Color.fromARGB(
+                                            255, 255, 251, 40),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              )
-                            : const Text(
-                                'Belum ada file yang dipilih',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
+                                    const SizedBox(height: 10),
+                                    ElevatedButton.icon(
+                                      onPressed: () =>
+                                          deletePdf(fileUrl, documentId),
+                                      icon: Icon(
+                                        Icons.delete,
+                                        color: Colors
+                                            .black, // Mengubah warna ikon menjadi hitam
+                                      ),
+                                      label: Text(
+                                        'Hapus File',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 24, vertical: 12),
+                                        backgroundColor: Colors.red[500],
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                      ],
-                    ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 2,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/studentpage');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/materi');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/quiz');
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Beranda',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: 'Tugas',
+          ),
+        ],
+        backgroundColor: const Color.fromARGB(255, 255, 234, 0),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        unselectedFontSize: 12,
       ),
     );
   }

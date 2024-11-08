@@ -210,7 +210,7 @@ class _EditProfilePageState extends State<ProfilePage> {
           ),
         ],
         backgroundColor: const Color.fromARGB(255, 255, 234, 0),
-        selectedItemColor: Colors.white,
+        selectedItemColor: Colors.black,
         unselectedItemColor: Colors.black,
         selectedFontSize: 14,
         unselectedFontSize: 12,

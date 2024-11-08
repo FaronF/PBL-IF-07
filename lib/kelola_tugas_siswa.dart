@@ -59,14 +59,15 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
   }
 
   // Function to add a new task
-  Future<void> addTask(
-      String title, String className, String description, DateTime dueTo) {
-    return tasksCollection.add({
+  Future<String> addTask(String title, String className, String description,
+      DateTime dueTo) async {
+    DocumentReference docRef = await tasksCollection.add({
       'title': title,
       'class': className,
       'description': description,
       'due_to': Timestamp.fromDate(dueTo),
     });
+    return docRef.id; // Return the generated taskId
   }
 
   // Function to update a task
@@ -167,14 +168,26 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
               child: Text('Batal'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   if (taskId == null) {
-                    // Add task
-                    addTask(title, className, description, dueTo);
+                    // Add task and capture taskId
+                    String newTaskId =
+                        await addTask(title, className, description, dueTo);
+
+                    // Show a confirmation message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Tugas berhasil ditambahkan dengan ID: $newTaskId')),
+                    );
                   } else {
                     // Update task
                     updateTask(taskId, title, className, description, dueTo);
+                    // Show a confirmation message for update
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Tugas berhasil diedit')),
+                    );
                   }
                   Navigator.of(context).pop();
                 }
