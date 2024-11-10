@@ -1,56 +1,64 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class DaftarSiswaPage extends StatelessWidget {
-  final List<Map<String, String>> siswaList = [
-    {
-      "nama": "Jhon tor Bin Atang",
-      "id": "2171145875436",
-      "gender": "Laki-laki",
-      "kelas": "Kelas 10",
-      "foto": "assets/avatar1.png",
-    },
-    {
-      "nama": "Jerome Jahit",
-      "id": "2171145875436",
-      "gender": "Perempuan",
-      "kelas": "Kelas 11",
-      "foto": "assets/avatar2.png",
-    },
-    {
-      "nama": "Demi Kian",
-      "id": "2171145875436",
-      "gender": "Perempuan",
-      "kelas": "Kelas 12",
-      "foto": "assets/avatar3.png",
-    },
-  ];
+class DaftarSiswaPage extends StatefulWidget {
+  @override
+  _DaftarSiswaPageState createState() => _DaftarSiswaPageState();
+}
+
+class _DaftarSiswaPageState extends State<DaftarSiswaPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String searchQuery = '';
+  List<Map<String, dynamic>> siswaList = [];
+  List<Map<String, dynamic>> filteredSiswaList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSiswaData();
+  }
+
+  // Fungsi untuk mengambil data siswa dari Firestore
+  void fetchSiswaData() async {
+    QuerySnapshot snapshot = await _firestore.collection('Students').get();
+    setState(() {
+      siswaList = snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+      filteredSiswaList = siswaList; // Inisialisasi dengan semua data
+    });
+  }
+
+  // Fungsi untuk mencari siswa berdasarkan nama, id, dan kelas
+  void searchSiswa(String query) {
+    final filtered = siswaList.where((siswa) {
+      return siswa['nama'].toLowerCase().contains(query.toLowerCase()) ||
+          siswa['nisn'].toLowerCase().contains(query.toLowerCase()) ||
+          siswa['kelas'].toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
+    setState(() {
+      filteredSiswaList = filtered;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text('Daftar Siswa')),
       body: Column(
         children: [
-          // Hapus atau komentari bagian ini untuk menghilangkan tulisan "Daftar Siswa"
-          /*
-          Container(
-            color: Colors.yellow,
-            padding: EdgeInsets.symmetric(vertical: 40),
-            child: Center(
-              child: Text(
-                'Daftar Siswa',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          */
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                Spacer(),
-                SizedBox(
-                  width: 200, // Perkecil lebar TextField
+                Expanded(
                   child: TextField(
+                    onChanged: (value) {
+                      searchQuery = value;
+                      searchSiswa(
+                          searchQuery); // Panggil fungsi pencarian saat teks berubah
+                    },
                     decoration: InputDecoration(
                       hintText: 'Cari Siswa',
                       prefixIcon: Icon(Icons.search),
@@ -61,16 +69,24 @@ class DaftarSiswaPage extends StatelessWidget {
                     ),
                   ),
                 ),
+                IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    searchSiswa(
+                        searchQuery); // Panggil fungsi pencarian saat tombol ditekan
+                  },
+                ),
               ],
             ),
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: siswaList.length,
+              itemCount: filteredSiswaList.length,
               itemBuilder: (context, index) {
-                final siswa = siswaList[index];
+                final siswa = filteredSiswaList[index];
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.blueAccent),
@@ -78,15 +94,16 @@ class DaftarSiswaPage extends StatelessWidget {
                     ),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundImage: AssetImage(siswa['foto']!),
+                        backgroundImage: AssetImage(
+                            siswa['foto'] ?? 'assets/default_avatar.png'),
                       ),
-                      title: Text(siswa['nama']!),
-                      subtitle: Text(siswa['id']!),
+                      title: Text(siswa['nama'] ?? 'Nama tidak tersedia'),
+                      subtitle: Text(siswa['nisn'] ?? 'NISN tidak tersedia'),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(siswa['gender']!),
-                          Text(siswa['kelas']!),
+                          Text(siswa['gender'] ?? 'Gender tidak tersedia'),
+                          Text(siswa['kelas'] ?? 'Kelas tidak tersedia'),
                         ],
                       ),
                     ),
