@@ -410,6 +410,16 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                     bottomRight: Radius.circular(150),
                   ),
                 ),
+                child: Center( // Menggunakan Center untuk memposisikan teks di tengah
+                  child: Text(
+                    'Tugas',
+                    style: TextStyle(
+                      fontSize: 24, // Ukuran font
+                      fontWeight: FontWeight.bold, // Ketebalan font
+                    color: Colors.black, // Warna teks
+                  ),
+                ),
+            ),
               ),
               const SizedBox(height: 10), // Memberi jarak setelah header
               // Konten utama
@@ -442,29 +452,59 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                 selectedFileName != null
                                     ? Column(
                                         children: [
-                                          Text(
-                                            'File dipilih: $selectedFileName',
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          ElevatedButton.icon(
-                                            onPressed: uploadPdf,
-                                            icon: Icon(Icons.send),
-                                            label: Text(
-                                              'Kirim',
-                                              style: TextStyle(fontSize: 16),
-                                            ),
-                                            style: ElevatedButton.styleFrom(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 24, vertical: 12),
-                                              backgroundColor:
-                                                  const Color.fromARGB(
-                                                      255, 255, 251, 40),
+                                          Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Card(
+                                              elevation: 5,
                                               shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.picture_as_pdf, // Ikon PDF
+                                                          color: Colors.red, // Warna ikon
+                                                          size: 24, // Ukuran ikon
+                                                        ),
+                                                        const SizedBox(width: 8), // Jarak antara ikon dan teks
+                                                        Expanded(
+                                                          child: Text(
+                                                            'File dipilih: $selectedFileName',
+                                                            style: TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight: FontWeight.w600,
+                                                              color: Colors.black87,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 12),
+                                                    Center( // Menempatkan tombol di tengah
+                                                      child: ElevatedButton.icon(
+                                                        onPressed: uploadPdf,
+                                                        icon: Icon(Icons.send, size: 24), // Ukuran ikon pada tombol
+                                                        label: Text(
+                                                          'Kirim',
+                                                          style: TextStyle(fontSize: 18), // Ukuran font pada tombol
+                                                        ),
+                                                        style: ElevatedButton.styleFrom(
+                                                          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Padding tombol
+                                                          backgroundColor: const Color.fromARGB(255, 255, 251, 40),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(10),
+                                                          ),
+                                                          elevation: 5, // Menambahkan bayangan pada tombol
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
