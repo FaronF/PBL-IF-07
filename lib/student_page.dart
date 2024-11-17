@@ -209,7 +209,7 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildCard(
+    Widget _buildCard(
       {required int index, required String image, required String title}) {
     return MouseRegion(
       onEnter: (_) {
@@ -232,23 +232,29 @@ class _HomeContentState extends State<HomeContent> {
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: AssetImage(image),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundImage: AssetImage(image),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                );
+              },
             ),
           ),
         ),
