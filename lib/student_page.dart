@@ -191,9 +191,9 @@ class _HomeContentState extends State<HomeContent> {
                   index: index,
                   image: _images[index],
                   title: index == 0
-                      ? 'Taman Penitipan'
+                      ? 'TPA'
                       : index == 1
-                          ? 'TKIT Anak Harapan'
+                          ? 'TKIT Anak'
                           : index == 2
                               ? 'SDIT'
                               : index == 3
@@ -209,8 +209,11 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-    Widget _buildCard(
-      {required int index, required String image, required String title}) {
+    Widget _buildCard({
+      required int index,
+      required String image,
+      required String title,
+    }) {
     return MouseRegion(
       onEnter: (_) {
         setState(() {
@@ -232,29 +235,30 @@ class _HomeContentState extends State<HomeContent> {
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundImage: AssetImage(image),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundImage: AssetImage(image),
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

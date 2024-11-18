@@ -96,35 +96,47 @@ class _TeacherPageState extends State<TeacherPage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school),
-            label: 'Kelola Akademik',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chrome_reader_mode_rounded),
-            label: 'Materi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: 'Student List',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor:
-            const Color.fromARGB(255, 253, 240, 69), // Menyamakan dengan header
-        selectedItemColor: Colors.white, // Warna teks/icon ketika item dipilih
-        unselectedItemColor:
-            Colors.black, // Warna teks/icon ketika item tidak dipilih
-        selectedFontSize: 14,
-        type: BottomNavigationBarType
-            .fixed, // Ini penting agar background color terlihat
-      ),
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.list_alt_rounded),
+          label: 'Manage Tasks',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chrome_reader_mode_rounded),
+          label: 'Materi',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.group),
+          label: 'Student List',
+        ),
+      ],
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        switch (index) {
+          case 0:
+            Navigator.pushReplacementNamed(context, '/teacherpage');
+            break;
+          case 1:
+            Navigator.pushReplacementNamed(context, '/kelolatugas');
+            break;
+          case 2:
+            Navigator.pushReplacementNamed(context, '/kelolamateri');
+            break;
+          case 3:
+            Navigator.pushReplacementNamed(context, '/daftarsiswa');
+            break;
+        }
+      },
+      backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.black,
+      selectedFontSize: 14,
+      type: BottomNavigationBarType.fixed,
+    ),
     );
   }
 }
@@ -201,9 +213,9 @@ class _HomeContentState extends State<HomeContent> {
                   index: index,
                   image: _images[index],
                   title: index == 0
-                      ? 'Taman Penitipan'
+                      ? 'TPA'
                       : index == 1
-                          ? 'TKIT Anak Harapan'
+                          ? 'TKIT Anak'
                           : index == 2
                               ? 'SDIT'
                               : index == 3
@@ -220,43 +232,49 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildCard(
-      {required int index, required String image, required String title}) {
-    return MouseRegion(
-      onEnter: (_) {
-        setState(() {
-          _isHovered[index] = true;
-        });
-      },
-      onExit: (_) {
-        setState(() {
-          _isHovered[index] = false;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        transform: Matrix4.translationValues(0, _isHovered[index] ? -10 : 0, 0),
-        child: Card(
-          elevation: _isHovered[index] ? 10 : 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
+    {required int index, required String image, required String title}) {
+  return MouseRegion(
+    onEnter: (_) {
+      setState(() {
+        _isHovered[index] = true;
+      });
+    },
+    onExit: (_) {
+      setState(() {
+        _isHovered[index] = false;
+      });
+    },
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      transform: Matrix4.translationValues(0, _isHovered[index] ? -10 : 0, 0),
+      child: Card(
+        elevation: _isHovered[index] ? 10 : 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                flex: 3,
+                child: CircleAvatar(
                   radius: 40,
                   backgroundImage: AssetImage(image),
                 ),
-                const SizedBox(height: 10),
-                Text(
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                flex: 1,
+                child: Text(
                   title,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),

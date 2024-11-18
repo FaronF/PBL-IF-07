@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 
-class KelolaAkademikPage extends StatelessWidget {
+class KelolaAkademikPage extends StatefulWidget {
+  @override
+  _KelolaAkademikPageState createState() => _KelolaAkademikPageState();
+}
+
+class _KelolaAkademikPageState extends State<KelolaAkademikPage> {
+  int _selectedIndex = 1;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView(
         children: [
-          // Wrap in SingleChildScrollView for vertical scroll support
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -17,33 +23,33 @@ class KelolaAkademikPage extends StatelessWidget {
                   _buildDashboardBox(
                     context,
                     'Kelola Tugas',
-                    '/kelolatugassiswa', // Route to Tugas page
-                    height: 60, // Set height smaller
-                    width: 140, // Set width smaller
+                    '/kelolatugassiswa',
+                    height: 60,
+                    width: 140,
                   ),
                   const SizedBox(height: 20),
                   _buildDashboardBox(
                     context,
                     'Kelola Quiz',
-                    '/kelolaquizsiswa', // Route to Quiz page
-                    height: 60, // Set height smaller
-                    width: 140, // Set width smaller
+                    '/kelolaquizsiswa',
+                    height: 60,
+                    width: 140,
                   ),
                   const SizedBox(height: 20),
                   _buildDashboardBox(
                     context,
                     'Kelola Konten Pelajaran',
-                    '/kelola_konten_pelajaran', // Route to Konten Pelajaran page
-                    height: 60, // Set height smaller
-                    width: 140, // Set width smaller
+                    '/kelola_konten_pelajaran',
+                    height: 60,
+                    width: 140,
                   ),
                   const SizedBox(height: 20),
                   _buildDashboardBox(
                     context,
                     'Kelola Penilaian',
-                    '/kelolapenilaiansiswa', // Route to Penilaian page
-                    height: 60, // Set height smaller
-                    width: 140, // Set width smaller
+                    '/kelolapenilaiansiswa',
+                    height: 60,
+                    width: 140,
                   ),
                 ],
               ),
@@ -51,23 +57,61 @@ class KelolaAkademikPage extends StatelessWidget {
           ),
         ],
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_rounded),
+            label: 'Manage Tasks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chrome_reader_mode_rounded),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Student List',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/teacherpage');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/kelolatugas');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/kelolamateri');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/daftarsiswa');
+          }
+        },
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        type: BottomNavigationBarType.fixed,
+      ),
     );
   }
 
-  // Method to build each dashboard box with adjustable size
   Widget _buildDashboardBox(
       BuildContext context, String title, String routeName,
       {double height = 150, double width = double.infinity}) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(
-            context, routeName); // Navigate to the respective page
+        Navigator.pushNamed(context, routeName);
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Container(
-            height: height, // Use passed height value to adjust size
-            width: width, // Use passed width value to adjust size
+            height: height,
+            width: width,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10.0),
               boxShadow: const [
@@ -77,7 +121,7 @@ class KelolaAkademikPage extends StatelessWidget {
                   blurRadius: 8.0,
                 ),
               ],
-              color: const Color.fromARGB(255, 131, 142, 240), // Set background color if needed
+              color: const Color.fromARGB(255, 131, 142, 240),
             ),
             child: Center(
               child: Text(

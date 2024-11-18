@@ -1,7 +1,31 @@
 import 'package:flutter/material.dart';
 
-class KelolaMateriPage extends StatelessWidget {
+class KelolaMateriPage extends StatefulWidget {
   const KelolaMateriPage({super.key});
+
+  @override
+  State<KelolaMateriPage> createState() => _KelolaMateriPageState();
+}
+
+class _KelolaMateriPageState extends State<KelolaMateriPage> {
+  int _selectedIndex = 2; // Index untuk BottomNavigationBar (default ke 'Materi')
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Navigasi berdasarkan index
+    if (index == 0) {
+      Navigator.pushReplacementNamed(context, '/teacherpage');
+    } else if (index == 1) {
+      Navigator.pushReplacementNamed(context, '/kelolatugas');
+    } else if (index == 2) {
+      Navigator.pushReplacementNamed(context, '/kelolamateri');
+    } else if (index == 3) {
+      Navigator.pushReplacementNamed(context, '/daftarsiswa');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,8 +36,7 @@ class KelolaMateriPage extends StatelessWidget {
       body: Center(
         child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.start, // Mengubah untuk merapat ke atas
+            mainAxisAlignment: MainAxisAlignment.start, // Mengubah untuk merapat ke atas
             children: [
               const SizedBox(height: 20), // Padding atas
               _buildMateriBox(context, "Matematika"),
@@ -26,6 +49,33 @@ class KelolaMateriPage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_rounded),
+            label: 'Manage Tasks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chrome_reader_mode_rounded),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Student List',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
@@ -76,8 +126,7 @@ class KelasPage extends StatelessWidget {
       body: Center(
         child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.start, // Mengubah agar rapat ke atas
+            mainAxisAlignment: MainAxisAlignment.start, // Mengubah agar rapat ke atas
             children: List.generate(3, (index) {
               int kelasNumber = index + 10; // Kelas 10, 11, 12
               return _buildKelasBox(kelasNumber);

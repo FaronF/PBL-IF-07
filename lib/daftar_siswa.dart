@@ -11,6 +11,7 @@ class _DaftarSiswaPageState extends State<DaftarSiswaPage> {
   String searchQuery = '';
   List<Map<String, dynamic>> siswaList = [];
   List<Map<String, dynamic>> filteredSiswaList = [];
+  int _selectedIndex = 3; // Indeks awal sesuai dengan "Student List"
 
   @override
   void initState() {
@@ -113,6 +114,46 @@ class _DaftarSiswaPageState extends State<DaftarSiswaPage> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_rounded),
+            label: 'Manage Tasks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chrome_reader_mode_rounded),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Student List',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/teacherpage');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/kelolatugas');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/kelolamateri');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/daftarsiswa');
+          }
+        },
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
