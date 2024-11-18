@@ -288,8 +288,9 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
   Future<void> uploadPdf() async {
     if (selectedFileBytes != null) {
       try {
+        // Menggunakan selectedFileName untuk menentukan path file
         String filePath =
-            'submissions/${FirebaseAuth.instance.currentUser?.uid}/${widget.taskTitle}/$selectedFileName';
+            'submissions/${FirebaseAuth.instance.currentUser?.uid}/$selectedFileName';
         UploadTask uploadTask =
             FirebaseStorage.instance.ref(filePath).putData(selectedFileBytes!);
 
@@ -304,9 +305,10 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
           CollectionReference submissions =
               studentDoc.collection('submissions');
 
-          // Add taskId to the submission data
+          // Menyimpan selectedFileName sebagai taskTitle
           await submissions.add({
-            'taskTitle': widget.taskTitle,
+            'taskTitle':
+                selectedFileName, // Menggunakan nama file asli sebagai taskTitle
             'submissionDate': Timestamp.now(),
             'fileUrl': downloadUrl,
             'status': 'submitted',
@@ -398,209 +400,277 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
       ),
       body: Stack(
         children: [
-          Column(
-            children: <Widget>[
-              // Header setengah lingkaran
-              Container(
-                height: 150,
-                decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 253, 240, 69), // Warna header
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(150),
-                    bottomRight: Radius.circular(150),
+          SingleChildScrollView(
+            // Membungkus seluruh konten dalam SingleChildScrollView
+            child: Column(
+              children: <Widget>[
+                // Header setengah lingkaran
+                Container(
+                  height: 150,
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(150),
+                      bottomRight: Radius.circular(150),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10), // Memberi jarak setelah header
-              // Konten utama
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Check for existing submissions
-                      StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('Students')
-                            .doc(studentId)
-                            .collection('submissions')
-                            .where('taskId', isEqualTo: widget.taskId)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          }
+                const SizedBox(height: 10), // Memberi jarak setelah header
+                // Konten utama
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Check for existing submissions
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('Students')
+                              .doc(studentId)
+                              .collection('submissions')
+                              .where('taskId', isEqualTo: widget.taskId)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            }
 
-                          if (!snapshot.hasData ||
-                              snapshot.data!.docs.isEmpty) {
-                            return Column(
-                              children: [
-                                // Upload options if no submission exists
-                                selectedFileName != null
-                                    ? Column(
-                                        children: [
-                                          Text(
-                                            'File dipilih: $selectedFileName',
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          ElevatedButton.icon(
-                                            onPressed: uploadPdf,
-                                            icon: Icon(Icons.send),
-                                            label: Text(
-                                              'Kirim',
-                                              style: TextStyle(fontSize: 16),
+                            if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return Column(
+                                children: [
+                                  // Upload options if no submission exists
+                                  selectedFileName != null
+                                      ? Column(
+                                          children: [
+                                            Text(
+                                              'File dipilih: $selectedFileName',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500),
                                             ),
-                                            style: ElevatedButton.styleFrom(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 24, vertical: 12),
-                                              backgroundColor:
-                                                  const Color.fromARGB(
-                                                      255, 255, 251, 40),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
+                                            const SizedBox(height: 10),
+                                            ElevatedButton.icon(
+                                              onPressed: uploadPdf,
+                                              icon: Icon(Icons.send),
+                                              label: Text(
+                                                'Kirim',
+                                                style: TextStyle(fontSize: 16),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 24,
+                                                    vertical: 12),
+                                                backgroundColor:
+                                                    const Color.fromARGB(
+                                                        255, 255, 251, 40),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      )
-                                    : ElevatedButton.icon(
-                                        onPressed: selectPdf,
-                                        icon: Icon(
-                                          Icons.upload_file,
-                                          color: Colors
-                                              .black, // Mengubah warna ikon menjadi hitam
-                                        ),
-                                        label: Text(
-                                          'Pilih PDF untuk diunggah',
-                                          style: TextStyle(
-                                            fontSize: 16,
+                                          ],
+                                        )
+                                      : ElevatedButton.icon(
+                                          onPressed: selectPdf,
+                                          icon: Icon(
+                                            Icons.upload_file,
                                             color: Colors
-                                                .black, // Mengubah warna teks menjadi hitam
+                                                .black, // Mengubah warna ikon menjadi hitam
+                                          ),
+                                          label: Text(
+                                            'Pilih PDF untuk diunggah',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors
+                                                  .black, // Mengubah warna teks menjadi hitam
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 24, vertical: 12),
+                                            backgroundColor: Colors.blue[300],
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                            ),
                                           ),
                                         ),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 24, vertical: 12),
-                                          backgroundColor: Colors.blue[300],
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                          ),
-                                        ),
-                                      ),
-                              ],
-                            );
-                          } else {
-                            // If a submission exists, show the uploaded file info
-                            var submission = snapshot.data!.docs.first;
-                            String documentId =
-                                submission.id; // Get the document ID
-                            String fileUrl = submission['fileUrl'];
-                            Timestamp submissionDate =
-                                submission['submissionDate'];
-                            String status = submission['status'];
+                                ],
+                              );
+                            } else {
+                              // Mendapatkan nilai grade dari submission sebagai String
+// Jika ada submission, ambil data dari dokumen pertama
+                              var submissionDoc = snapshot.data!.docs
+                                  .first; // Menggunakan nama yang benar
+                              String documentId =
+                                  submissionDoc.id; // Mendapatkan ID dokumen
+                              String fileUrl = submissionDoc['fileUrl'];
+                              Timestamp submissionDate =
+                                  submissionDoc['submissionDate'];
+                              String status = submissionDoc['status'];
 
-                            return Card(
-                              elevation: 4,
-                              color: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'File yang diunggah: ${submission['taskTitle']}',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      'Dikirim pada: ${submissionDate.toDate().toLocal().toString().split(' ')[0]}',
-                                      style: TextStyle(
-                                          fontSize: 14, color: Colors.grey),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      'Status: $status',
-                                      style: TextStyle(
-                                          fontSize: 14, color: Colors.grey),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    ElevatedButton.icon(
-                                      onPressed: () => openPdf(fileUrl),
-                                      icon: Icon(
-                                        Icons.open_in_new,
-                                        color: Colors
-                                            .black, // Mengubah warna ikon menjadi hitam
-                                      ),
-                                      label: Text(
-                                        'Buka File PDF',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black,
+// Mengonversi data dokumen ke Map<String, dynamic>
+                              Map<String, dynamic>? data =
+                                  submissionDoc.data() as Map<String, dynamic>?;
+
+// Cek apakah field 'grade' ada sebelum mengaksesnya
+                              String? gradeString = (data != null &&
+                                      data.containsKey('grade'))
+                                  ? data['grade']
+                                      .toString() // Mengambil grade sebagai String
+                                  : null; // Nilai null jika tidak ada
+
+                              int? grade = gradeString != null
+                                  ? int.tryParse(gradeString)
+                                  : null; // Mengonversi String ke int jika ada
+
+// Menentukan warna berdasarkan nilai grade
+                              Color gradeColor;
+                              String displayGrade;
+                              if (grade != null) {
+                                // Jika grade ada, tentukan warna dan tampilkan nilai
+                                if (grade == 100) {
+                                  gradeColor = Colors
+                                      .blue[300]!; // Warna biru untuk nilai 100
+                                } else if (grade >= 85 && grade <= 99) {
+                                  gradeColor = Colors.green[
+                                      300]!; // Warna hijau untuk nilai 85-99
+                                } else if (grade >= 70 && grade < 85) {
+                                  gradeColor = Colors
+                                      .yellow; // Warna kuning untuk nilai 70-80
+                                } else {
+                                  gradeColor = Colors
+                                      .red; // Warna merah untuk nilai < 70
+                                }
+                                displayGrade =
+                                    gradeString!; // Menampilkan grade sebagai String, pastikan tidak null
+                              } else {
+                                // Jika grade tidak ada, tampilkan "-"
+                                gradeColor = Colors.grey; // Warna abu-abu
+                                displayGrade =
+                                    '-'; // Tanda jika grade tidak ada
+                              }
+
+                              return Card(
+                                elevation: 4,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'File yang diunggah: ${data?['taskTitle'] ?? 'Tidak ada judul'}',
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500),
                                         ),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 24, vertical: 12),
-                                        backgroundColor: const Color.fromARGB(
-                                            255, 255, 251, 40),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          'Dikirim pada: ${submissionDate.toDate().toLocal().toString().split(' ')[0]}',
+                                          style: TextStyle(
+                                              fontSize: 14, color: Colors.grey),
                                         ),
-                                      ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          'Status: $status',
+                                          style: TextStyle(
+                                              fontSize: 14, color: Colors.grey),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        // Display the grade with a background color
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 8, horizontal: 12),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                gradeColor, // Menggunakan warna yang ditentukan
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            'Nilai: $displayGrade', // Menampilkan grade atau "-"
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black, // Text color
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        ElevatedButton.icon(
+                                          onPressed: () => openPdf(fileUrl),
+                                          icon: Icon(
+                                            Icons.open_in_new,
+                                            color: Colors.black,
+                                          ),
+                                          label: Text(
+                                            'Buka File PDF',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 24, vertical: 12),
+                                            backgroundColor:
+                                                const Color.fromARGB(
+                                                    255, 255, 251, 40),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        ElevatedButton.icon(
+                                          onPressed: () =>
+                                              deletePdf(fileUrl, documentId),
+                                          icon: Icon(
+                                            Icons.delete,
+                                            color: Colors.black,
+                                          ),
+                                          label: Text(
+                                            'Hapus File',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 24, vertical: 12),
+                                            backgroundColor: Colors.red[500],
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 10),
-                                    ElevatedButton.icon(
-                                      onPressed: () =>
-                                          deletePdf(fileUrl, documentId),
-                                      icon: Icon(
-                                        Icons.delete,
-                                        color: Colors
-                                            .black, // Mengubah warna ikon menjadi hitam
-                                      ),
-                                      label: Text(
-                                        'Hapus File',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 24, vertical: 12),
-                                        backgroundColor: Colors.red[500],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ],
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          )
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

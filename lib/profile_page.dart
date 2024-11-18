@@ -192,7 +192,7 @@ class _EditProfilePageState extends State<ProfilePage> {
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/materi');
           } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/quiz');
+            Navigator.pushReplacementNamed(context, '/quiz_siswa');
           }
         },
         items: const [

@@ -1,4 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
+
+class Tasks {
+  final String taskId;
+  final String title;
+
+  Tasks({
+    required this.taskId,
+    required this.title,
+  });
+
+  factory Tasks.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map;
+    return Tasks(
+      taskId: doc.id,
+      title: data['title'] ?? '',
+    );
+  }
+}
+
+class Submission {
+  final String studentId;
+  final String taskId;
+  final String fileUrl;
+  final DateTime submissionDate;
+
+  Submission({
+    required this.studentId,
+    required this.taskId,
+    required this.fileUrl,
+    required this.submissionDate,
+  });
+
+  factory Submission.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map;
+    return Submission(
+      studentId: data['studentId'] ?? '',
+      taskId: data['taskId'] ?? '',
+      fileUrl: data['fileUrl'] ?? '',
+      submissionDate: (data['submissionDate'] as Timestamp).toDate(),
+    );
+  }
+}
+
+class Student {
+  final String studentId;
+  final String name;
+
+  Student({
+    required this.studentId,
+    required this.name,
+  });
+
+  factory Student.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map;
+    return Student(
+      studentId: doc.id,
+      name: data['nama'] ?? '',
+    );
+  }
+}
 
 class KelolaPenilaianSiswa extends StatefulWidget {
   @override
@@ -6,13 +68,51 @@ class KelolaPenilaianSiswa extends StatefulWidget {
 }
 
 class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
+
+  List<Tasks> tasks = [];
+  List<Submission> submissions = [];
+  List<Submission> filteredSubmissions =
+      []; // To hold submissions for selected task
+  String selectedtaskId = ''; // To store selected task ID
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTasks();
+  }
+
+  void fetchTasks() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('Tasks').get();
+    setState(() {
+      tasks = snapshot.docs.map((doc) => Tasks.fromFirestore(doc)).toList();
+    });
+  }
+
+  void fetchSubmissions(String taskId) async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('submissions')
+        .where('taskId', isEqualTo: taskId)
+        .get();
+    setState(() {
+      filteredSubmissions =
+          snapshot.docs.map((doc) => Submission.fromFirestore(doc)).toList();
+      selectedtaskId = taskId; // Update selected task ID
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SubmissionsPage(taskId: taskId),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Mengatur tinggi toolbar
+        toolbarHeight: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -20,11 +120,10 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
         children: [
           Column(
             children: <Widget>[
-              // Header setengah lingkaran dengan teks "Kelola Penilaian"
               Container(
                 height: 150,
                 decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                  color: Color.fromARGB(255, 253, 240, 69),
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(150),
                     bottomRight: Radius.circular(150),
@@ -42,41 +141,19 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
                 ),
               ),
               const SizedBox(height: 10),
-              
-              // Cards List
               Expanded(
-                child: ListView(
+                child: ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 10),
-                  children: [
-                    buildTaskCard(
-                      title: 'Bakteri',
-                      subtitle: 'Bab Fotosintesis lorem ipsum\nXII MIPA 3\nPDF',
-                      dueDate: '27 Agustus 2025 22.00',
-                      dikumpul: '13/24',
-                      selesai: '0/24',
-                    ),
-                    buildTaskCard(
-                      title: 'Pembelahan Sel',
-                      subtitle: 'Bab Fotosintesis lorem ipsum\nXII MIPA 3\nPDF',
-                      dueDate: '27 Agustus 2025 22.00',
-                      dikumpul: '19/22',
-                      selesai: '10/22',
-                    ),
-                    buildTaskCard(
-                      title: 'Bakteri',
-                      subtitle: 'Bab Fotosintesis lorem ipsum\nXII MIPA 3\nPDF',
-                      dueDate: '27 Agustus 2025 22.00',
-                      dikumpul: '13/24',
-                      selesai: '0/24',
-                    ),
-                  ],
+                  itemCount: tasks.length,
+                  itemBuilder: (context, index) {
+                    return buildTaskCard(context, tasks[index]);
+                  },
                 ),
               ),
             ],
           ),
         ],
       ),
-      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -84,7 +161,7 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
+            icon: Icon(Icons.school),
             label: 'Manage Tasks',
           ),
           BottomNavigationBarItem(
@@ -98,9 +175,6 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
         ],
         currentIndex: _selectedIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/teacherpage');
           } else if (index == 1) {
@@ -120,96 +194,195 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
     );
   }
 
-  // Card widget
-    Widget buildTaskCard({
-    required String title,
-    required String subtitle,
-    required String dueDate,
-    required String dikumpul,
-    required String selesai,
-  }) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 15),
-      padding: EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.lightBlueAccent,
-        borderRadius: BorderRadius.circular(10),
+  Widget buildTaskCard(BuildContext context, Tasks task) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      elevation: 8, // Menambahkan bayangan untuk efek kedalaman
+      shape: RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(12), // Membuat sudut card lebih bulat
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              // Menambahkan Spacer agar title berada di kiri, dan status di kanan
-              Spacer(),
-              Row(
-                children: [
-                  buildStatusBox('Dikumpul', dikumpul),
-                  SizedBox(width: 10), // Jarak antara kotak
-                  buildStatusBox('Selesai', selesai),
-                ],
-              ),
-            ],
+      color: Colors.blue[300], // Mengatur warna latar belakang card
+      child: ListTile(
+        contentPadding:
+            EdgeInsets.all(16), // Menambahkan padding di dalam ListTile
+        title: Text(
+          task.title,
+          style: TextStyle(
+            color: Colors.white, // Mengubah warna teks menjadi putih
+            fontSize: 18, // Ukuran font yang lebih besar
+            fontWeight: FontWeight.bold, // Menebalkan teks
           ),
-          SizedBox(height: 5),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            dueDate,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-            ),
-          ),
-        ],
+        ),
+        trailing: Icon(
+          Icons
+              .arrow_forward, // Menambahkan ikon panah untuk menunjukkan interaksi
+          color: Colors.white, // Mengubah warna ikon menjadi putih
+        ),
+        onTap: () {
+          fetchSubmissions(
+              task.taskId); // Fetch submissions for the selected task
+        },
       ),
     );
   }
+}
 
+class SubmissionsPage extends StatelessWidget {
+  final String taskId;
 
-  // Kotak Status widget
-  Widget buildStatusBox(String label, String value) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.blue[200],
-        borderRadius: BorderRadius.circular(5),
+  const SubmissionsPage({Key? key, required this.taskId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Submissions for Task $taskId'),
       ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ],
+      body: FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        future: FirebaseFirestore.instance
+            .collection('Students')
+            .get(), // Mengambil semua dokumen dari koleksi Students
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No submissions found.'));
+          }
+
+          // Loop through each student document
+          final studentDocs = snapshot.data!.docs;
+          return ListView.builder(
+            itemCount: studentDocs.length,
+            itemBuilder: (context, index) {
+              final studentDoc = studentDocs[index];
+
+              // Mengambil reference ke sub-koleksi submissions
+              CollectionReference<Map<String, dynamic>> submissionsRef =
+                  studentDoc.reference.collection('submissions');
+
+              // Mengambil submissions berdasarkan taskId
+              return FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                future: submissionsRef.where('taskId', isEqualTo: taskId).get(),
+                builder: (context, submissionSnapshot) {
+                  if (submissionSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (submissionSnapshot.hasError) {
+                    return Center(
+                        child: Text('Error: ${submissionSnapshot.error}'));
+                  }
+
+                  final submissionDocs = submissionSnapshot.data?.docs ?? [];
+                  final fileUrls = submissionDocs
+                      .map((doc) => doc.data()['fileUrl'])
+                      .toList();
+
+                  // Display student name and their submissions
+                  return ListTile(
+                    title: Text(studentDoc.data()['nama'] ?? 'Unknown Student'),
+                    subtitle: submissionDocs.isNotEmpty
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (int i = 0; i < submissionDocs.length; i++)
+                                SizedBox(
+                                  width: double
+                                      .infinity, // Make it take the full width
+                                  child: Card(
+                                    elevation: 4,
+                                    margin: EdgeInsets.symmetric(vertical: 8),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            // Menggunakan Expanded di sini
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.picture_as_pdf,
+                                                    color:
+                                                        Colors.red), // PDF icon
+                                                SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    submissionDocs[i]
+                                                            ['taskTitle'] ??
+                                                        'File ${i + 1}', // Menampilkan taskTitle
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    overflow: TextOverflow
+                                                        .ellipsis, // Menambahkan overflow
+                                                    maxLines:
+                                                        1, // Membatasi jumlah baris
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.file_download),
+                                            onPressed: () async {
+                                              // Launch the URL as a download
+                                              await UrlLauncher.launch(
+                                                fileUrls[i],
+                                                headers: <String, String>{
+                                                  'content-type':
+                                                      'application/pdf', // or 'application/octet-stream'
+                                                  'content-disposition':
+                                                      'attachment',
+                                                },
+                                              );
+                                            },
+                                          ),
+                                          // Add a TextField for grading
+                                          SizedBox(
+                                            width: 60,
+                                            child: TextField(
+                                              decoration: InputDecoration(
+                                                labelText: 'Nilai',
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onSubmitted: (value) async {
+                                                // Save the grade to Firestore
+                                                if (submissionDocs.isNotEmpty) {
+                                                  await submissionsRef
+                                                      .doc(submissionDocs[i].id)
+                                                      .update({'grade': value});
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                        content: Text(
+                                                            'Grade saved!')),
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          )
+                        : Text('No submissions found.'),
+                  );
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
