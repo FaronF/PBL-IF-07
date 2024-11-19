@@ -414,6 +414,17 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                       bottomRight: Radius.circular(150),
                     ),
                   ),
+                  child: Center(
+                    // Menggunakan Center untuk memposisikan teks di tengah
+                    child: Text(
+                      'Tugas',
+                      style: TextStyle(
+                        fontSize: 24, // Ukuran font
+                        fontWeight: FontWeight.bold, // Ketebalan font
+                        color: Colors.black, // Warna teks
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10), // Memberi jarak setelah header
                 // Konten utama
