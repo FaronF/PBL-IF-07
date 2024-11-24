@@ -6,7 +6,7 @@ class KelolaQuizSiswa extends StatefulWidget {
 }
 
 class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -15,7 +15,7 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
     if (index == 0) {
       Navigator.pushReplacementNamed(context, '/teacherpage');
     } else if (index == 1) {
-      Navigator.pushReplacementNamed(context, '/kelolatugas');
+      Navigator.pushReplacementNamed(context, '/kelolaakademik');
     } else if (index == 2) {
       Navigator.pushReplacementNamed(context, '/kelolamateri');
     } else if (index == 3) {
@@ -26,54 +26,74 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
+      appBar: AppBar(
+        toolbarHeight: 0, // Mengatur tinggi toolbar
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Stack(
         children: [
-          Container(
-            height: 150,
-            decoration: BoxDecoration(
-              color: Colors.yellow,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(50),
+          Column(
+            children: <Widget>[
+              // Header setengah lingkaran dengan teks
+              Stack(
+                children: [
+                  Container(
+                    height: 150,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(150),
+                        bottomRight: Radius.circular(150),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Kelola Quiz",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              'Kelola Quiz',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+              const SizedBox(height: 10), // Memberi jarak setelah header
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.all(16),
+                  children: [
+                    QuizCard(
+                      title: 'Genetika',
+                      kelas: '10 MIPA C',
+                      date: 'Selasa 15 September',
+                      time: '13.00–14.30',
+                      status: 'Dibuka',
+                    ),
+                    QuizCard(
+                      title: 'Virus',
+                      kelas: '10 MIPA D',
+                      date: 'Kamis 12 Agustus',
+                      time: '09.45–12.00',
+                      status: 'Selesai',
+                    ),
+                    QuizCard(
+                      title: 'Mutasi',
+                      kelas: '10 MIPA B',
+                      date: 'Senin 27 Agustus',
+                      time: '10.00–12.00',
+                      status: 'Selesai',
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.all(16),
-              children: [
-                QuizCard(
-                  title: 'Genetika',
-                  kelas: '10 MIPA C',
-                  date: 'Selasa 15 September',
-                  time: '13.00–14.30',
-                  status: 'Dibuka',
-                ),
-                QuizCard(
-                  title: 'Virus',
-                  kelas: '10 MIPA D',
-                  date: 'Kamis 12 Agustus',
-                  time: '09.45–12.00',
-                  status: 'Selesai',
-                ),
-                QuizCard(
-                  title: 'Mutasi',
-                  kelas: '10 MIPA B',
-                  date: 'Senin 27 Agustus',
-                  time: '10.00–12.00',
-                  status: 'Selesai',
-                ),
-              ],
-            ),
+            ],
           ),
         ],
       ),

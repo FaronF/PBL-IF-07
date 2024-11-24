@@ -281,7 +281,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
               padding:
                   const EdgeInsets.only(top: 40.0), // Mengatur jarak dari atas
               child: Text(
-                'Kelola Konten Pelajaran',
+                'Kelola Tugas',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -299,8 +299,8 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
-            label: 'Manage Tasks',
+            icon: Icon(Icons.school),
+            label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chrome_reader_mode_rounded),
@@ -316,7 +316,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/teacherpage');
           } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/kelolatugas');
+            Navigator.pushReplacementNamed(context, '/kelolaakademik');
           } else if (index == 2) {
             Navigator.pushReplacementNamed(context, '/kelolamateri');
           } else if (index == 3) {

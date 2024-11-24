@@ -19,7 +19,7 @@ class _KelolaMateriPageState extends State<KelolaMateriPage> {
     if (index == 0) {
       Navigator.pushReplacementNamed(context, '/teacherpage');
     } else if (index == 1) {
-      Navigator.pushReplacementNamed(context, '/kelolatugas');
+      Navigator.pushReplacementNamed(context, '/kelolaakademik');
     } else if (index == 2) {
       Navigator.pushReplacementNamed(context, '/kelolamateri');
     } else if (index == 3) {
@@ -31,24 +31,64 @@ class _KelolaMateriPageState extends State<KelolaMateriPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Materi'), // Menambahkan judul untuk AppBar
+        toolbarHeight: 0, // Mengatur tinggi toolbar
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start, // Mengubah untuk merapat ke atas
-            children: [
-              const SizedBox(height: 20), // Padding atas
-              _buildMateriBox(context, "Matematika"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "Biologi"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "PKN"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "Fisika"),
+      body: Stack(
+        children: [
+          Column(
+            children: <Widget>[
+              // Header setengah lingkaran dengan teks
+              Stack(
+                children: [
+                  Container(
+                    height: 150,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(150),
+                        bottomRight: Radius.circular(150),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Kelola Materi",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start, // Merapat ke atas
+                    children: [
+                      const SizedBox(height: 20), // Padding atas
+                      _buildMateriBox(context, "Matematika"),
+                      const SizedBox(height: 20), // Jarak antar box
+                      _buildMateriBox(context, "Biologi"),
+                      const SizedBox(height: 20), // Jarak antar box
+                      _buildMateriBox(context, "PKN"),
+                      const SizedBox(height: 20), // Jarak antar box
+                      _buildMateriBox(context, "Fisika"),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -57,8 +97,8 @@ class _KelolaMateriPageState extends State<KelolaMateriPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
-            label: 'Manage Tasks',
+            icon: Icon(Icons.school),
+            label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chrome_reader_mode_rounded),

@@ -61,7 +61,7 @@ class MyApp extends StatelessWidget {
         '/daftar_quiz': (context) => DaftarQuizPage(),
         '/quiz_siswa': (context) => QuizPage(),
         '/materi': (context) => MateriPage(),
-        '/kelolatugas': (context) => KelolaAkademikPage(),
+        '/kelolaakademik': (context) => KelolaAkademikPage(),
         '/daftarsiswa': (context) => DaftarSiswaPage(),
         '/kelolamateri': (context) => KelolaMateriPage(),
         '/kelolatugassiswa': (context) => KelolaTugasSiswa(),

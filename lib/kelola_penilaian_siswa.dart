@@ -162,7 +162,7 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.school),
-            label: 'Manage Tasks',
+            label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chrome_reader_mode_rounded),
@@ -178,7 +178,7 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/teacherpage');
           } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/kelolatugas');
+            Navigator.pushReplacementNamed(context, '/kelolaakademik');
           } else if (index == 2) {
             Navigator.pushReplacementNamed(context, '/kelolamateri');
           } else if (index == 3) {

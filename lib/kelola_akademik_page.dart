@@ -11,49 +11,90 @@ class _KelolaAkademikPageState extends State<KelolaAkademikPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
+      appBar: AppBar(
+        toolbarHeight: 0, // Mengatur tinggi toolbar
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          Column(
+            children: <Widget>[
+              // Header setengah lingkaran dengan teks
+              Stack(
                 children: [
-                  _buildDashboardBox(
-                    context,
-                    'Kelola Tugas',
-                    '/kelolatugassiswa',
-                    height: 60,
-                    width: 140,
+                  Container(
+                    height: 150,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(150),
+                        bottomRight: Radius.circular(150),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  _buildDashboardBox(
-                    context,
-                    'Kelola Quiz',
-                    '/kelolaquizsiswa',
-                    height: 60,
-                    width: 140,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildDashboardBox(
-                    context,
-                    'Kelola Konten Pelajaran',
-                    '/kelola_konten_pelajaran',
-                    height: 60,
-                    width: 140,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildDashboardBox(
-                    context,
-                    'Kelola Penilaian',
-                    '/kelolapenilaiansiswa',
-                    height: 60,
-                    width: 140,
+                  Center(
+                    child: Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Kelola Akademik",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildDashboardBox(
+                          context,
+                          'Kelola Tugas',
+                          '/kelolatugassiswa',
+                          height: 60,
+                          width: 140,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildDashboardBox(
+                          context,
+                          'Kelola Quiz',
+                          '/kelolaquizsiswa',
+                          height: 60,
+                          width: 140,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildDashboardBox(
+                          context,
+                          'Kelola Konten Pelajaran',
+                          '/kelola_konten_pelajaran',
+                          height: 60,
+                          width: 140,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildDashboardBox(
+                          context,
+                          'Kelola Penilaian',
+                          '/kelolapenilaiansiswa',
+                          height: 60,
+                          width: 140,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -64,8 +105,8 @@ class _KelolaAkademikPageState extends State<KelolaAkademikPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
-            label: 'Manage Tasks',
+            icon: Icon(Icons.school),
+            label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chrome_reader_mode_rounded),
@@ -84,7 +125,7 @@ class _KelolaAkademikPageState extends State<KelolaAkademikPage> {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/teacherpage');
           } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/kelolatugas');
+            Navigator.pushReplacementNamed(context, '/kelolaakademik');
           } else if (index == 2) {
             Navigator.pushReplacementNamed(context, '/kelolamateri');
           } else if (index == 3) {

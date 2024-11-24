@@ -46,72 +46,111 @@ class _DaftarSiswaPageState extends State<DaftarSiswaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Daftar Siswa')),
-      body: Column(
+      appBar: AppBar(
+        toolbarHeight: 0, // Mengatur tinggi toolbar
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) {
-                      searchQuery = value;
-                      searchSiswa(
-                          searchQuery); // Panggil fungsi pencarian saat teks berubah
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Cari Siswa',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide(color: Colors.blueAccent),
+          Column(
+            children: <Widget>[
+              // Header setengah lingkaran dengan teks
+              Stack(
+                children: [
+                  Container(
+                    height: 150,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(150),
+                        bottomRight: Radius.circular(150),
                       ),
                     ),
                   ),
+                  Center(
+                    child: Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Daftar Siswa",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        onChanged: (value) {
+                          searchQuery = value;
+                          searchSiswa(
+                              searchQuery); // Panggil fungsi pencarian saat teks berubah
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Cari Siswa',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide(color: Colors.blueAccent),
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.search),
+                      onPressed: () {
+                        searchSiswa(
+                            searchQuery); // Panggil fungsi pencarian saat tombol ditekan
+                      },
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () {
-                    searchSiswa(
-                        searchQuery); // Panggil fungsi pencarian saat tombol ditekan
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredSiswaList.length,
+                  itemBuilder: (context, index) {
+                    final siswa = filteredSiswaList[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blueAccent),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: AssetImage(
+                                siswa['foto'] ?? 'assets/default_avatar.png'),
+                          ),
+                          title: Text(siswa['nama'] ?? 'Nama tidak tersedia'),
+                          subtitle:
+                              Text(siswa['nisn'] ?? 'NISN tidak tersedia'),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(siswa['gender'] ?? 'Gender tidak tersedia'),
+                              Text(siswa['kelas'] ?? 'Kelas tidak tersedia'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
                   },
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredSiswaList.length,
-              itemBuilder: (context, index) {
-                final siswa = filteredSiswaList[index];
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blueAccent),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: AssetImage(
-                            siswa['foto'] ?? 'assets/default_avatar.png'),
-                      ),
-                      title: Text(siswa['nama'] ?? 'Nama tidak tersedia'),
-                      subtitle: Text(siswa['nisn'] ?? 'NISN tidak tersedia'),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(siswa['gender'] ?? 'Gender tidak tersedia'),
-                          Text(siswa['kelas'] ?? 'Kelas tidak tersedia'),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -122,8 +161,8 @@ class _DaftarSiswaPageState extends State<DaftarSiswaPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
-            label: 'Manage Tasks',
+            icon: Icon(Icons.school),
+            label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chrome_reader_mode_rounded),
@@ -142,7 +181,7 @@ class _DaftarSiswaPageState extends State<DaftarSiswaPage> {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/teacherpage');
           } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/kelolatugas');
+            Navigator.pushReplacementNamed(context, '/kelolaakademik');
           } else if (index == 2) {
             Navigator.pushReplacementNamed(context, '/kelolamateri');
           } else if (index == 3) {

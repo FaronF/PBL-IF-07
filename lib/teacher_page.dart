@@ -102,8 +102,8 @@ class _TeacherPageState extends State<TeacherPage> {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.list_alt_rounded),
-          label: 'Manage Tasks',
+          icon: Icon(Icons.school),
+          label: 'Kelola Akademik',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.chrome_reader_mode_rounded),
@@ -121,7 +121,7 @@ class _TeacherPageState extends State<TeacherPage> {
             Navigator.pushReplacementNamed(context, '/teacherpage');
             break;
           case 1:
-            Navigator.pushReplacementNamed(context, '/kelolatugas');
+            Navigator.pushReplacementNamed(context, '/kelolaakademik');
             break;
           case 2:
             Navigator.pushReplacementNamed(context, '/kelolamateri');
