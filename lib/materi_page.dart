@@ -1,7 +1,31 @@
 import 'package:flutter/material.dart';
 
-class MateriPage extends StatelessWidget {
+class MateriPage extends StatefulWidget {
   const MateriPage({super.key});
+
+  @override
+  State<MateriPage> createState() => _MateriPageState();
+}
+
+class _MateriPageState extends State<MateriPage> {
+  int _selectedIndex = 1; // Indeks awal untuk MateriPage
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/studentpage');
+        break;
+      case 1:
+        // Tetap di halaman ini
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/quiz_siswa');
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +52,29 @@ class MateriPage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
@@ -86,6 +133,41 @@ class KelasPage extends StatelessWidget {
             }),
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
+          ),
+        ],
+        currentIndex: 1, // Indeks tetap di Materi
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/studentpage');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/materi');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/quiz_siswa');
+              break;
+          }
+        },
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
