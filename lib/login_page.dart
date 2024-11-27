@@ -38,13 +38,21 @@ class _LoginPageState extends State<LoginPage> {
             .doc(userCredential.user!.uid)
             .get();
 
+        DocumentSnapshot adminSnapshot = await _firestore
+            .collection('Admins')
+            .doc(userCredential.user!.uid)
+            .get();
+
         if (studentSnapshot.exists) {
           Navigator.pushReplacementNamed(context, '/studentpage');
         } else if (teacherSnapshot.exists) {
           Navigator.pushReplacementNamed(context, '/teacherpage');
+        } else if (adminSnapshot.exists) {
+          Navigator.pushReplacementNamed(
+              context, '/adminpage'); // Arahkan ke halaman admin
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User not found in the database.')),
+            const SnackBar(content: Text('User  not found in the database.')),
           );
           await _auth.signOut();
         }
@@ -136,14 +144,17 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    _buildTextField(_emailController, 'Email', Icons.email, false),
+                    _buildTextField(
+                        _emailController, 'Email', Icons.email, false),
                     const SizedBox(height: 16),
-                    _buildTextField(_passwordController, 'Password', Icons.lock, true),
+                    _buildTextField(
+                        _passwordController, 'Password', Icons.lock, true),
                     const SizedBox(height: 40),
                     ElevatedButton(
                       onPressed: _login,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 80, vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),

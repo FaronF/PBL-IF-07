@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'admin_page.dart';
 import 'kelola_pengajar.dart';
 import 'kelola_pengguna.dart';
 import 'materi_page.dart';
-import 'tambah_pengajar.dart';
-import 'tambah_pengguna.dart';
 import 'teacher_page.dart';
 import 'login_page.dart';
 import 'register_page.dart';
@@ -21,6 +20,7 @@ import 'kelola_tugas_siswa.dart';
 import 'kelola_quiz_siswa.dart';
 import 'kelola_penilaian_siswa.dart';
 import 'profile_guru.dart';
+import 'profile_admin.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,24 +59,30 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
+
+        //Halaman Siswa
         '/studentpage': (context) => const StudentPage(),
-        '/teacherpage': (context) => const TeacherPage(),
         '/edit_profile': (context) => ProfilePage(),
-        '/profileguru': (context) => ProfileGuruPage(),
         '/daftar_tugas': (context) => DaftarTugasPage(),
         '/daftar_quiz': (context) => DaftarQuizPage(),
         '/quiz_siswa': (context) => QuizPage(),
         '/materi': (context) => const MateriPage(),
+        '/teacherpage': (context) => const TeacherPage(),
+
+        //Halaman Guru
+        '/profileguru': (context) => ProfileGuruPage(),
         '/kelolaakademik': (context) => KelolaAkademikPage(),
         '/daftarsiswa': (context) => DaftarSiswaPage(),
         '/kelolamateri': (context) => const KelolaMateriPage(),
         '/kelolatugassiswa': (context) => KelolaTugasSiswa(),
         '/kelolaquizsiswa': (context) => KelolaQuizSiswa(),
         '/kelolapenilaiansiswa': (context) => KelolaPenilaianSiswa(),
-        '/kelolaPengguna': (context) => const KelolaPenggunaPage(),
-        '/kelolaPengajar': (context) => const KelolaPengajarPage(),
-        '/tambahPengguna': (context) => const TambahPenggunaPage(),
-        '/tambahPengajar': (context) => const TambahPengajarPage(),
+
+        // Halaman Admin
+        '/adminpage': (context) => const AdminPage(),
+        '/profileadmin': (context) => const ProfileAdminPage(),
+        '/kelolapengguna': (context) => const KelolaPenggunaPage(),
+        '/kelolapengajar': (context) => const KelolaPengajarPage(),
       },
     );
   }
