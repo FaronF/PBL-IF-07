@@ -193,7 +193,7 @@ class _EditProfileGuruPageState extends State<ProfileGuruPage> {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/teacherpage');
           } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/kelolatugas');
+            Navigator.pushReplacementNamed(context, '/kelolaakademik');
           } else if (index == 2) {
             Navigator.pushReplacementNamed(context, '/kelolamateri');
           } else if (index == 3) {

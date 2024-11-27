@@ -107,12 +107,24 @@ class _StudentPageState extends State<StudentPage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: const Color.fromARGB(255, 255, 234, 0),
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/studentpage');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/materi');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/quiz_siswa');
+              break;
+          }
+        },
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.black,
         selectedFontSize: 14,
-        unselectedFontSize: 12,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }

@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
 
-class QuizPage extends StatelessWidget {
+class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
+
+  @override
+  State<QuizPage> createState() => _QuizPageState();
+}
+
+class _QuizPageState extends State<QuizPage> {
+  int _selectedIndex = 2; // Track the selected tab index
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Handle navigation based on the selected tab
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/studentpage');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/materi');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/quiz_siswa');
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView(
         children: [
-          // Wrap in SingleChildScrollView for vertical scroll support
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -20,24 +45,23 @@ class QuizPage extends StatelessWidget {
                     context,
                     'assets/images/background2.png', // Replace with your image
                     'Tugas',
-                    '/daftar_tugas', // Route to Tugas page
-                    height: 140, // Set height smaller
-                    width: 250, // Set width smaller
+                    '/daftar_tugas',
+                    height: 140,
+                    width: 250,
                   ),
                   const SizedBox(height: 20),
                   _buildDashboardBox(
                     context,
                     'assets/images/background3.png', // Replace with your image
                     'Quiz',
-                    '/daftar_quiz', // Route to Tugas page
-                    height: 140, // Set height smaller
-                    width: 250, // Set width smaller
+                    '/daftar_quiz',
+                    height: 140,
+                    width: 250,
                   ),
                 ],
               ),
             ),
           ),
-          // Add another swipeable page if needed
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -49,18 +73,18 @@ class QuizPage extends StatelessWidget {
                     context,
                     'assets/images/background3.png', // Replace with your image
                     'Quiz',
-                    '/quiz', // Route to Quiz page
-                    height: 100, // Set height smaller
-                    width: 250, // Set width smaller
+                    '/quiz',
+                    height: 100,
+                    width: 250,
                   ),
                   const SizedBox(height: 50),
                   _buildDashboardBox(
                     context,
                     'assets/images/background4.png', // Replace with your image
                     'Leaderboard',
-                    '/leaderboard', // Route to Leaderboard page
-                    height: 100, // Set height smaller
-                    width: 250, // Set width smaller
+                    '/leaderboard',
+                    height: 100,
+                    width: 250,
                   ),
                 ],
               ),
@@ -68,23 +92,44 @@ class QuizPage extends StatelessWidget {
           ),
         ],
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        type: BottomNavigationBarType.fixed,
+      ),
     );
   }
 
-  // Method to build each dashboard box with adjustable size
   Widget _buildDashboardBox(
       BuildContext context, String imagePath, String title, String routeName,
       {double height = 150, double width = double.infinity}) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(
-            context, routeName); // Navigate to the respective page
+        Navigator.pushNamed(context, routeName);
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Container(
-            height: height, // Use passed height value to adjust size
-            width: width, // Use passed width value to adjust size
+            height: height,
+            width: width,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10.0),
               boxShadow: const [
@@ -97,7 +142,6 @@ class QuizPage extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                // Background image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10.0),
                   child: Image.asset(
@@ -107,14 +151,12 @@ class QuizPage extends StatelessWidget {
                     height: double.infinity,
                   ),
                 ),
-                // Centered text with background shadow
                 Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 8.0),
                     decoration: BoxDecoration(
-                      color: Colors.black45.withOpacity(
-                          0.5), // Semi-transparent background for text
+                      color: Colors.black45.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: Text(
