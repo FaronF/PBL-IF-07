@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class KelolaQuizSiswa extends StatefulWidget {
+  const KelolaQuizSiswa({super.key});
+
   @override
   _KelolaQuizSiswaState createState() => _KelolaQuizSiswaState();
 }
@@ -67,7 +69,7 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
               const SizedBox(height: 10), // Memberi jarak setelah header
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   children: [
                     QuizCard(
                       title: 'Genetika',
@@ -102,7 +104,7 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
           // Tambahkan fungsi untuk menambah quiz di sini
         },
         backgroundColor: Colors.yellow,
-        child: Icon(Icons.add, size: 32),
+        child: const Icon(Icons.add, size: 32),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -142,7 +144,7 @@ class QuizCard extends StatelessWidget {
   final String time;
   final String status;
 
-  QuizCard({
+  const QuizCard({super.key, 
     required this.title,
     required this.kelas,
     required this.date,
@@ -153,8 +155,8 @@ class QuizCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      padding: EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.blue,
         borderRadius: BorderRadius.circular(20),
@@ -167,7 +169,7 @@ class QuizCard extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -175,21 +177,21 @@ class QuizCard extends StatelessWidget {
               ),
               Text(
                 kelas,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white,
                 ),
               ),
               Text(
                 date,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white,
                 ),
               ),
               Text(
                 time,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white,
                 ),
@@ -204,7 +206,7 @@ class QuizCard extends StatelessWidget {
                     onPressed: () {
                       // Fungsi untuk menghapus quiz
                     },
-                    icon: Icon(Icons.delete),
+                    icon: const Icon(Icons.delete),
                     color: Colors.white,
                   ),
                   if (status == 'Dibuka')
@@ -212,14 +214,14 @@ class QuizCard extends StatelessWidget {
                       onPressed: () {
                         // Fungsi untuk mengedit quiz
                       },
-                      icon: Icon(Icons.edit),
+                      icon: const Icon(Icons.edit),
                       color: Colors.white,
                     ),
                 ],
               ),
               Text(
                 status,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white,
                 ),

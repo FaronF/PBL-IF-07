@@ -19,9 +19,9 @@ class _StudentPageState extends State<StudentPage> {
     });
   }
 
-  static List<Widget> _pages = <Widget>[
-    HomeContent(), // Halaman Home
-    MateriPage(), // Halaman Materi
+  static final List<Widget> _pages = <Widget>[
+    const HomeContent(), // Halaman Home
+    const MateriPage(), // Halaman Materi
     QuizPage(), // Halaman Quiz
   ];
 

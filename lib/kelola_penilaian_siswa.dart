@@ -63,12 +63,14 @@ class Student {
 }
 
 class KelolaPenilaianSiswa extends StatefulWidget {
+  const KelolaPenilaianSiswa({super.key});
+
   @override
   _KelolaPenilaianSiswaState createState() => _KelolaPenilaianSiswaState();
 }
 
 class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
-  int _selectedIndex = 1;
+  final int _selectedIndex = 1;
 
   List<Tasks> tasks = [];
   List<Submission> submissions = [];
@@ -129,7 +131,7 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
                     bottomRight: Radius.circular(150),
                   ),
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     'Kelola Penilaian',
                     style: TextStyle(
@@ -143,7 +145,7 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
               const SizedBox(height: 10),
               Expanded(
                 child: ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   itemCount: tasks.length,
                   itemBuilder: (context, index) {
                     return buildTaskCard(context, tasks[index]);
@@ -196,7 +198,7 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
 
   Widget buildTaskCard(BuildContext context, Tasks task) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       elevation: 8, // Menambahkan bayangan untuk efek kedalaman
       shape: RoundedRectangleBorder(
         borderRadius:
@@ -205,16 +207,16 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
       color: Colors.blue[300], // Mengatur warna latar belakang card
       child: ListTile(
         contentPadding:
-            EdgeInsets.all(16), // Menambahkan padding di dalam ListTile
+            const EdgeInsets.all(16), // Menambahkan padding di dalam ListTile
         title: Text(
           task.title,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white, // Mengubah warna teks menjadi putih
             fontSize: 18, // Ukuran font yang lebih besar
             fontWeight: FontWeight.bold, // Menebalkan teks
           ),
         ),
-        trailing: Icon(
+        trailing: const Icon(
           Icons
               .arrow_forward, // Menambahkan ikon panah untuk menunjukkan interaksi
           color: Colors.white, // Mengubah warna ikon menjadi putih
@@ -231,7 +233,7 @@ class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
 class SubmissionsPage extends StatelessWidget {
   final String taskId;
 
-  const SubmissionsPage({Key? key, required this.taskId}) : super(key: key);
+  const SubmissionsPage({super.key, required this.taskId});
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +298,7 @@ class SubmissionsPage extends StatelessWidget {
                                       .infinity, // Make it take the full width
                                   child: Card(
                                     elevation: 4,
-                                    margin: EdgeInsets.symmetric(vertical: 8),
+                                    margin: const EdgeInsets.symmetric(vertical: 8),
                                     child: Padding(
                                       padding: const EdgeInsets.all(16.0),
                                       child: Row(
@@ -307,16 +309,16 @@ class SubmissionsPage extends StatelessWidget {
                                             // Menggunakan Expanded di sini
                                             child: Row(
                                               children: [
-                                                Icon(Icons.picture_as_pdf,
+                                                const Icon(Icons.picture_as_pdf,
                                                     color:
                                                         Colors.red), // PDF icon
-                                                SizedBox(width: 8),
+                                                const SizedBox(width: 8),
                                                 Expanded(
                                                   child: Text(
                                                     submissionDocs[i]
                                                             ['taskTitle'] ??
                                                         'File ${i + 1}', // Menampilkan taskTitle
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold),
                                                     overflow: TextOverflow
@@ -329,7 +331,7 @@ class SubmissionsPage extends StatelessWidget {
                                             ),
                                           ),
                                           IconButton(
-                                            icon: Icon(Icons.file_download),
+                                            icon: const Icon(Icons.file_download),
                                             onPressed: () async {
                                               // Launch the URL as a download
                                               await UrlLauncher.launch(
@@ -347,7 +349,7 @@ class SubmissionsPage extends StatelessWidget {
                                           SizedBox(
                                             width: 60,
                                             child: TextField(
-                                              decoration: InputDecoration(
+                                              decoration: const InputDecoration(
                                                 labelText: 'Nilai',
                                                 border: OutlineInputBorder(),
                                               ),
@@ -361,7 +363,7 @@ class SubmissionsPage extends StatelessWidget {
                                                       .update({'grade': value});
                                                   ScaffoldMessenger.of(context)
                                                       .showSnackBar(
-                                                    SnackBar(
+                                                    const SnackBar(
                                                         content: Text(
                                                             'Grade saved!')),
                                                   );
@@ -376,7 +378,7 @@ class SubmissionsPage extends StatelessWidget {
                                 ),
                             ],
                           )
-                        : Text('No submissions found.'),
+                        : const Text('No submissions found.'),
                   );
                 },
               );

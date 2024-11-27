@@ -21,10 +21,10 @@ class _TeacherPageState extends State<TeacherPage> {
     });
   }
 
-  static List<Widget> _pages = <Widget>[
-    HomeContent(), // Halaman Home
+  static final List<Widget> _pages = <Widget>[
+    const HomeContent(), // Halaman Home
     KelolaAkademikPage(), // Halaman Manage Tasks
-    KelolaMateriPage(), // Halaman Materi
+    const KelolaMateriPage(), // Halaman Materi
     DaftarSiswaPage(),
     LoginPage(), // Halaman Student List
   ];

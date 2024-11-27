@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class KelolaTugasSiswa extends StatefulWidget {
+  const KelolaTugasSiswa({super.key});
+
   @override
   KelolaTugasSiswaState createState() => KelolaTugasSiswaState();
 }
 
 class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
-  int _selectedIndex = 1;
+  final int _selectedIndex = 1;
 
   // Reference to Firestore collection
   final CollectionReference tasksCollection =
@@ -19,7 +21,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
     try {
       await FirebaseFirestore.instance.collection('Tasks').doc(taskId).delete();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tugas berhasil dihapus')),
+        const SnackBar(content: Text('Tugas berhasil dihapus')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -34,14 +36,14 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Hapus Tugas'),
-          content: Text('Apakah Anda yakin ingin menghapus tugas ini?'),
+          title: const Text('Hapus Tugas'),
+          content: const Text('Apakah Anda yakin ingin menghapus tugas ini?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog
               },
-              child: Text('Batal'),
+              child: const Text('Batal'),
             ),
             TextButton(
               onPressed: () {
@@ -50,7 +52,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                   Navigator.of(context).pop();
                 });
               },
-              child: Text('Hapus', style: TextStyle(color: Colors.red)),
+              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -88,7 +90,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
       String? currentClass,
       String? currentDescription,
       DateTime? currentDueTo}) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     String title = currentTitle ?? '';
     String className = currentClass ?? '';
     String description = currentDescription ?? '';
@@ -100,13 +102,13 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
         return AlertDialog(
           title: Text(taskId == null ? 'Tambah Tugas' : 'Edit Tugas'),
           content: Form(
-            key: _formKey,
+            key: formKey,
             child: SingleChildScrollView(
               child: Column(
                 children: [
                   TextFormField(
                     initialValue: title,
-                    decoration: InputDecoration(labelText: 'Judul'),
+                    decoration: const InputDecoration(labelText: 'Judul'),
                     onChanged: (value) {
                       title = value;
                     },
@@ -119,7 +121,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                   ),
                   TextFormField(
                     initialValue: className,
-                    decoration: InputDecoration(labelText: 'Kelas'),
+                    decoration: const InputDecoration(labelText: 'Kelas'),
                     onChanged: (value) {
                       className = value;
                     },
@@ -132,7 +134,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                   ),
                   TextFormField(
                     initialValue: description,
-                    decoration: InputDecoration(labelText: 'Deskripsi'),
+                    decoration: const InputDecoration(labelText: 'Deskripsi'),
                     onChanged: (value) {
                       description = value;
                     },
@@ -145,7 +147,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                   ),
                   TextFormField(
                     initialValue: DateFormat('dd-MM-yyyy HH:mm').format(dueTo),
-                    decoration: InputDecoration(labelText: 'Deadline'),
+                    decoration: const InputDecoration(labelText: 'Deadline'),
                     onChanged: (value) {
                       dueTo = DateFormat('dd-MM-yyyy HH:mm').parse(value);
                     },
@@ -165,11 +167,11 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Batal'),
+              child: const Text('Batal'),
             ),
             TextButton(
               onPressed: () async {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   if (taskId == null) {
                     // Add task and capture taskId
                     String newTaskId =
@@ -186,7 +188,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                     updateTask(taskId, title, className, description, dueTo);
                     // Show a confirmation message for update
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Tugas berhasil diedit')),
+                      const SnackBar(content: Text('Tugas berhasil diedit')),
                     );
                   }
                   Navigator.of(context).pop();
@@ -235,13 +237,13 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                     }
 
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     }
 
                     final tasks = snapshot.data!.docs;
 
                     if (tasks.isEmpty) {
-                      return Center(
+                      return const Center(
                         child: Text('Tidak ada tugas yang tersedia.'),
                       );
                     }
@@ -263,7 +265,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                             task['description'], // Deskripsi
                             dueTo, // Tanggal jatuh tempo yang di-convert dari Timestamp
                           ),
-                          SizedBox(
+                          const SizedBox(
                               height:
                                   20), // Menambahkan jarak 20 pixels antara setiap tugas
                         ]);
@@ -275,11 +277,11 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
             ],
           ),
           // Teks di tengah atas
-          Align(
+          const Align(
             alignment: Alignment.topCenter,
             child: Padding(
               padding:
-                  const EdgeInsets.only(top: 40.0), // Mengatur jarak dari atas
+                  EdgeInsets.only(top: 40.0), // Mengatur jarak dari atas
               child: Text(
                 'Kelola Tugas',
                 style: TextStyle(
@@ -334,8 +336,8 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
           // Buka form untuk menambahkan tugas
           showTaskForm();
         },
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
         child: Icon(Icons.add),
-        backgroundColor: Color.fromARGB(255, 253, 240, 69),
       ),
     );
   }
@@ -359,18 +361,18 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                 children: [
                   Text(title,
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text(className, style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 4),
-                  Text(description, style: TextStyle(fontSize: 14)),
-                  SizedBox(height: 4),
-                  Text('Due: $formattedDueTo', style: TextStyle(fontSize: 14)),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(className, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(height: 4),
+                  Text(description, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text('Due: $formattedDueTo', style: const TextStyle(fontSize: 14)),
                 ],
               ),
             ),
             IconButton(
-              icon: Icon(Icons.edit, color: Colors.blue),
+              icon: const Icon(Icons.edit, color: Colors.blue),
               onPressed: () {
                 // Buka form untuk mengedit tugas
                 showTaskForm(
@@ -383,7 +385,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
               },
             ),
             IconButton(
-              icon: Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete, color: Colors.red),
               onPressed: () {
                 showDeleteConfirmationDialog(taskId);
               },

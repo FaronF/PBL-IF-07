@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:tester/materi_page.dart';
-import 'package:tester/teacher_page.dart';
+import 'kelola_pengajar.dart';
+import 'kelola_pengguna.dart';
+import 'materi_page.dart';
+import 'tambah_pengajar.dart';
+import 'tambah_pengguna.dart';
+import 'teacher_page.dart';
 import 'login_page.dart';
 import 'register_page.dart';
 import 'student_page.dart';
@@ -41,6 +45,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -53,20 +59,24 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
-        '/studentpage': (context) => StudentPage(),
-        '/teacherpage': (context) => TeacherPage(),
+        '/studentpage': (context) => const StudentPage(),
+        '/teacherpage': (context) => const TeacherPage(),
         '/edit_profile': (context) => ProfilePage(),
         '/profileguru': (context) => ProfileGuruPage(),
         '/daftar_tugas': (context) => DaftarTugasPage(),
         '/daftar_quiz': (context) => DaftarQuizPage(),
         '/quiz_siswa': (context) => QuizPage(),
-        '/materi': (context) => MateriPage(),
+        '/materi': (context) => const MateriPage(),
         '/kelolaakademik': (context) => KelolaAkademikPage(),
         '/daftarsiswa': (context) => DaftarSiswaPage(),
-        '/kelolamateri': (context) => KelolaMateriPage(),
+        '/kelolamateri': (context) => const KelolaMateriPage(),
         '/kelolatugassiswa': (context) => KelolaTugasSiswa(),
         '/kelolaquizsiswa': (context) => KelolaQuizSiswa(),
         '/kelolapenilaiansiswa': (context) => KelolaPenilaianSiswa(),
+        '/kelolaPengguna': (context) => const KelolaPenggunaPage(),
+        '/kelolaPengajar': (context) => const KelolaPengajarPage(),
+        '/tambahPengguna': (context) => const TambahPenggunaPage(),
+        '/tambahPengajar': (context) => const TambahPengajarPage(),
       },
     );
   }

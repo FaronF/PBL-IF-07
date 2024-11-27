@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DaftarSiswaPage extends StatefulWidget {
+  const DaftarSiswaPage({super.key});
+
   @override
   _DaftarSiswaPageState createState() => _DaftarSiswaPageState();
 }
@@ -98,16 +100,16 @@ class _DaftarSiswaPageState extends State<DaftarSiswaPage> {
                         },
                         decoration: InputDecoration(
                           hintText: 'Cari Siswa',
-                          prefixIcon: Icon(Icons.search),
+                          prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide(color: Colors.blueAccent),
+                            borderSide: const BorderSide(color: Colors.blueAccent),
                           ),
                         ),
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.search),
+                      icon: const Icon(Icons.search),
                       onPressed: () {
                         searchSiswa(
                             searchQuery); // Panggil fungsi pencarian saat tombol ditekan

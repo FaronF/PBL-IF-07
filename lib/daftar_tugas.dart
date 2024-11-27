@@ -9,7 +9,7 @@ import 'package:open_file/open_file.dart';
 import 'profile_page.dart';
 
 class DaftarTugasPage extends StatelessWidget {
-  DaftarTugasPage({super.key});
+  const DaftarTugasPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +179,7 @@ class TaskItem extends StatelessWidget {
   final String taskClass;
   final String deadline;
 
-  const TaskItem({
+  const TaskItem({super.key, 
     required this.taskId,
     required this.title,
     required this.description,
@@ -257,7 +257,7 @@ class PdfUploadScreen extends StatefulWidget {
   final String taskTitle;
   final String taskId;
 
-  PdfUploadScreen({required this.taskTitle, required this.taskId});
+  const PdfUploadScreen({super.key, required this.taskTitle, required this.taskId});
 
   @override
   _PdfUploadScreenState createState() => _PdfUploadScreenState();
@@ -323,11 +323,11 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('File uploaded successfully!')),
+            const SnackBar(content: Text('File uploaded successfully!')),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User  is not authenticated.')),
+            const SnackBar(content: Text('User  is not authenticated.')),
           );
         }
       } catch (e) {
@@ -338,7 +338,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a file first.')),
+        const SnackBar(content: Text('Please select a file first.')),
       );
     }
   }
@@ -364,7 +364,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission deleted successfully!')),
+          const SnackBar(content: Text('Submission deleted successfully!')),
         );
       } catch (e) {
         print("Error deleting file: $e");
@@ -374,7 +374,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No file uploaded to delete.')),
+        const SnackBar(content: Text('No file uploaded to delete.')),
       );
     }
   }
@@ -389,7 +389,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
 
     // Check if the user is authenticated
     if (studentId == null) {
-      return Center(child: Text('User  is not authenticated. Please log in.'));
+      return const Center(child: Text('User  is not authenticated. Please log in.'));
     }
 
     return Scaffold(
@@ -414,7 +414,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                       bottomRight: Radius.circular(150),
                     ),
                   ),
-                  child: Center(
+                  child: const Center(
                     // Menggunakan Center untuk memposisikan teks di tengah
                     child: Text(
                       'Tugas',
@@ -446,7 +446,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
+                              return const Center(child: CircularProgressIndicator());
                             }
 
                             if (!snapshot.hasData ||
@@ -459,20 +459,20 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                           children: [
                                             Text(
                                               'File dipilih: $selectedFileName',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w500),
                                             ),
                                             const SizedBox(height: 10),
                                             ElevatedButton.icon(
                                               onPressed: uploadPdf,
-                                              icon: Icon(Icons.send),
-                                              label: Text(
+                                              icon: const Icon(Icons.send),
+                                              label: const Text(
                                                 'Kirim',
                                                 style: TextStyle(fontSize: 16),
                                               ),
                                               style: ElevatedButton.styleFrom(
-                                                padding: EdgeInsets.symmetric(
+                                                padding: const EdgeInsets.symmetric(
                                                     horizontal: 24,
                                                     vertical: 12),
                                                 backgroundColor:
@@ -488,12 +488,12 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                         )
                                       : ElevatedButton.icon(
                                           onPressed: selectPdf,
-                                          icon: Icon(
+                                          icon: const Icon(
                                             Icons.upload_file,
                                             color: Colors
                                                 .black, // Mengubah warna ikon menjadi hitam
                                           ),
-                                          label: Text(
+                                          label: const Text(
                                             'Pilih PDF untuk diunggah',
                                             style: TextStyle(
                                               fontSize: 16,
@@ -502,7 +502,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                             ),
                                           ),
                                           style: ElevatedButton.styleFrom(
-                                            padding: EdgeInsets.symmetric(
+                                            padding: const EdgeInsets.symmetric(
                                                 horizontal: 24, vertical: 12),
                                             backgroundColor: Colors.blue[300],
                                             shape: RoundedRectangleBorder(
@@ -580,26 +580,26 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                       children: [
                                         Text(
                                           'File yang diunggah: ${data?['taskTitle'] ?? 'Tidak ada judul'}',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500),
                                         ),
                                         const SizedBox(height: 10),
                                         Text(
                                           'Dikirim pada: ${submissionDate.toDate().toLocal().toString().split(' ')[0]}',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontSize: 14, color: Colors.grey),
                                         ),
                                         const SizedBox(height: 10),
                                         Text(
                                           'Status: $status',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontSize: 14, color: Colors.grey),
                                         ),
                                         const SizedBox(height: 10),
                                         // Display the grade with a background color
                                         Container(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                               vertical: 8, horizontal: 12),
                                           decoration: BoxDecoration(
                                             color:
@@ -609,7 +609,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                           ),
                                           child: Text(
                                             'Nilai: $displayGrade', // Menampilkan grade atau "-"
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black, // Text color
@@ -619,11 +619,11 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                         const SizedBox(height: 20),
                                         ElevatedButton.icon(
                                           onPressed: () => openPdf(fileUrl),
-                                          icon: Icon(
+                                          icon: const Icon(
                                             Icons.open_in_new,
                                             color: Colors.black,
                                           ),
-                                          label: Text(
+                                          label: const Text(
                                             'Buka File PDF',
                                             style: TextStyle(
                                               fontSize: 16,
@@ -631,7 +631,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                             ),
                                           ),
                                           style: ElevatedButton.styleFrom(
-                                            padding: EdgeInsets.symmetric(
+                                            padding: const EdgeInsets.symmetric(
                                                 horizontal: 24, vertical: 12),
                                             backgroundColor:
                                                 const Color.fromARGB(
@@ -646,11 +646,11 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                         ElevatedButton.icon(
                                           onPressed: () =>
                                               deletePdf(fileUrl, documentId),
-                                          icon: Icon(
+                                          icon: const Icon(
                                             Icons.delete,
                                             color: Colors.black,
                                           ),
-                                          label: Text(
+                                          label: const Text(
                                             'Hapus File',
                                             style: TextStyle(
                                               fontSize: 16,
@@ -658,7 +658,7 @@ class _PdfUploadScreenState extends State<PdfUploadScreen> {
                                             ),
                                           ),
                                           style: ElevatedButton.styleFrom(
-                                            padding: EdgeInsets.symmetric(
+                                            padding: const EdgeInsets.symmetric(
                                                 horizontal: 24, vertical: 12),
                                             backgroundColor: Colors.red[500],
                                             shape: RoundedRectangleBorder(

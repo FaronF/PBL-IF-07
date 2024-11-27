@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class KelolaAkademikPage extends StatefulWidget {
+  const KelolaAkademikPage({super.key});
+
   @override
   _KelolaAkademikPageState createState() => _KelolaAkademikPageState();
 }
