@@ -32,63 +32,108 @@ class _QuizPageState extends State<QuizPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
+      appBar: AppBar(
+        toolbarHeight: 0, // Menyembunyikan tinggi AppBar default
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          Column(
+            children: <Widget>[
+              // Header berbentuk setengah lingkaran dengan teks
+              Stack(
                 children: [
-                  _buildDashboardBox(
-                    context,
-                    'assets/images/background2.png', // Replace with your image
-                    'Tugas',
-                    '/daftar_tugas',
-                    height: 140,
-                    width: 250,
+                  Container(
+                    height: 150,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(150),
+                        bottomRight: Radius.circular(150),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  _buildDashboardBox(
-                    context,
-                    'assets/images/background3.png', // Replace with your image
-                    'Quiz',
-                    '/daftar_quiz',
-                    height: 140,
-                    width: 250,
+                  Center(
+                    child: Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Halaman Quiz",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ),
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildDashboardBox(
-                    context,
-                    'assets/images/background3.png', // Replace with your image
-                    'Quiz',
-                    '/quiz',
-                    height: 100,
-                    width: 250,
-                  ),
-                  const SizedBox(height: 50),
-                  _buildDashboardBox(
-                    context,
-                    'assets/images/background4.png', // Replace with your image
-                    'Leaderboard',
-                    '/leaderboard',
-                    height: 100,
-                    width: 250,
-                  ),
-                ],
+              const SizedBox(height: 10),
+              Expanded(
+                child: PageView(
+                  children: [
+                    SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildDashboardBox(
+                              context,
+                              'assets/images/background2.png',
+                              'Tugas',
+                              '/daftar_tugas',
+                              height: 140,
+                              width: 250,
+                            ),
+                            const SizedBox(height: 20),
+                            _buildDashboardBox(
+                              context,
+                              'assets/images/background3.png',
+                              'Quiz',
+                              '/daftar_quiz',
+                              height: 140,
+                              width: 250,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildDashboardBox(
+                              context,
+                              'assets/images/background3.png',
+                              'Quiz',
+                              '/quiz',
+                              height: 100,
+                              width: 250,
+                            ),
+                            const SizedBox(height: 50),
+                            _buildDashboardBox(
+                              context,
+                              'assets/images/background4.png',
+                              'Leaderboard',
+                              '/leaderboard',
+                              height: 100,
+                              width: 250,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

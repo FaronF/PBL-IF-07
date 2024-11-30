@@ -31,27 +31,65 @@ class _MateriPageState extends State<MateriPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Mengatur tinggi toolbar
+        toolbarHeight: 0, // Menyembunyikan tinggi AppBar default
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.start, // Mengubah untuk merapat ke atas
-            children: [
-              const SizedBox(height: 20), // Padding atas
-              _buildMateriBox(context, "Matematika"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "Biologi"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "PKN"),
-              const SizedBox(height: 20), // Jarak antar box
-              _buildMateriBox(context, "Fisika"),
+      body: Stack(
+        children: [
+          Column(
+            children: <Widget>[
+              // Header berbentuk setengah lingkaran dengan teks
+              Stack(
+                children: [
+                  Container(
+                    height: 150,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(150),
+                        bottomRight: Radius.circular(150),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Halaman Materi",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10), // Spasi antara header dan konten
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment:
+                        MainAxisAlignment.start, // Mengubah untuk merapat ke atas
+                    children: [
+                      const SizedBox(height: 20), // Padding atas
+                      _buildMateriBox(context, "Matematika"),
+                      const SizedBox(height: 20), // Jarak antar box
+                      _buildMateriBox(context, "Biologi"),
+                      const SizedBox(height: 20), // Jarak antar box
+                      _buildMateriBox(context, "PKN"),
+                      const SizedBox(height: 20), // Jarak antar box
+                      _buildMateriBox(context, "Fisika"),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -120,19 +158,59 @@ class KelasPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Kelas $subject'),
+        toolbarHeight: 0, // Menyembunyikan tinggi AppBar default
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.start, // Mengubah agar rapat ke atas
-            children: List.generate(3, (index) {
-              int kelasNumber = index + 10; // Kelas 10, 11, 12
-              return _buildKelasBox(kelasNumber);
-            }),
+      body: Stack(
+        children: [
+          Column(
+            children: <Widget>[
+              // Header berbentuk setengah lingkaran dengan teks
+              Stack(
+                children: [
+                  Container(
+                    height: 150,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(150),
+                        bottomRight: Radius.circular(150),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Kelas $subject",
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10), // Spasi antara header dan konten
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment:
+                        MainAxisAlignment.start, // Mengubah agar rapat ke atas
+                    children: List.generate(3, (index) {
+                      int kelasNumber = index + 10; // Kelas 10, 11, 12
+                      return _buildKelasBox(kelasNumber);
+                    }),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
