@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class KelolaPenggunaPage extends StatefulWidget {
@@ -34,9 +35,21 @@ class _KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
     }
   }
 
-  Future<void> hapusPengguna(String id) async {
+  Future<void> hapusPengguna(String id, String email, String password) async {
     try {
+      // Menghapus akun pengguna dari Firebase Authentication
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Hapus pengguna dari Firebase Authentication
+      await userCredential.user!.delete();
+
+      // Menghapus data siswa dari Firestore
       await FirebaseFirestore.instance.collection('Students').doc(id).delete();
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pengguna berhasil dihapus')),
       );
@@ -50,7 +63,7 @@ class _KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
   }
 
   // Fungsi untuk menampilkan dialog konfirmasi
-  void showDeleteConfirmationDialog(String id) {
+  void showDeleteConfirmationDialog(String id, String email, String password) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -66,9 +79,10 @@ class _KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
               },
             ),
             TextButton(
-              child: const Text('Hapus'),
+              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
               onPressed: () {
-                hapusPengguna(id); // Memanggil fungsi hapus pengguna
+                hapusPengguna(id, email,
+                    password); // Memanggil fungsi hapus pengguna dengan semua argumen
                 Navigator.of(context).pop(); // Menutup dialog
               },
             ),
@@ -127,7 +141,11 @@ class _KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
                       itemBuilder: (context, index) {
                         final student =
                             students[index].data() as Map<String, dynamic>;
-                        final studentId = students[index].id;
+                        final studentId = students[index].id; // Ambil ID siswa
+                        final email = student[
+                            'email']; // Ambil email siswa (pastikan ini ada di data)
+                        final password = student[
+                            'password']; // Ambil password siswa (pastikan ini ada di data)
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -138,10 +156,13 @@ class _KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
                             subtitle: Text('Kelas: ${student['kelas'] ?? '-'}\n'
                                 'NISN: ${student['nisn'] ?? '-'}'),
                             trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () =>
-                                  showDeleteConfirmationDialog(studentId),
-                            ),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  // Memanggil fungsi dengan argumen yang benar
+                                  showDeleteConfirmationDialog(
+                                      studentId, email, password);
+                                }),
                           ),
                         );
                       },
@@ -225,14 +246,26 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
   Future<void> tambahPengguna() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await FirebaseFirestore.instance.collection('Students').add({
+        // Membuat akun pengguna baru
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        // Mendapatkan UID dari pengguna yang baru dibuat
+        String uid = userCredential.user!.uid;
+
+        // Menambahkan data siswa ke Firestore dengan UID sebagai ID dokumen
+        await FirebaseFirestore.instance.collection('Students').doc(uid).set({
           'nama': namaController.text.trim(),
           'email': emailController.text.trim(),
           'kelas': kelasController.text.trim(),
           'nisn': nisnController.text.trim(),
-          'password': passwordController.text.trim(),
           'gender': gender,
+          'password': passwordController.text.trim(),
         });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pengguna berhasil ditambahkan')),
         );
@@ -318,10 +351,12 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: tambahPengguna,
-                  child: const Text('Simpan'),
-                ),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: tambahPengguna,
+                    child: const Text('Simpan'),
+                  ),
+                )
               ],
             ),
           ),

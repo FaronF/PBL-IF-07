@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'kelola_materi_page.dart'; // Import halaman Materi
 import 'kelola_akademik_page.dart'; // Import halaman Manage Tasks
 import 'daftar_siswa.dart'; // Import halaman Student List
-import 'profile_admin.dart'; // Import halaman Profile
 import 'login_page.dart';
 
 class AdminPage extends StatefulWidget {
@@ -19,6 +19,40 @@ class _AdminPageState extends State<AdminPage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Logout'),
+          content: const Text('Apakah Anda yakin ingin keluar?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Tutup dialog tanpa logout
+              },
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Tutup dialog
+                _logout(); // Panggil fungsi logout
+              },
+              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Fungsi untuk logout
+  void _logout() {
+    FirebaseAuth.instance.signOut(); // Lakukan proses sign out
+    Navigator.pushReplacementNamed(
+        context, '/login'); // Arahkan ke halaman login
   }
 
   static final List<Widget> _pages = <Widget>[
@@ -66,20 +100,15 @@ class _AdminPageState extends State<AdminPage> {
                   ),
                 ),
                 Positioned(
-                  top: 40,
+                  top: 45,
                   right: 25,
                   child: IconButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProfileAdminPage(),
-                        ),
-                      );
+                      _showLogoutConfirmation(context);
                     },
                     icon: const Icon(
-                      Icons.person,
-                      size: 40,
+                      Icons.logout_rounded,
+                      size: 30,
                       color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),

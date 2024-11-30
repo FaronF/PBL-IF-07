@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class KelolaPengajarPage extends StatefulWidget {
@@ -36,8 +37,34 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
 
   Future<void> hapusPengajar(String id) async {
     try {
-      await FirebaseFirestore.instance.collection('Teachers').doc(id).delete();
-      debugPrint('Pengajar berhasil dihapus');
+      // Mengambil data pengajar dari Firestore untuk mendapatkan UID
+      DocumentSnapshot doc =
+          await FirebaseFirestore.instance.collection('Teachers').doc(id).get();
+
+      if (doc.exists) {
+        String uid = doc['uid']; // Mengambil UID dari dokumen
+
+        // Hanya bisa menghapus pengguna yang sedang masuk
+        // Pastikan pengguna yang sedang masuk adalah pengguna yang ingin dihapus
+        if (FirebaseAuth.instance.currentUser != null &&
+            FirebaseAuth.instance.currentUser!.uid == uid) {
+          await FirebaseAuth.instance.currentUser!
+              .delete(); // Hapus pengguna saat ini
+          debugPrint('Pengguna berhasil dihapus dari Authentication');
+        } else {
+          debugPrint(
+              'Pengguna yang sedang masuk tidak cocok dengan UID yang akan dihapus');
+        }
+
+        // Menghapus pengajar dari Firestore
+        await FirebaseFirestore.instance
+            .collection('Teachers')
+            .doc(id)
+            .delete();
+        debugPrint('Pengajar berhasil dihapus dari Firestore');
+      } else {
+        debugPrint('Pengajar tidak ditemukan');
+      }
     } catch (e) {
       debugPrint('Gagal menghapus pengajar: $e');
     }
@@ -66,7 +93,7 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
                 );
                 Navigator.of(context).pop(); // Menutup dialog setelah hapus
               },
-              child: const Text('Hapus'),
+              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -74,7 +101,7 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
     );
   }
 
-  void showTambahPengajarDialog() {
+  void showTambahPengajarDialog(BuildContext context) {
     final TextEditingController namaController = TextEditingController();
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
@@ -112,86 +139,36 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
             ),
             TextButton(
               onPressed: () async {
-                // Tambahkan logika untuk menyimpan pengajar ke Firestore
-                await FirebaseFirestore.instance.collection('Teachers').add({
-                  'nama': namaController.text.trim(),
-                  'email': emailController.text.trim(),
-                  'password': passwordController.text.trim(),
-                });
+                try {
+                  // Membuat akun di Firebase Authentication
+                  UserCredential userCredential = await FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
+                    email: emailController.text.trim(),
+                    password: passwordController.text.trim(),
+                  );
 
-                // Menampilkan SnackBar setelah berhasil menambahkan
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Pengajar berhasil ditambahkan')),
-                );
+                  // Menyimpan data pengajar ke Firestore
+                  await FirebaseFirestore.instance.collection('Teachers').add({
+                    'nama': namaController.text.trim(),
+                    'email': emailController.text.trim(),
+                    'uid': userCredential
+                        .user!.uid, // Menyimpan UID untuk referensi
+                  });
 
-                Navigator.of(context)
-                    .pop(); // Menutup dialog setelah menambahkan
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+                  // Menampilkan SnackBar setelah berhasil menambahkan
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Pengajar berhasil ditambahkan')),
+                  );
 
-  void showEditPengajarDialog(String teacherId, String nama, String email) {
-    final TextEditingController namaController =
-        TextEditingController(text: nama);
-    final TextEditingController emailController =
-        TextEditingController(text: email);
-    final TextEditingController passwordController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Pengajar'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: namaController,
-                  decoration: const InputDecoration(labelText: 'Nama Guru'),
-                ),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                ),
-                TextField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Batal'),
-            ),
-            TextButton(
-              onPressed: () async {
-                // Tambahkan logika untuk memperbarui pengajar di Firestore
-                await FirebaseFirestore.instance
-                    .collection('Teachers')
-                    .doc(teacherId)
-                    .update({
-                  'nama': namaController.text.trim(),
-                  'email': emailController.text.trim(),
-                  'password': passwordController.text.trim(),
-                });
-
-                // Menampilkan SnackBar setelah berhasil mengedit
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Pengajar berhasil diedit')),
-                );
-
-                Navigator.of(context).pop(); // Menutup dialog setelah mengedit
+                  Navigator.of(context)
+                      .pop(); // Menutup dialog setelah menambahkan
+                } catch (e) {
+                  // Menangani kesalahan jika terjadi
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal menambahkan pengajar: $e')),
+                  );
+                }
               },
               child: const Text('Simpan'),
             ),
@@ -265,17 +242,6 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () {
-                                    showEditPengajarDialog(
-                                      teacherId,
-                                      teacher['nama'] ?? '',
-                                      teacher['email'] ?? '',
-                                    );
-                                  },
-                                ),
-                                IconButton(
                                   icon: const Icon(Icons.delete,
                                       color: Colors.red),
                                   onPressed: () =>
@@ -333,7 +299,7 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
         type: BottomNavigationBarType.fixed,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: showTambahPengajarDialog,
+        onPressed: () => showTambahPengajarDialog(context),
         child: const Icon(Icons.add),
         backgroundColor: Colors.blue,
       ),
