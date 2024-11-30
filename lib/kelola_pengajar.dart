@@ -35,65 +35,56 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
     }
   }
 
-  Future<void> hapusPengajar(String id) async {
+  Future<void> hapusPengajar(String id, String email, String password) async {
     try {
-      // Mengambil data pengajar dari Firestore untuk mendapatkan UID
-      DocumentSnapshot doc =
-          await FirebaseFirestore.instance.collection('Teachers').doc(id).get();
+      // Menghapus akun pengguna dari Firebase Authentication
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      if (doc.exists) {
-        String uid = doc['uid']; // Mengambil UID dari dokumen
+      // Hapus pengguna dari Firebase Authentication
+      await userCredential.user!.delete();
 
-        // Hanya bisa menghapus pengguna yang sedang masuk
-        // Pastikan pengguna yang sedang masuk adalah pengguna yang ingin dihapus
-        if (FirebaseAuth.instance.currentUser != null &&
-            FirebaseAuth.instance.currentUser!.uid == uid) {
-          await FirebaseAuth.instance.currentUser!
-              .delete(); // Hapus pengguna saat ini
-          debugPrint('Pengguna berhasil dihapus dari Authentication');
-        } else {
-          debugPrint(
-              'Pengguna yang sedang masuk tidak cocok dengan UID yang akan dihapus');
-        }
+      // Menghapus data siswa dari Firestore
+      await FirebaseFirestore.instance.collection('Teachers').doc(id).delete();
 
-        // Menghapus pengajar dari Firestore
-        await FirebaseFirestore.instance
-            .collection('Teachers')
-            .doc(id)
-            .delete();
-        debugPrint('Pengajar berhasil dihapus dari Firestore');
-      } else {
-        debugPrint('Pengajar tidak ditemukan');
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pengguna berhasil dihapus')),
+      );
+      debugPrint('Pengajar berhasil dihapus');
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menghapus pengajar: $e')),
+      );
       debugPrint('Gagal menghapus pengajar: $e');
     }
   }
 
-  void showDeleteConfirmationDialog(String teacherId) {
+  // Fungsi untuk menampilkan dialog konfirmasi
+  void showDeleteConfirmationDialog(String id, String email, String password) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Konfirmasi Hapus'),
           content:
-              const Text('Apakah Anda yakin ingin menghapus pengajar ini?'),
-          actions: [
+              const Text('Apakah Anda yakin ingin menghapus pengguna ini?'),
+          actions: <Widget>[
             TextButton(
+              child: const Text('Batal'),
               onPressed: () {
                 Navigator.of(context).pop(); // Menutup dialog
               },
-              child: const Text('Batal'),
             ),
             TextButton(
-              onPressed: () async {
-                await hapusPengajar(teacherId); // Memanggil fungsi hapus
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Pengajar berhasil dihapus')),
-                );
-                Navigator.of(context).pop(); // Menutup dialog setelah hapus
-              },
               child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                hapusPengajar(id, email,
+                    password); // Memanggil fungsi hapus pengguna dengan semua argumen
+                Navigator.of(context).pop(); // Menutup dialog
+              },
             ),
           ],
         );
@@ -147,12 +138,17 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
                     password: passwordController.text.trim(),
                   );
 
+                  // Mendapatkan UID dari pengguna yang baru dibuat
+                  String uid = userCredential.user!.uid;
+
                   // Menyimpan data pengajar ke Firestore
-                  await FirebaseFirestore.instance.collection('Teachers').add({
+                  await FirebaseFirestore.instance
+                      .collection('Teachers')
+                      .doc(uid)
+                      .set({
                     'nama': namaController.text.trim(),
                     'email': emailController.text.trim(),
-                    'uid': userCredential
-                        .user!.uid, // Menyimpan UID untuk referensi
+                    'password': passwordController.text.trim(),
                   });
 
                   // Menampilkan SnackBar setelah berhasil menambahkan
@@ -230,6 +226,10 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
                         final teacher =
                             teachers[index].data() as Map<String, dynamic>;
                         final teacherId = teachers[index].id;
+                        final email = teacher[
+                            'email']; // Ambil email siswa (pastikan ini ada di data)
+                        final password = teacher[
+                            'password']; // Ambil password siswa (pastikan ini ada di data)
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -242,11 +242,12 @@ class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () =>
-                                      showDeleteConfirmationDialog(teacherId),
-                                ),
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    onPressed: () {
+                                      showDeleteConfirmationDialog(
+                                          teacherId, email, password);
+                                    }),
                               ],
                             ),
                           ),
