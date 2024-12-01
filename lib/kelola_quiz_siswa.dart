@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class KelolaQuizSiswa extends StatefulWidget {
   const KelolaQuizSiswa({super.key});
@@ -25,11 +26,54 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
     }
   }
 
+  void _navigateToAddQuiz() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddQuizPage()),
+    );
+  }
+
+  Future<void> deleteQuiz(String quizId) async {
+    try {
+      await FirebaseFirestore.instance.collection('quiz').doc(quizId).delete();
+      print("Quiz berhasil dihapus");
+    } catch (e) {
+      print("Error menghapus quiz: $e");
+    }
+  }
+
+  void showDeleteConfirmation(String quizId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Hapus Quiz"),
+          content: const Text("Apakah Anda yakin ingin menghapus quiz ini?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+              },
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () {
+                deleteQuiz(quizId); // Panggil fungsi hapus
+                Navigator.of(context).pop(); // Menutup dialog
+              },
+              child: const Text("Hapus"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Mengatur tinggi toolbar
+        toolbarHeight: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -37,13 +81,12 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
         children: [
           Column(
             children: <Widget>[
-              // Header setengah lingkaran dengan teks
               Stack(
                 children: [
                   Container(
                     height: 150,
                     decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                      color: Color.fromARGB(255, 253, 240, 69),
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(150),
                         bottomRight: Radius.circular(150),
@@ -66,33 +109,43 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10), // Memberi jarak setelah header
+              const SizedBox(height: 10),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    QuizCard(
-                      title: 'Genetika',
-                      kelas: '10 MIPA C',
-                      date: 'Selasa 15 September',
-                      time: '13.00–14.30',
-                      status: 'Dibuka',
-                    ),
-                    QuizCard(
-                      title: 'Virus',
-                      kelas: '10 MIPA D',
-                      date: 'Kamis 12 Agustus',
-                      time: '09.45–12.00',
-                      status: 'Selesai',
-                    ),
-                    QuizCard(
-                      title: 'Mutasi',
-                      kelas: '10 MIPA B',
-                      date: 'Senin 27 Agustus',
-                      time: '10.00–12.00',
-                      status: 'Selesai',
-                    ),
-                  ],
+                child: StreamBuilder<QuerySnapshot>(
+                  stream:
+                      FirebaseFirestore.instance.collection('quiz').snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(
+                          child: Text('Tidak ada quiz tersedia.'));
+                    }
+
+                    final quizzes = snapshot.data!.docs;
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: quizzes.length,
+                      itemBuilder: (context, index) {
+                        final quiz = quizzes[index];
+                        return QuizCard(
+                          title: quiz['title'] ?? 'Tanpa Judul',
+                          kelas: quiz['kelas'] ?? 'Kelas Tidak Diketahui',
+                          date: quiz['date'] ?? 'Tanggal Tidak Diketahui',
+                          time: quiz['time'] ?? 'Waktu Tidak Diketahui',
+                          status: quiz['status'] ?? 'Status Tidak Diketahui',
+                          quizId: quiz.id, // Pass the quiz ID
+                          onDelete:
+                              showDeleteConfirmation, // Pass the delete confirmation function
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],
@@ -100,9 +153,7 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Tambahkan fungsi untuk menambah quiz di sini
-        },
+        onPressed: _navigateToAddQuiz,
         backgroundColor: Colors.yellow,
         child: const Icon(Icons.add, size: 32),
       ),
@@ -137,20 +188,337 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
   }
 }
 
+class AddQuizPage extends StatefulWidget {
+  const AddQuizPage({Key? key}) : super(key: key);
+
+  @override
+  _AddQuizPageState createState() => _AddQuizPageState();
+}
+
+class _AddQuizPageState extends State<AddQuizPage> {
+  String title = '';
+  String kelas = '';
+  String date = '';
+  String time = '';
+  List<Map<String, dynamic>> questions =
+      []; // List to hold questions and answers
+
+  void _addQuestion() {
+    setState(() {
+      questions.add({
+        'question': '',
+        'answers': [],
+        'correctAnswer': null,
+      });
+    });
+  }
+
+  void _removeQuestion(int questionIndex) {
+    setState(() {
+      questions.removeAt(questionIndex);
+    });
+  }
+
+  void _addAnswer(int questionIndex) {
+    setState(() {
+      questions[questionIndex]['answers'].add({'text': '', 'isCorrect': false});
+    });
+  }
+
+  void _removeAnswer(int questionIndex, int answerIndex) {
+    setState(() {
+      questions[questionIndex]['answers'].removeAt(answerIndex);
+      // Reset correctAnswer if the removed answer was the correct one
+      if (questions[questionIndex]['correctAnswer'] == answerIndex) {
+        questions[questionIndex]['correctAnswer'] = null;
+      } else if (questions[questionIndex]['correctAnswer'] != null &&
+          questions[questionIndex]['correctAnswer'] > answerIndex) {
+        questions[questionIndex]['correctAnswer']--;
+      }
+    });
+  }
+
+  void _setCorrectAnswer(int questionIndex, int answerIndex) {
+    setState(() {
+      questions[questionIndex]['correctAnswer'] = answerIndex;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 0, // Menyembunyikan toolbar AppBar
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Stack(children: [
+          Column(
+            children: <Widget>[
+              // Header setengah lingkaran
+              Container(
+                height: 150,
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(150),
+                    bottomRight: Radius.circular(150),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10), // Memberi jarak setelah header
+              Expanded(
+                  child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: <Widget>[
+                    const SizedBox(height: 10), // Memberi jarak dari atas
+                    const TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Judul Quiz',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
+                    // Tambahkan widget lain di sini sesuai kebutuhan
+                    const SizedBox(height: 20), // Memberi jarak
+                    // Contoh widget tambahan
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Deskripsi Quiz',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: (value) {
+                        title = value;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Kelas',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: (value) {
+                        kelas = value;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Tanggal',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: (value) {
+                        date = value;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Waktu',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: (value) {
+                        time = value;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Masukkan Soal dan Jawaban:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
+                    ...questions.asMap().entries.map((entry) {
+                      int questionIndex = entry.key;
+                      Map<String, dynamic> question = entry.value;
+                      return Card(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          elevation: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      labelText: 'Soal ${questionIndex + 1}',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    onChanged: (value) {
+                                      question['question'] = value;
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Menampilkan jawaban
+                                  ...question['answers']
+                                      .asMap()
+                                      .entries
+                                      .map((answerEntry) {
+                                    int answerIndex = answerEntry.key;
+                                    Map<String, dynamic> answer =
+                                        answerEntry.value;
+                                    return Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            decoration: InputDecoration(
+                                              labelText:
+                                                  'Opsi ${answerIndex + 1}',
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            onChanged: (value) {
+                                              answer['text'] = value;
+                                            },
+                                          ),
+                                        ),
+                                        Radio(
+                                          value: answerIndex,
+                                          groupValue: question['correctAnswer'],
+                                          onChanged: (value) {
+                                            _setCorrectAnswer(
+                                                questionIndex, answerIndex);
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () {
+                                            _removeAnswer(
+                                                questionIndex, answerIndex);
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () =>
+                                            _addAnswer(questionIndex),
+                                        style: ElevatedButton.styleFrom(),
+                                        child: const Icon(
+                                            Icons.add), // Hanya ikon tambah
+                                      ),
+                                      const SizedBox(
+                                          width: 16), // Spasi antara tombol
+                                      ElevatedButton(
+                                        onPressed: () =>
+                                            _removeQuestion(questionIndex),
+                                        style: ElevatedButton.styleFrom(),
+                                        child: const Icon(
+                                            Icons.delete), // Hanya ikon hapus
+                                      ),
+                                    ],
+                                  ),
+                                ]),
+                          ));
+                    }).toList(),
+                    ElevatedButton(
+                      onPressed: _addQuestion,
+                      child: Row(
+                        mainAxisSize: MainAxisSize
+                            .min, // Mengatur ukuran minimum dari Row
+                        children: const [
+                          Icon(Icons.add), // Ikon tambah
+                          SizedBox(width: 8), // Spasi antara ikon dan teks
+                          Text('Tambah Soal'), // Teks soal
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (title.isNotEmpty &&
+                            kelas.isNotEmpty &&
+                            date.isNotEmpty &&
+                            time.isNotEmpty &&
+                            questions.isNotEmpty) {
+                          await FirebaseFirestore.instance
+                              .collection('quiz')
+                              .add({
+                            'title': title,
+                            'kelas': kelas,
+                            'date': date,
+                            'time': time,
+                            'questions': questions,
+                            'status': 'Dibuka',
+                          });
+                          Navigator.of(context)
+                              .pop(); // Close the add quiz page
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Semua field harus diisi!')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Colors.yellow, // Warna latar belakang tombol
+                      ),
+                      child: const Text('Simpan Quiz'),
+                    ),
+                  ],
+                ),
+              ))
+            ],
+          ),
+          // Teks di tengah atas
+          const Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: EdgeInsets.only(top: 50.0), // Mengatur jarak dari atas
+              child: Text(
+                'Tambah Quiz',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+          // Tombol panah kembali di kiri atas
+          Positioned(
+              top: 40, // Posisi vertikal dari tombol
+              left: 16, // Jarak dari kiri
+              child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.pop(context); // Kembali ke halaman sebelumnya
+                  }))
+        ]));
+  }
+}
+
 class QuizCard extends StatelessWidget {
   final String title;
   final String kelas;
   final String date;
   final String time;
   final String status;
+  final String quizId; // ID Quiz
+  final Function(String) onDelete; // Callback untuk hapus quiz
 
-  const QuizCard({super.key, 
+  const QuizCard({
+    Key? key,
     required this.title,
     required this.kelas,
     required this.date,
     required this.time,
     required this.status,
-  });
+    required this.quizId, // Pass quizId to the card
+    required this.onDelete, // Callback untuk hapus quiz
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -203,20 +571,12 @@ class QuizCard extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {
-                      // Fungsi untuk menghapus quiz
-                    },
                     icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      onDelete(quizId); // Panggil callback untuk hapus
+                    },
                     color: Colors.white,
                   ),
-                  if (status == 'Dibuka')
-                    IconButton(
-                      onPressed: () {
-                        // Fungsi untuk mengedit quiz
-                      },
-                      icon: const Icon(Icons.edit),
-                      color: Colors.white,
-                    ),
                 ],
               ),
               Text(
