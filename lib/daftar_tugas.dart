@@ -50,7 +50,7 @@ class DaftarTugasPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProfilePage(),
+                          builder: (context) => const ProfilePage(),
                         ),
                       );
                     },
@@ -260,10 +260,10 @@ class PdfUploadScreen extends StatefulWidget {
   const PdfUploadScreen({super.key, required this.taskTitle, required this.taskId});
 
   @override
-  _PdfUploadScreenState createState() => _PdfUploadScreenState();
+  PdfUploadScreenState createState() => PdfUploadScreenState();
 }
 
-class _PdfUploadScreenState extends State<PdfUploadScreen> {
+class PdfUploadScreenState extends State<PdfUploadScreen> {
   String? uploadedFileURL;
   String? uploadedFileName;
   String? selectedFileName;

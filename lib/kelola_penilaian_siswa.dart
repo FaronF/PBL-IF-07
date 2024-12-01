@@ -66,10 +66,10 @@ class KelolaPenilaianSiswa extends StatefulWidget {
   const KelolaPenilaianSiswa({super.key});
 
   @override
-  _KelolaPenilaianSiswaState createState() => _KelolaPenilaianSiswaState();
+  KelolaPenilaianSiswaState createState() => KelolaPenilaianSiswaState();
 }
 
-class _KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
+class KelolaPenilaianSiswaState extends State<KelolaPenilaianSiswa> {
   final int _selectedIndex = 1;
 
   List<Tasks> tasks = [];

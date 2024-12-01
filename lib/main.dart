@@ -41,7 +41,7 @@ void main() async {
     await Firebase.initializeApp();
   }
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -57,26 +57,26 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/login', // Set the initial route
       routes: {
-        '/login': (context) => LoginPage(),
-        '/register': (context) => RegisterPage(),
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
 
         //Halaman Siswa
         '/studentpage': (context) => const StudentPage(),
-        '/edit_profile': (context) => ProfilePage(),
-        '/daftar_tugas': (context) => DaftarTugasPage(),
-        '/daftar_quiz': (context) => DaftarQuizPage(),
-        '/quiz_siswa': (context) => QuizPage(),
+        '/edit_profile': (context) => const ProfilePage(),
+        '/daftar_tugas': (context) => const DaftarTugasPage(),
+        '/daftar_quiz': (context) => const DaftarQuizPage(),
+        '/quiz_siswa': (context) => const QuizPage(),
         '/materi': (context) => const MateriPage(),
         '/teacherpage': (context) => const TeacherPage(),
 
         //Halaman Guru
-        '/profileguru': (context) => ProfileGuruPage(),
-        '/kelolaakademik': (context) => KelolaAkademikPage(),
-        '/daftarsiswa': (context) => DaftarSiswaPage(),
+        '/profileguru': (context) => const ProfileGuruPage(),
+        '/kelolaakademik': (context) => const KelolaAkademikPage(),
+        '/daftarsiswa': (context) => const DaftarSiswaPage(),
         '/kelolamateri': (context) => const KelolaMateriPage(),
-        '/kelolatugassiswa': (context) => KelolaTugasSiswa(),
-        '/kelolaquizsiswa': (context) => KelolaQuizSiswa(),
-        '/kelolapenilaiansiswa': (context) => KelolaPenilaianSiswa(),
+        '/kelolatugassiswa': (context) => const KelolaTugasSiswa(),
+        '/kelolaquizsiswa': (context) => const KelolaQuizSiswa(),
+        '/kelolapenilaiansiswa': (context) => const KelolaPenilaianSiswa(),
 
         // Halaman Admin
         '/adminpage': (context) => const AdminPage(),

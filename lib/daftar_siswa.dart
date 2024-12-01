@@ -5,10 +5,10 @@ class DaftarSiswaPage extends StatefulWidget {
   const DaftarSiswaPage({super.key});
 
   @override
-  _DaftarSiswaPageState createState() => _DaftarSiswaPageState();
+  DaftarSiswaPageState createState() => DaftarSiswaPageState();
 }
 
-class _DaftarSiswaPageState extends State<DaftarSiswaPage> {
+class DaftarSiswaPageState extends State<DaftarSiswaPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String searchQuery = '';
   List<Map<String, dynamic>> siswaList = [];

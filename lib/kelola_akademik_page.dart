@@ -4,10 +4,10 @@ class KelolaAkademikPage extends StatefulWidget {
   const KelolaAkademikPage({super.key});
 
   @override
-  _KelolaAkademikPageState createState() => _KelolaAkademikPageState();
+  KelolaAkademikPageState createState() => KelolaAkademikPageState();
 }
 
-class _KelolaAkademikPageState extends State<KelolaAkademikPage> {
+class KelolaAkademikPageState extends State<KelolaAkademikPage> {
   int _selectedIndex = 1;
 
   @override

@@ -15,7 +15,7 @@ class AdminPage extends StatefulWidget {
 class _AdminPageState extends State<AdminPage> {
   int _selectedIndex = 0;
 
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -57,10 +57,10 @@ class _AdminPageState extends State<AdminPage> {
 
   static final List<Widget> _pages = <Widget>[
     const HomeContent(), // Halaman Home
-    KelolaAkademikPage(), // Halaman Manage Tasks
+    const KelolaAkademikPage(), // Halaman Manage Tasks
     const KelolaMateriPage(), // Halaman Materi
-    DaftarSiswaPage(),
-    LoginPage(), // Halaman Student List
+    const DaftarSiswaPage(),
+    const LoginPage(), // Halaman Student List
   ];
 
   @override

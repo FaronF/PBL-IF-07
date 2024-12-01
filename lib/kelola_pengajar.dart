@@ -6,10 +6,10 @@ class KelolaPengajarPage extends StatefulWidget {
   const KelolaPengajarPage({super.key});
 
   @override
-  _KelolaPengajarPageState createState() => _KelolaPengajarPageState();
+  KelolaPengajarPageState createState() => KelolaPengajarPageState();
 }
 
-class _KelolaPengajarPageState extends State<KelolaPengajarPage> {
+class KelolaPengajarPageState extends State<KelolaPengajarPage> {
   int _selectedIndex = 2; // Menyimpan indeks item yang dipilih
 
   // Method untuk menangani perubahan item yang dipilih

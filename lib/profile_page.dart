@@ -6,10 +6,10 @@ class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  _EditProfilePageState createState() => _EditProfilePageState();
+  EditProfilePageState createState() => EditProfilePageState();
 }
 
-class _EditProfilePageState extends State<ProfilePage> {
+class EditProfilePageState extends State<ProfilePage> {
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();

@@ -13,7 +13,7 @@ class StudentPage extends StatefulWidget {
 class _StudentPageState extends State<StudentPage> {
   int _selectedIndex = 0;
 
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -22,7 +22,7 @@ class _StudentPageState extends State<StudentPage> {
   static final List<Widget> _pages = <Widget>[
     const HomeContent(), // Halaman Home
     const MateriPage(), // Halaman Materi
-    QuizPage(), // Halaman Quiz
+    const QuizPage(), // Halaman Quiz
   ];
 
   @override
@@ -69,7 +69,7 @@ class _StudentPageState extends State<StudentPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProfilePage(),
+                          builder: (context) => const ProfilePage(),
                         ),
                       );
                     },
