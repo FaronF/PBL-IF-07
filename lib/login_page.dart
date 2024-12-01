@@ -9,19 +9,47 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Method to handle login action
+  bool _isLoading = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..forward();
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeIn,
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   void _login() async {
     final email = _emailController.text;
     final password = _passwordController.text;
 
     if (email.isNotEmpty && password.isNotEmpty) {
+      setState(() {
+        _isLoading = true;
+      });
+
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: email,
@@ -48,11 +76,10 @@ class _LoginPageState extends State<LoginPage> {
         } else if (teacherSnapshot.exists) {
           Navigator.pushReplacementNamed(context, '/teacherpage');
         } else if (adminSnapshot.exists) {
-          Navigator.pushReplacementNamed(
-              context, '/adminpage'); // Arahkan ke halaman admin
+          Navigator.pushReplacementNamed(context, '/adminpage');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User  not found in the database.')),
+            const SnackBar(content: Text('User not found in the database.')),
           );
           await _auth.signOut();
         }
@@ -75,6 +102,10 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An unexpected error occurred: $e')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,33 +124,36 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: Column(
         children: <Widget>[
-          // Header setengah lingkaran
-          Container(
-            height: 150,
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 253, 240, 69),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(150),
-                bottomRight: Radius.circular(150),
+          // Header dengan animasi memudar
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: Container(
+              height: 150,
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 253, 240, 69),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(150),
+                  bottomRight: Radius.circular(150),
+                ),
               ),
-            ),
-            child: Stack(
-              children: <Widget>[
-                Positioned(
-                  top: -30,
-                  left: 15,
-                  width: 200,
-                  height: 200,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/logo-ulilalbab.png'),
-                        fit: BoxFit.contain,
+              child: Stack(
+                children: <Widget>[
+                  Positioned(
+                    top: -30,
+                    left: 15,
+                    width: 200,
+                    height: 200,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/logo-ulilalbab.png'),
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -130,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/login1.png', // Replace with your logo path
+                      'assets/login1.png',
                       height: 80,
                       width: 120,
                     ),
@@ -150,25 +184,27 @@ class _LoginPageState extends State<LoginPage> {
                     _buildTextField(
                         _passwordController, 'Password', Icons.lock, true),
                     const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: _login,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 80, vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton(
+                            onPressed: _login,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 80, vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0),
+                              ),
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                   ],
                 ),
               ),
