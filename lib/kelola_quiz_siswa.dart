@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'edit_quiz.dart';
 
 class KelolaQuizSiswa extends StatefulWidget {
-  const KelolaQuizSiswa({super.key});
+  const KelolaQuizSiswa({Key? key}) : super(key: key);
 
   @override
   _KelolaQuizSiswaState createState() => _KelolaQuizSiswaState();
 }
 
 class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
+  List<QueryDocumentSnapshot> quizzes = [];
   int _selectedIndex = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchQuizzes();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -26,6 +34,19 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
     }
   }
 
+  Future<void> _fetchQuizzes() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('quiz').get();
+
+      setState(() {
+        quizzes = querySnapshot.docs;
+      });
+    } catch (e) {
+      print('Error fetching quizzes: $e');
+    }
+  }
+
   void _navigateToAddQuiz() {
     Navigator.push(
       context,
@@ -33,40 +54,72 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
     );
   }
 
-  Future<void> deleteQuiz(String quizId) async {
-    try {
-      await FirebaseFirestore.instance.collection('quiz').doc(quizId).delete();
-      print("Quiz berhasil dihapus");
-    } catch (e) {
-      print("Error menghapus quiz: $e");
-    }
-  }
-
   void showDeleteConfirmation(String quizId) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Hapus Quiz"),
-          content: const Text("Apakah Anda yakin ingin menghapus quiz ini?"),
+          title: const Text('Konfirmasi Hapus'),
+          content: const Text('Apakah Anda yakin ingin menghapus quiz ini?'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Menutup dialog
+                Navigator.of(context).pop();
               },
-              child: const Text("Batal"),
+              child: const Text('Batal'),
             ),
             TextButton(
               onPressed: () {
-                deleteQuiz(quizId); // Panggil fungsi hapus
-                Navigator.of(context).pop(); // Menutup dialog
+                _deleteQuiz(quizId);
+                Navigator.of(context).pop();
               },
-              child: const Text("Hapus"),
+              child: const Text('Hapus'),
             ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _deleteQuiz(String quizId) async {
+    try {
+      await FirebaseFirestore.instance.collection('quiz').doc(quizId).delete();
+      _fetchQuizzes(); // Refresh the list after deletion
+    } catch (e) {
+      print('Error deleting quiz: $e');
+    }
+  }
+
+  void _navigateToEditQuiz(String quizId) {
+    FirebaseFirestore.instance
+        .collection('quiz')
+        .doc(quizId)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> quizData =
+            documentSnapshot.data() as Map<String, dynamic>;
+
+        List<Map<String, dynamic>> questions = (quizData['questions'] as List?)
+                ?.map((q) => Map<String, dynamic>.from(q))
+                .toList() ??
+            [];
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditQuizPage(
+              quizId: quizId,
+              initialTitle: quizData['title'] ?? '',
+              initialKelas: quizData['kelas'] ?? '',
+              initialDate: quizData['date'] ?? '',
+              initialTime: quizData['time'] ?? '',
+              initialQuestions: questions,
+            ),
+          ),
+        ).then((_) => _fetchQuizzes());
+      }
+    });
   }
 
   @override
@@ -133,15 +186,36 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
                       itemCount: quizzes.length,
                       itemBuilder: (context, index) {
                         final quiz = quizzes[index];
+                        final quizId = quizzes[index].id;
+
                         return QuizCard(
                           title: quiz['title'] ?? 'Tanpa Judul',
                           kelas: quiz['kelas'] ?? 'Kelas Tidak Diketahui',
                           date: quiz['date'] ?? 'Tanggal Tidak Diketahui',
                           time: quiz['time'] ?? 'Waktu Tidak Diketahui',
                           status: quiz['status'] ?? 'Status Tidak Diketahui',
-                          quizId: quiz.id, // Pass the quiz ID
-                          onDelete:
-                              showDeleteConfirmation, // Pass the delete confirmation function
+                          quizId: quizId,
+                          onDelete: showDeleteConfirmation,
+                          onEdit: (title, kelas, date, time, quizId) {
+                            _navigateToEditQuiz(quizId);
+                            // Navigasi ke halaman edit dengan data quiz yang dipilih
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditQuizPage(
+                                  quizId: quizId,
+                                  initialTitle: title,
+                                  initialKelas: kelas,
+                                  initialDate: date,
+                                  initialTime: time,
+                                  initialQuestions: List<
+                                      Map<String, dynamic>>.from(quiz[
+                                          'questions'] ??
+                                      []), // Pastikan ini adalah List<Map<String, dynamic>>
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                     );
@@ -506,8 +580,9 @@ class QuizCard extends StatelessWidget {
   final String date;
   final String time;
   final String status;
-  final String quizId; // ID Quiz
-  final Function(String) onDelete; // Callback untuk hapus quiz
+  final String quizId;
+  final Function(String) onDelete;
+  final Function(String, String, String, String, String) onEdit;
 
   const QuizCard({
     Key? key,
@@ -516,8 +591,9 @@ class QuizCard extends StatelessWidget {
     required this.date,
     required this.time,
     required this.status,
-    required this.quizId, // Pass quizId to the card
-    required this.onDelete, // Callback untuk hapus quiz
+    required this.quizId,
+    required this.onDelete,
+    required this.onEdit,
   }) : super(key: key);
 
   @override
@@ -532,48 +608,74 @@ class QuizCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              Text(
-                kelas,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
+                Text(
+                  kelas,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              Text(
-                date,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
+                Text(
+                  date,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
+                Text(
+                  time,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Column(
             children: [
               Row(
                 children: [
                   IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      FirebaseFirestore.instance
+                          .collection('quiz')
+                          .doc(quizId)
+                          .get()
+                          .then((DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists) {
+                          // Hapus variabel questions jika tidak digunakan
+                          onEdit(title, kelas, date, time, quizId);
+
+                          onEdit(
+                            title,
+                            kelas,
+                            date,
+                            time,
+                            quizId,
+                          );
+                        }
+                      });
+                    },
+                    color: Colors.white,
+                  ),
+                  IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () {
-                      onDelete(quizId); // Panggil callback untuk hapus
+                      onDelete(quizId);
                     },
                     color: Colors.white,
                   ),
