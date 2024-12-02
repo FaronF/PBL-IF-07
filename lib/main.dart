@@ -21,6 +21,7 @@ import 'kelola_quiz_siswa.dart';
 import 'kelola_penilaian_siswa.dart';
 import 'profile_guru.dart';
 import 'profile_admin.dart';
+import 'quiz_main.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,9 +68,10 @@ class MyApp extends StatelessWidget {
         '/daftar_quiz': (context) => const DaftarQuizPage(),
         '/quiz_siswa': (context) => const QuizPage(),
         '/materi': (context) => const MateriPage(),
-        '/teacherpage': (context) => const TeacherPage(),
+        '/quiz_main': (context) => const QuizMainPage(),
 
         //Halaman Guru
+        '/teacherpage': (context) => const TeacherPage(),
         '/profileguru': (context) => const ProfileGuruPage(),
         '/kelolaakademik': (context) => const KelolaAkademikPage(),
         '/daftarsiswa': (context) => const DaftarSiswaPage(),

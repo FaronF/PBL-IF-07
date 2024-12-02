@@ -8,7 +8,7 @@ class DaftarQuizPage extends StatefulWidget {
 }
 
 class _DaftarQuizPageState extends State<DaftarQuizPage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
 
   void _onItemTapped(int index) {
     setState(() {

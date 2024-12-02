@@ -144,7 +144,7 @@ class DaftarTugasPage extends StatelessWidget {
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/materi');
           } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/quiz');
+            Navigator.pushReplacementNamed(context, '/quiz_siswa');
           }
         },
         items: const [
@@ -692,7 +692,7 @@ class PdfUploadScreenState extends State<PdfUploadScreen> {
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/materi');
           } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/quiz');
+            Navigator.pushReplacementNamed(context, '/daftar_tugas');
           }
         },
         items: const [
