@@ -113,7 +113,7 @@ class _StudentPageState extends State<StudentPage> {
               Navigator.pushReplacementNamed(context, '/studentpage');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/quiz_main');
+              Navigator.pushReplacementNamed(context, '/materi');
               break;
             case 2:
               Navigator.pushReplacementNamed(context, '/quiz_siswa');
