@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'quiz_main.dart'; // Make sure this imports your QuizMainPage
 
 class DaftarQuizPage extends StatefulWidget {
   const DaftarQuizPage({super.key});
@@ -27,30 +29,6 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
         break;
     }
   }
-
-  final List<Map<String, String>> quizzes = [
-    {
-      'title': 'Genetika',
-      'class': '10 MIPA C',
-      'date': 'Selasa 15 September',
-      'time': '13.00–14.30',
-      'status': 'Dibuka',
-    },
-    {
-      'title': 'Virus',
-      'class': '10 MIPA D',
-      'date': 'Kamis 12 Agustus',
-      'time': '09.45–12.00',
-      'status': 'Ditutup',
-    },
-    {
-      'title': 'Mutasi',
-      'class': '10 MIPA B',
-      'date': 'Senin 27 Agustus',
-      'time': '10.00–12.00',
-      'status': 'Selesai',
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -97,16 +75,35 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: ListView.builder(
-                    itemCount: quizzes.length,
-                    itemBuilder: (context, index) {
-                      final quiz = quizzes[index];
-                      return QuizCard(
-                        title: quiz['title']!,
-                        className: quiz['class']!,
-                        date: quiz['date']!,
-                        time: quiz['time']!,
-                        status: quiz['status']!,
+                  child: FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                    future: FirebaseFirestore.instance.collection('quiz').get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Center(child: Text('No quizzes found.'));
+                      }
+
+                      final quizDocs = snapshot.data!.docs;
+
+                      return ListView.builder(
+                        itemCount: quizDocs.length,
+                        itemBuilder: (context, index) {
+                          final quiz = quizDocs[index].data();
+                          return QuizCard(
+                            title: quiz['title'] ?? 'No Title',
+                            className: quiz['kelas'] ?? 'No Class',
+                            date: quiz['date'] ?? 'No Date',
+                            time: quiz['time'] ?? 'No Time',
+                            status: quiz['status'] ?? 'Unknown',
+                            password: quiz['password'] ?? 'Need password',
+                            quizData: quiz, // Pass the entire quiz data
+                          );
+                        },
                       );
                     },
                   ),
@@ -149,6 +146,8 @@ class QuizCard extends StatelessWidget {
   final String date;
   final String time;
   final String status;
+  final String password; // Add password field
+  final Map<String, dynamic> quizData; // Add quiz data field
 
   const QuizCard({
     super.key,
@@ -157,59 +156,110 @@ class QuizCard extends StatelessWidget {
     required this.date,
     required this.time,
     required this.status,
+    required this.password, // Initialize password
+    required this.quizData, // Initialize quiz data
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.lightBlueAccent,
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+    return GestureDetector(
+      onTap: () => _showPasswordDialog(context),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  className,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
+                  const SizedBox(height: 4),
+                  Text(
+                    className,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$date\n$time',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
+                  const SizedBox(height: 4),
+                  Text(
+                    '$date\n$time',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Text(
-            status,
-            style: TextStyle(
-              color: _getStatusColor(status),
-              fontWeight: FontWeight.bold,
+            Text(
+              status,
+              style: TextStyle(
+                color: _getStatusColor(status),
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  void _showPasswordDialog(BuildContext context) {
+    final TextEditingController passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Enter Password'),
+          content: TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(hintText: "Password"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (passwordController.text == password) {
+                  // Password is correct, proceed to the quiz
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuizMainPage(), // Pass quiz data
+                    ),
+                  );
+                } else {
+                  // Show error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Incorrect Password')),
+                  );
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
     );
   }
 

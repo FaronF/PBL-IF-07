@@ -1,17 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
-
-class QuizApp extends StatelessWidget {
-  const QuizApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Quiz App',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const QuizMainPage(),
-    );
-  }
-}
 
 class QuizMainPage extends StatefulWidget {
   const QuizMainPage({super.key});
@@ -23,29 +12,7 @@ class QuizMainPageState extends State<QuizMainPage> {
   int currentQuestionIndex = 0;
   int totalTime = 60; // Total time in seconds for the entire quiz
   late Timer timer;
-
-  List<Map<String, dynamic>> questions = [
-    {
-      "question": "Apa ibukota Indonesia?",
-      "options": ["Jakarta", "Surabaya", "Bandung", "Medan"],
-      "answer": "Jakarta",
-    },
-    {
-      "question": "Berapa hasil dari 5 + 3?",
-      "options": ["6", "7", "8", "9"],
-      "answer": "8",
-    },
-    {
-      "question": "Siapa penemu bola lampu?",
-      "options": [
-        "Albert Einstein",
-        "Thomas Edison",
-        "Nikola Tesla",
-        "Isaac Newton"
-      ],
-      "answer": "Thomas Edison",
-    }
-  ];
+  List<Map<String, dynamic>> questions = [];
 
   final List<Color> optionColors = [
     Colors.blue[400]!,
@@ -57,7 +24,29 @@ class QuizMainPageState extends State<QuizMainPage> {
   @override
   void initState() {
     super.initState();
+    fetchQuestions(); // Fetch questions from Firestore
     startTimer();
+  }
+
+  void fetchQuestions() async {
+    // Fetch data from Firestore
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('quiz').get();
+    List<Map<String, dynamic>> fetchedQuestions = [];
+
+    for (var doc in snapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      fetchedQuestions.add({
+        "question": data['questions'], // Assuming 'questions' is a string
+        "options": data['answers'], // Assuming 'answers' is a list of options
+        "answer": data[
+            'correctAnswer'], // Assuming 'correctAnswer' is the correct answer
+      });
+    }
+
+    setState(() {
+      questions = fetchedQuestions; // Update the questions list
+    });
   }
 
   void startTimer() {
@@ -118,6 +107,12 @@ class QuizMainPageState extends State<QuizMainPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (questions.isEmpty) {
+      return const Center(
+          child:
+              CircularProgressIndicator()); // Show loading indicator while fetching
+    }
+
     var currentQuestion = questions[currentQuestionIndex];
     return Scaffold(
       appBar: AppBar(
@@ -175,7 +170,8 @@ class QuizMainPageState extends State<QuizMainPage> {
                           ),
                           Text(
                             'Waktu: $totalTime detik',
-                            style: const TextStyle(fontSize: 16, color: Colors.red),
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.red),
                           ),
                         ],
                       ),
@@ -191,7 +187,8 @@ class QuizMainPageState extends State<QuizMainPage> {
                           int index = entry.key;
                           String option = entry.value;
                           return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0), // Tambahkan padding vertikal
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0), // Tambahkan padding vertikal
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
@@ -207,7 +204,7 @@ class QuizMainPageState extends State<QuizMainPage> {
                         },
                       ).toList(),
                       const Spacer(),
-                     Row(
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ElevatedButton(

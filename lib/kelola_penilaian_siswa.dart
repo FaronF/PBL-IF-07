@@ -298,7 +298,8 @@ class SubmissionsPage extends StatelessWidget {
                                       .infinity, // Make it take the full width
                                   child: Card(
                                     elevation: 4,
-                                    margin: const EdgeInsets.symmetric(vertical: 8),
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 8),
                                     child: Padding(
                                       padding: const EdgeInsets.all(16.0),
                                       child: Row(
@@ -306,7 +307,6 @@ class SubmissionsPage extends StatelessWidget {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Expanded(
-                                            // Menggunakan Expanded di sini
                                             child: Row(
                                               children: [
                                                 const Icon(Icons.picture_as_pdf,
@@ -331,7 +331,8 @@ class SubmissionsPage extends StatelessWidget {
                                             ),
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.file_download),
+                                            icon:
+                                                const Icon(Icons.file_download),
                                             onPressed: () async {
                                               // Launch the URL as a download
                                               await UrlLauncher.launch(
@@ -349,6 +350,15 @@ class SubmissionsPage extends StatelessWidget {
                                           SizedBox(
                                             width: 60,
                                             child: TextField(
+                                              controller: TextEditingController(
+                                                text: submissionDocs[i]
+                                                        .data()
+                                                        .containsKey('grade')
+                                                    ? submissionDocs[i]['grade']
+                                                            ?.toString() ??
+                                                        ''
+                                                    : '', // Menggunakan containsKey untuk memeriksa keberadaan field
+                                              ),
                                               decoration: const InputDecoration(
                                                 labelText: 'Nilai',
                                                 border: OutlineInputBorder(),
