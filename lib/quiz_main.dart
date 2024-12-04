@@ -207,13 +207,41 @@ class QuizMainPageState extends State<QuizMainPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          if (currentQuestionIndex >
+                              0) // Tampilkan tombol "Previous" hanya jika bukan soal pertama
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Colors.white, // Warna latar belakang putih
+                                foregroundColor:
+                                    Colors.black, // Warna teks hitam
+                              ),
+                              onPressed: previousQuestion,
+                              child: const Text('Previous'),
+                            ),
                           ElevatedButton(
-                            onPressed: previousQuestion,
-                            child: const Text('Previous'),
-                          ),
-                          ElevatedButton(
-                            onPressed: nextQuestion,
-                            child: const Text('Next'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: currentQuestionIndex <
+                                      questions.length - 1
+                                  ? Colors.white // Tombol "Next" berwarna putih
+                                  : const Color.fromARGB(255, 253, 240,
+                                      69), // Tombol "Finish Attempt" berwarna kuning
+                              foregroundColor: Colors.black, // Warna teks hitam
+                            ),
+                            onPressed: () {
+                              if (currentQuestionIndex < questions.length - 1) {
+                                nextQuestion();
+                              } else {
+                                timer
+                                    .cancel(); // Hentikan timer saat menyelesaikan kuis
+                                endQuiz(); // Tampilkan dialog penyelesaian
+                              }
+                            },
+                            child: Text(
+                              currentQuestionIndex < questions.length - 1
+                                  ? 'Next'
+                                  : 'Finish Attempt',
+                            ),
                           ),
                         ],
                       ),

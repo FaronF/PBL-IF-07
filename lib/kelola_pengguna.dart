@@ -227,10 +227,10 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
 }
 
 class TambahPenggunaPage extends StatefulWidget {
-  const TambahPenggunaPage({super.key});
+  const TambahPenggunaPage({Key? key}) : super(key: key);
 
   @override
-  State<TambahPenggunaPage> createState() => _TambahPenggunaPageState();
+  _TambahPenggunaPageState createState() => _TambahPenggunaPageState();
 }
 
 class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
@@ -246,17 +246,14 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
   Future<void> tambahPengguna() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Membuat akun pengguna baru
-        UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
 
-        // Mendapatkan UID dari pengguna yang baru dibuat
         String uid = userCredential.user!.uid;
 
-        // Menambahkan data siswa ke Firestore dengan UID sebagai ID dokumen
         await FirebaseFirestore.instance.collection('Students').doc(uid).set({
           'nama': namaController.text.trim(),
           'email': emailController.text.trim(),
@@ -281,87 +278,132 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tambah Pengguna')),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text(
+          'Tambah Pengguna',
+          style: TextStyle(color: Colors.black), // Teks hitam
+        ),
+        backgroundColor: Colors.lightBlue,
+        iconTheme: const IconThemeData(color: Colors.black), // Ikon hitam
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: namaController,
-                  decoration: const InputDecoration(labelText: 'Nama'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Nama tidak boleh kosong' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Email tidak boleh kosong' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: kelasController,
-                  decoration: const InputDecoration(labelText: 'Kelas'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Kelas tidak boleh kosong' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: nisnController,
-                  decoration: const InputDecoration(labelText: 'NISN'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'NISN tidak boleh kosong' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Password tidak boleh kosong' : null,
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: RadioListTile(
-                        value: 'Laki-laki',
-                        groupValue: gender,
-                        title: const Text('Laki-laki'),
-                        onChanged: (value) {
-                          setState(() => gender = value!);
-                        },
-                      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildTextField(
+                controller: namaController,
+                label: 'Nama',
+                icon: Icons.person,
+              ),
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: emailController,
+                label: 'Email',
+                icon: Icons.email,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: kelasController,
+                label: 'Kelas',
+                icon: Icons.class_,
+              ),
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: nisnController,
+                label: 'NISN',
+                icon: Icons.badge,
+              ),
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: passwordController,
+                label: 'Password',
+                icon: Icons.lock,
+                obscureText: true,
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile(
+                      value: 'Laki-laki',
+                      groupValue: gender,
+                      title: const Text('Laki-laki'),
+                      onChanged: (value) {
+                        setState(() => gender = value!);
+                      },
                     ),
-                    Expanded(
-                      child: RadioListTile(
-                        value: 'Perempuan',
-                        groupValue: gender,
-                        title: const Text('Perempuan'),
-                        onChanged: (value) {
-                          setState(() => gender = value!);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: tambahPengguna,
-                    child: const Text('Simpan'),
                   ),
-                )
-              ],
-            ),
+                  Expanded(
+                    child: RadioListTile(
+                      value: 'Perempuan',
+                      groupValue: gender,
+                      title: const Text('Perempuan'),
+                      onChanged: (value) {
+                        setState(() => gender = value!);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              Center(
+                child: ElevatedButton(
+                  onPressed: tambahPengguna,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightBlue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 15,
+                    ),
+                  ),
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black, // Teks hitam
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.lightBlue),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.lightBlue),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.lightBlue),
+        ),
+      ),
+      validator: (value) =>
+          value!.isEmpty ? '$label tidak boleh kosong' : null,
     );
   }
 }

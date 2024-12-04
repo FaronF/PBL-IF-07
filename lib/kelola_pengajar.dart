@@ -239,35 +239,36 @@ class TambahPengajarPage extends StatefulWidget {
 
 class _TambahPengajarPageState extends State<TambahPengajarPage> {
   final _formKey = GlobalKey<FormState>();
-  String _nama = '';
-  String _email = '';
-  String _password = '';
-  String _nuptk = '';
-  String _mapel = '';
-  String _kelas = '';
+  final TextEditingController namaController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nuptkController = TextEditingController();
+  final TextEditingController mapelController = TextEditingController();
+  final TextEditingController kelasController = TextEditingController();
 
-  Future<void> _tambahPengajar() async {
+  Future<void> tambahPengajar() async {
     if (_formKey.currentState!.validate()) {
       try {
         UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: _email, password: _password);
+            .createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
 
-        await FirebaseFirestore.instance
-            .collection('Teachers')
-            .doc(userCredential.user!.uid)
-            .set({
-          'nama': _nama,
-          'email': _email,
-          'password': _password,
-          'nuptk': _nuptk,
-          'mapel': _mapel,
-          'kelas': _kelas,
+        String uid = userCredential.user!.uid;
+
+        await FirebaseFirestore.instance.collection('Teachers').doc(uid).set({
+          'nama': namaController.text.trim(),
+          'email': emailController.text.trim(),
+          'password': passwordController.text.trim(),
+          'nuptk': nuptkController.text.trim(),
+          'mapel': mapelController.text.trim(),
+          'kelas': kelasController.text.trim(),
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pengajar berhasil ditambahkan')),
         );
-
         Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -281,81 +282,112 @@ class _TambahPengajarPageState extends State<TambahPengajarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Pengajar'),
+        title: const Text(
+          'Tambah Pengajar',
+          style: TextStyle(color: Colors.black), // Teks hitam
+        ),
+        backgroundColor: Colors.lightBlue,
+        iconTheme: const IconThemeData(color: Colors.black), // Ikon hitam
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                decoration: const InputDecoration(labelText: ' Nama'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nama tidak boleh kosong';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  _nama = value;
-                },
+              buildTextField(
+                controller: namaController,
+                label: 'Nama',
+                icon: Icons.person,
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Email tidak boleh kosong';
-                  }
-                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    return 'Masukkan email yang valid';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  _email = value;
-                },
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: emailController,
+                label: 'Email',
+                icon: Icons.email,
+                keyboardType: TextInputType.emailAddress,
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Password'),
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: passwordController,
+                label: 'Password',
+                icon: Icons.lock,
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password tidak boleh kosong';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  _password = value;
-                },
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'NUPTK'),
-                onChanged: (value) {
-                  _nuptk = value;
-                },
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: nuptkController,
+                label: 'NUPTK',
+                icon: Icons.badge,
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Mata Pelajaran'),
-                onChanged: (value) {
-                  _mapel = value;
-                },
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: mapelController,
+                label: 'Mata Pelajaran',
+                icon: Icons.book,
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Kategori Kelas'),
-                onChanged: (value) {
-                  _kelas = value;
-                },
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: kelasController,
+                label: 'Kategori Kelas',
+                icon: Icons.class_,
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _tambahPengajar,
-                child: const Text('Tambah Pengajar'),
+              const SizedBox(height: 30),
+              Center(
+                child: ElevatedButton(
+                  onPressed: tambahPengajar,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightBlue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 15,
+                    ),
+                  ),
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black, // Teks hitam
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.lightBlue),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.lightBlue),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.lightBlue),
+        ),
+      ),
+      validator: (value) =>
+          value!.isEmpty ? '$label tidak boleh kosong' : null,
     );
   }
 }
