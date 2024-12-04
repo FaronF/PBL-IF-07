@@ -7,6 +7,8 @@ class EditQuizPage extends StatefulWidget {
   final String initialKelas;
   final String initialDate;
   final String initialTime;
+  final String initialStatus;
+  final String initialPassword;
   final List<Map<String, dynamic>> initialQuestions;
 
   const EditQuizPage({
@@ -16,6 +18,8 @@ class EditQuizPage extends StatefulWidget {
     required this.initialKelas,
     required this.initialDate,
     required this.initialTime,
+    required this.initialStatus,
+    required this.initialPassword,
     required this.initialQuestions,
   }) : super(key: key);
 
@@ -24,450 +28,273 @@ class EditQuizPage extends StatefulWidget {
 }
 
 class _EditQuizPageState extends State<EditQuizPage> {
-  // Controllers untuk field utama
-  late TextEditingController _titleController;
-  late TextEditingController _kelasController;
-  late TextEditingController _dateController;
-  late TextEditingController _timeController;
-
-  // Controllers untuk pertanyaan dan jawaban
-  late List<TextEditingController> _questionControllers;
-  late List<List<TextEditingController>> _answerControllers;
-
-  // State quiz
   late String title;
   late String kelas;
   late String date;
   late String time;
-  late List<Map<String, dynamic>> questions;
-
-  // Scroll controller untuk optimasi scrolling
-  final ScrollController _scrollController = ScrollController();
+  late String status;
+  late String password;
+  List<Map<String, dynamic>> questions = [];
 
   @override
   void initState() {
     super.initState();
-
-    // Inisialisasi data awal
-    _initializeData();
-
-    // Inisialisasi controllers
-    _initializeControllers();
-  }
-
-  void _initializeData() {
     title = widget.initialTitle;
     kelas = widget.initialKelas;
     date = widget.initialDate;
     time = widget.initialTime;
+    status = widget.initialStatus;
+    password = widget.initialPassword;
     questions = List.from(widget.initialQuestions);
   }
 
-  void _initializeControllers() {
-    // Controller untuk field utama
-    _titleController = TextEditingController(text: title);
-    _kelasController = TextEditingController(text: kelas);
-    _dateController = TextEditingController(text: date);
-    _timeController = TextEditingController(text: time);
+  void _updateQuiz() async {
+    if (title.isNotEmpty &&
+        kelas.isNotEmpty &&
+        date.isNotEmpty &&
+        time.isNotEmpty &&
+        password.isNotEmpty) {
+      bool? confirm = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Konfirmasi'),
+            content: const Text('Apakah Anda yakin ingin menyimpan perubahan?'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Batal'),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+              ),
+              TextButton(
+                child: const Text('Simpan'),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+              ),
+            ],
+          );
+        },
+      );
 
-    // Controller untuk pertanyaan
-    _questionControllers = questions
-        .map((q) => TextEditingController(text: q['question']))
-        .toList();
-
-    // Controller untuk jawaban
-    _answerControllers = questions
-        .map((q) => (q['answers'] as List)
-            .map((a) => TextEditingController(text: a['text']))
-            .toList())
-        .toList();
-  }
-
-  @override
-  void dispose() {
-    // Bersihkan semua controllers
-    _titleController.dispose();
-    _kelasController.dispose();
-    _dateController.dispose();
-    _timeController.dispose();
-
-    _questionControllers.forEach((controller) => controller.dispose());
-    _answerControllers.forEach((answers) {
-      answers.forEach((controller) => controller.dispose());
-    });
-
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _setCorrectAnswer(int questionIndex, int answerIndex) {
-    setState(() {
-      questions[questionIndex]['correctAnswer'] = answerIndex;
-    });
+      if (confirm == true) {
+        await FirebaseFirestore.instance
+            .collection('quiz')
+            .doc(widget.quizId)
+            .update({
+          'title': title,
+          'kelas': kelas,
+          'date': date,
+          'time': time,
+          'status': status,
+          'password': password,
+          'questions': questions,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data berhasil diubah!')),
+        );
+        Navigator.pushNamed(context, '/kelolaquizsiswa');
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Semua field harus diisi!')),
+      );
+    }
   }
 
   void _addAnswer(int questionIndex) {
     setState(() {
-      questions[questionIndex]['answers'].add({
-        'text': '',
-        'isCorrect': false,
-      });
-
-      // Tambah controller untuk jawaban baru
-      _answerControllers[questionIndex].add(TextEditingController());
-    });
-  }
-
-  void _removeAnswer(int questionIndex, int answerIndex) {
-    setState(() {
-      // Hapus jawaban
-      questions[questionIndex]['answers'].removeAt(answerIndex);
-
-      // Hapus controller jawaban
-      _answerControllers[questionIndex][answerIndex].dispose();
-      _answerControllers[questionIndex].removeAt(answerIndex);
-    });
-  }
-
-  void _addQuestion() {
-    setState(() {
-      // Tambah pertanyaan baru
-      questions.add({
-        'question': '',
-        'answers': [
-          {'text': '', 'isCorrect': false},
-          {'text': '', 'isCorrect': false},
-        ],
-        'correctAnswer': null,
-      });
-
-      // Tambah controller untuk pertanyaan baru
-      _questionControllers.add(TextEditingController());
-
-      // Tambah controller untuk jawaban
-      _answerControllers.add([
-        TextEditingController(),
-        TextEditingController(),
-      ]);
+      questions[questionIndex]['answers'].add({'text': '', 'isCorrect': false});
     });
   }
 
   void _removeQuestion(int questionIndex) {
     setState(() {
-      // Hapus pertanyaan
       questions.removeAt(questionIndex);
-
-      // Hapus controller pertanyaan
-      _questionControllers[questionIndex].dispose();
-      _questionControllers.removeAt(questionIndex);
-
-      // Hapus controller jawaban
-      _answerControllers[questionIndex]
-          .forEach((controller) => controller.dispose());
-      _answerControllers.removeAt(questionIndex);
     });
-  }
-
-  Future<void> _saveQuiz() async {
-    // Update data dari controllers
-    for (int i = 0; i < questions.length; i++) {
-      questions[i]['question'] = _questionControllers[i].text;
-
-      for (int j = 0; j < questions[i]['answers'].length; j++) {
-        questions[i]['answers'][j]['text'] = _answerControllers[i][j].text;
-      }
-    }
-
-    // Validasi data
-    if (_validateQuizData()) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('quiz')
-            .doc(widget.quizId)
-            .update({
-          'title': _titleController.text,
-          'kelas': _kelasController.text,
-          'date': _dateController.text,
-          'time': _timeController.text,
-          'questions': questions,
-          'status': 'Dibuka',
-        });
-        Navigator.of(context).pop();
-      } catch (e) {
-        _showErrorSnackBar('Gagal menyimpan quiz: ${e.toString()}');
-      }
-    }
-  }
-
-  bool _validateQuizData() {
-    if (_titleController.text.isEmpty ||
-        _kelasController.text.isEmpty ||
-        _dateController.text.isEmpty ||
-        _timeController.text.isEmpty ||
-        questions.isEmpty) {
-      _showErrorSnackBar('Semua field harus diisi!');
-      return false;
-    }
-    return true;
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: const Text('Edit Quiz'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushNamed(context,
+                '/kelolaquizsiswa'); // Navigasi ke halaman yang diinginkan
+          },
+        ),
       ),
-      body: Stack(
-        children: [
-          Column(
-            children: <Widget>[
-              // Header setengah lingkaran
-              Container(
-                height: 150,
-                decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 253, 240, 69),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(150),
-                    bottomRight: Radius.circular(150),
-                  ),
-                ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Judul Quiz'),
+                onChanged: (value) {
+                  title = value;
+                },
+                controller: TextEditingController(text: title),
               ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: <Widget>[
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Judul Quiz',
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white,
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Kelas'),
+                onChanged: (value) {
+                  kelas = value;
+                },
+                controller: TextEditingController(text: kelas),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Tanggal'),
+                onChanged: (value) {
+                  date = value;
+                },
+                controller: TextEditingController(text: date),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Waktu'),
+                onChanged: (value) {
+                  time = value;
+                },
+                controller: TextEditingController(text: time),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Password'),
+                onChanged: (value) {
+                  password = value;
+                },
+                controller: TextEditingController(text: password),
+              ),
+              const SizedBox(height: 16),
+              DropdownButton<String>(
+                value: status,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    status = newValue!;
+                  });
+                },
+                items: <String>['Dibuka', 'Ditutup']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              const Text('Soal dan Jawaban:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              ...questions.asMap().entries.map((entry) {
+                int questionIndex = entry.key;
+                Map<String, dynamic> question = entry.value;
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          decoration: InputDecoration(
+                            labelText: 'Soal ${questionIndex + 1}',
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            question['question'] = value;
+                          },
+                          controller:
+                              TextEditingController(text: question['question']),
                         ),
-                        onChanged: (value) {
-                          setState(() {
-                            title = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        controller: _kelasController,
-                        decoration: const InputDecoration(
-                          labelText: 'Kelas',
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            kelas = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _dateController,
-                        decoration: const InputDecoration(
-                          labelText: 'Tanggal',
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            date = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _timeController,
-                        decoration: const InputDecoration(
-                          labelText: 'Waktu',
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            time = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Masukkan Soal dan Jawaban:',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Daftar Pertanyaan
-                      ...questions.asMap().entries.map((entry) {
-                        int questionIndex = entry.key;
-                        Map<String, dynamic> question = entry.value;
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          elevation: 4,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextField(
-                                  controller:
-                                      _questionControllers[questionIndex],
+                        const SizedBox(height: 8),
+                        ...question['answers']
+                            .asMap()
+                            .entries
+                            .map((answerEntry) {
+                          int answerIndex = answerEntry.key;
+                          Map<String, dynamic> answer = answerEntry.value;
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
                                   decoration: InputDecoration(
-                                    labelText: 'Soal ${questionIndex + 1}',
-                                    border: const OutlineInputBorder(),
+                                    labelText: 'Opsi ${answerIndex + 1}',
+                                    border: OutlineInputBorder(),
                                   ),
                                   onChanged: (value) {
-                                    setState(() {
-                                      question['question'] = value;
-                                    });
+                                    answer['text'] = value;
                                   },
+                                  controller: TextEditingController(
+                                      text: answer['text']),
                                 ),
-                                const SizedBox(height: 8),
-
-                                // Daftar Jawaban
-                                ...question['answers']
-                                    .asMap()
-                                    .entries
-                                    .map((answerEntry) {
-                                  int answerIndex = answerEntry.key;
-                                  Map<String, dynamic> answer =
-                                      answerEntry.value;
-                                  return Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller:
-                                              _answerControllers[questionIndex]
-                                                  [answerIndex],
-                                          decoration: InputDecoration(
-                                            labelText:
-                                                'Opsi ${answerIndex + 1}',
-                                            border: const OutlineInputBorder(),
-                                          ),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              answer['text'] = value;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      Radio(
-                                        value: answerIndex,
-                                        groupValue: question['correctAnswer'],
-                                        onChanged: (value) {
-                                          _setCorrectAnswer(
-                                              questionIndex, answerIndex);
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () {
-                                          _removeAnswer(
-                                              questionIndex, answerIndex);
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
-
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () =>
-                                          _addAnswer(questionIndex),
-                                      child: const Icon(Icons.add),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    ElevatedButton(
-                                      onPressed: () =>
-                                          _removeQuestion(questionIndex),
-                                      child: const Icon(Icons.delete),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                              ),
+                              Radio(
+                                value: answerIndex,
+                                groupValue: question['correctAnswer'],
+                                onChanged: (value) {
+                                  setState(() {
+                                    question['correctAnswer'] = answerIndex;
+                                  });
+                                },
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () => _addAnswer(questionIndex),
+                                style: ElevatedButton.styleFrom(),
+                                child: const Icon(Icons.add),
+                              ),
+                              const SizedBox(width: 16),
+                              ElevatedButton(
+                                onPressed: () => _removeQuestion(questionIndex),
+                                style: ElevatedButton.styleFrom(),
+                                child: const Icon(Icons.delete),
+                              ),
+                            ],
                           ),
-                        );
-                      }).toList(),
-
-                      // Tombol Tambah Soal
-                      ElevatedButton(
-                        onPressed: _addQuestion,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.add),
-                            SizedBox(width: 8),
-                            Text('Tambah Soal'),
-                          ],
                         ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Tombol Simpan
-                      ElevatedButton(
-                        onPressed: _saveQuiz,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow,
-                        ),
-                        child: const Text('Simpan Quiz'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                );
+              }).toList(),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    questions.add({
+                      'question': '',
+                      'answers': [],
+                      'correctAnswer': null,
+                    });
+                  });
+                },
+                child: const Text('Tambah Soal'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _updateQuiz,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.yellow,
                 ),
+                child: const Text('Simpan Quiz'),
               ),
             ],
           ),
-
-          // Judul Halaman
-          const Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: EdgeInsets.only(top: 50.0),
-              child: Text(
-                'Edit Quiz',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-
-          // Tombol Kembali
-          Positioned(
-            top: 40,
-            left: 16,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

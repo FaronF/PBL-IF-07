@@ -114,6 +114,8 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
               initialKelas: quizData['kelas'] ?? '',
               initialDate: quizData['date'] ?? '',
               initialTime: quizData['time'] ?? '',
+              initialPassword: quizData['password'] ?? '', // Pastikan ini ada
+              initialStatus: quizData['status'] ?? '',
               initialQuestions: questions,
             ),
           ),
@@ -196,25 +198,15 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
                           status: quiz['status'] ?? 'Status Tidak Diketahui',
                           quizId: quizId,
                           onDelete: showDeleteConfirmation,
-                          onEdit: (title, kelas, date, time, quizId) {
-                            _navigateToEditQuiz(quizId);
-                            // Navigasi ke halaman edit dengan data quiz yang dipilih
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditQuizPage(
-                                  quizId: quizId,
-                                  initialTitle: title,
-                                  initialKelas: kelas,
-                                  initialDate: date,
-                                  initialTime: time,
-                                  initialQuestions: List<
-                                      Map<String, dynamic>>.from(quiz[
-                                          'questions'] ??
-                                      []), // Pastikan ini adalah List<Map<String, dynamic>>
-                                ),
-                              ),
-                            );
+                          onEdit: (
+                            title,
+                            kelas,
+                            date,
+                            time,
+                            quizId,
+                          ) {
+                            _navigateToEditQuiz(
+                                quizId); // Panggil metode untuk navigasi
                           },
                         );
                       },
@@ -274,8 +266,9 @@ class _AddQuizPageState extends State<AddQuizPage> {
   String kelas = '';
   String date = '';
   String time = '';
-  List<Map<String, dynamic>> questions =
-      []; // List to hold questions and answers
+  String password = ''; // Tambahkan field password
+  String status = 'Dibuka'; // Default status
+  List<Map<String, dynamic>> questions = [];
 
   void _addQuestion() {
     setState(() {
@@ -347,20 +340,9 @@ class _AddQuizPageState extends State<AddQuizPage> {
                 child: Column(
                   children: <Widget>[
                     const SizedBox(height: 10), // Memberi jarak dari atas
-                    const TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Judul Quiz',
-                        border: OutlineInputBorder(),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                    ),
-                    // Tambahkan widget lain di sini sesuai kebutuhan
-                    const SizedBox(height: 20), // Memberi jarak
-                    // Contoh widget tambahan
                     TextField(
                       decoration: const InputDecoration(
-                        labelText: 'Deskripsi Quiz',
+                        labelText: 'Judul Quiz',
                         border: OutlineInputBorder(),
                         filled: true,
                         fillColor: Colors.white,
@@ -404,6 +386,36 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       onChanged: (value) {
                         time = value;
                       },
+                    ),
+                    // Input untuk Password
+                    const SizedBox(height: 16),
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: (value) {
+                        password = value;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    // Dropdown untuk Status
+                    DropdownButton<String>(
+                      value: status,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          status = newValue!;
+                        });
+                      },
+                      items: <String>['Dibuka', 'Ditutup']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
                     ),
                     const SizedBox(height: 16),
                     const Text('Masukkan Soal dan Jawaban:',
@@ -472,8 +484,8 @@ class _AddQuizPageState extends State<AddQuizPage> {
                                     );
                                   }).toList(),
                                   const SizedBox(height: 8),
+                                  const SizedBox(height: 8),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       ElevatedButton(
                                         onPressed: () =>
@@ -515,6 +527,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
                             kelas.isNotEmpty &&
                             date.isNotEmpty &&
                             time.isNotEmpty &&
+                            password.isNotEmpty &&
                             questions.isNotEmpty) {
                           await FirebaseFirestore.instance
                               .collection('quiz')
@@ -524,7 +537,8 @@ class _AddQuizPageState extends State<AddQuizPage> {
                             'date': date,
                             'time': time,
                             'questions': questions,
-                            'status': 'Dibuka',
+                            'status': status, // Simpan status
+                            'password': password, // Simpan password
                           });
                           Navigator.of(context)
                               .pop(); // Close the add quiz page

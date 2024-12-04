@@ -92,88 +92,6 @@ class KelolaPengajarPageState extends State<KelolaPengajarPage> {
     );
   }
 
-  void showTambahPengajarDialog(BuildContext context) {
-    final TextEditingController namaController = TextEditingController();
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Tambah Pengajar'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: namaController,
-                  decoration: const InputDecoration(labelText: 'Nama Pengajar'),
-                ),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                ),
-                TextField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Batal'),
-            ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  // Membuat akun di Firebase Authentication
-                  UserCredential userCredential = await FirebaseAuth.instance
-                      .createUserWithEmailAndPassword(
-                    email: emailController.text.trim(),
-                    password: passwordController.text.trim(),
-                  );
-
-                  // Mendapatkan UID dari pengguna yang baru dibuat
-                  String uid = userCredential.user!.uid;
-
-                  // Menyimpan data pengajar ke Firestore
-                  await FirebaseFirestore.instance
-                      .collection('Teachers')
-                      .doc(uid)
-                      .set({
-                    'nama': namaController.text.trim(),
-                    'email': emailController.text.trim(),
-                    'password': passwordController.text.trim(),
-                  });
-
-                  // Menampilkan SnackBar setelah berhasil menambahkan
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Pengajar berhasil ditambahkan')),
-                  );
-
-                  Navigator.of(context)
-                      .pop(); // Menutup dialog setelah menambahkan
-                } catch (e) {
-                  // Menangani kesalahan jika terjadi
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal menambahkan pengajar: $e')),
-                  );
-                }
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -226,10 +144,8 @@ class KelolaPengajarPageState extends State<KelolaPengajarPage> {
                         final teacher =
                             teachers[index].data() as Map<String, dynamic>;
                         final teacherId = teachers[index].id;
-                        final email = teacher[
-                            'email']; // Ambil email siswa (pastikan ini ada di data)
-                        final password = teacher[
-                            'password']; // Ambil password siswa (pastikan ini ada di data)
+                        final email = teacher['email'];
+                        final password = teacher['password'];
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -237,7 +153,9 @@ class KelolaPengajarPageState extends State<KelolaPengajarPage> {
                           child: ListTile(
                             title:
                                 Text(teacher['nama'] ?? 'Nama tidak tersedia'),
-                            subtitle: Text('Email: ${teacher['email'] ?? '-'}'),
+                            subtitle: Text('NUPTK: ${teacher['nuptk'] ?? '-'}\n'
+                                'Mata Pelajaran: ${teacher['mapel'] ?? '-'}\n'
+                                'Kategori Kelas: ${teacher['kelas'] ?? '-'}'),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -259,11 +177,10 @@ class KelolaPengajarPageState extends State<KelolaPengajarPage> {
               ),
             ],
           ),
-          // Teks di tengah atas
           const Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: EdgeInsets.only(top: 40.0), // Mengatur jarak dari atas
+              padding: EdgeInsets.only(top: 40.0),
               child: Text(
                 'Kelola Pengajar',
                 style: TextStyle(
@@ -300,9 +217,144 @@ class KelolaPengajarPageState extends State<KelolaPengajarPage> {
         type: BottomNavigationBarType.fixed,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showTambahPengajarDialog(context),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const TambahPengajarPage()),
+          );
+        },
         child: const Icon(Icons.add),
         backgroundColor: Colors.blue,
+      ),
+    );
+  }
+}
+
+class TambahPengajarPage extends StatefulWidget {
+  const TambahPengajarPage({Key? key}) : super(key: key);
+
+  @override
+  _TambahPengajarPageState createState() => _TambahPengajarPageState();
+}
+
+class _TambahPengajarPageState extends State<TambahPengajarPage> {
+  final _formKey = GlobalKey<FormState>();
+  String _nama = '';
+  String _email = '';
+  String _password = '';
+  String _nuptk = '';
+  String _mapel = '';
+  String _kelas = '';
+
+  Future<void> _tambahPengajar() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: _email, password: _password);
+
+        await FirebaseFirestore.instance
+            .collection('Teachers')
+            .doc(userCredential.user!.uid)
+            .set({
+          'nama': _nama,
+          'email': _email,
+          'password': _password,
+          'nuptk': _nuptk,
+          'mapel': _mapel,
+          'kelas': _kelas,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pengajar berhasil ditambahkan')),
+        );
+
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menambahkan pengajar: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tambah Pengajar'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: const InputDecoration(labelText: ' Nama'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nama tidak boleh kosong';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  _nama = value;
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Email tidak boleh kosong';
+                  }
+                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                    return 'Masukkan email yang valid';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  _email = value;
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Password tidak boleh kosong';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  _password = value;
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'NUPTK'),
+                onChanged: (value) {
+                  _nuptk = value;
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Mata Pelajaran'),
+                onChanged: (value) {
+                  _mapel = value;
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Kategori Kelas'),
+                onChanged: (value) {
+                  _kelas = value;
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _tambahPengajar,
+                child: const Text('Tambah Pengajar'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
