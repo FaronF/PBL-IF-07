@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'daftar_quiz.dart';
 import 'dart:async';
 
 class QuizMainPage extends StatefulWidget {
@@ -13,6 +15,8 @@ class QuizMainPageState extends State<QuizMainPage> {
   int totalTime = 60; // Total time in seconds for the entire quiz
   late Timer timer;
   List<Map<String, dynamic>> questions = [];
+  List<int?> selectedAnswers = []; // List to store selected answers
+  String studentId = ""; // Initialize studentId as an empty string
 
   final List<Color> optionColors = [
     Colors.blue[400]!,
@@ -24,29 +28,79 @@ class QuizMainPageState extends State<QuizMainPage> {
   @override
   void initState() {
     super.initState();
+    fetchStudentId(); // Fetch student ID from Firestore
     fetchQuestions(); // Fetch questions from Firestore
     startTimer();
   }
 
-  void fetchQuestions() async {
-    // Fetch data from Firestore
-    QuerySnapshot snapshot =
-        await FirebaseFirestore.instance.collection('quiz').get();
-    List<Map<String, dynamic>> fetchedQuestions = [];
+  void fetchStudentId() async {
+    try {
+      // Replace 'studentDocumentId' with the actual document ID you want to fetch
+      DocumentSnapshot studentDoc = await FirebaseFirestore.instance
+          .collection('Students')
+          .doc('studentDocumentId')
+          .get();
 
-    for (var doc in snapshot.docs) {
-      var data = doc.data() as Map<String, dynamic>;
-      fetchedQuestions.add({
-        "question": data['questions'], // Assuming 'questions' is a string
-        "options": data['answers'], // Assuming 'answers' is a list of options
-        "answer": data[
-            'correctAnswer'], // Assuming 'correctAnswer' is the correct answer
-      });
+      if (studentDoc.exists) {
+        // Cast the data to Map<String, dynamic>
+        Map<String, dynamic>? data = studentDoc.data() as Map<String, dynamic>?;
+
+        if (data != null) {
+          setState(() {
+            studentId = data['studentId'] ??
+                'defaultStudentId'; // Access the studentId field
+          });
+          print("Student ID: $studentId");
+        } else {
+          print("No data found in the document!");
+        }
+      } else {
+        print("No such document!");
+      }
+    } catch (e) {
+      print("Error fetching student ID: $e");
     }
+  }
 
-    setState(() {
-      questions = fetchedQuestions; // Update the questions list
-    });
+  void fetchQuestions() async {
+    try {
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('quiz').get();
+      List<Map<String, dynamic>> fetchedQuestions = [];
+
+      for (var doc in snapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+
+        // Check if 'questions' is an array
+        if (data['questions'] is List) {
+          for (var question in data['questions']) {
+            if (question is Map<String, dynamic>) {
+              String questionText =
+                  question['question'] ?? 'Pertanyaan tidak tersedia';
+              List<Map<String, dynamic>> answers =
+                  List<Map<String, dynamic>>.from(question['answers'] ?? []);
+              int correctAnswerIndex = question['correctAnswer'] ??
+                  -1; // Using -1 as default if not available
+
+              fetchedQuestions.add({
+                "question": questionText,
+                "options": answers.map((answer) => answer['text']).toList(),
+                "correctAnswerIndex":
+                    correctAnswerIndex, // Store the index of the correct answer
+              });
+            }
+          }
+        }
+      }
+
+      setState(() {
+        questions = fetchedQuestions; // Update the state with fetched questions
+        selectedAnswers = List<int?>.filled(
+            questions.length, null); // Initialize selected answers
+      });
+    } catch (e) {
+      print("Error fetching questions: $e");
+    }
   }
 
   void startTimer() {
@@ -63,21 +117,91 @@ class QuizMainPageState extends State<QuizMainPage> {
   }
 
   void endQuiz() {
+    // Tampilkan dialog konfirmasi sebelum mengakhiri kuis
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Kuis Selesai'),
-        content: const Text('Waktu habis! Terima kasih telah mengikuti kuis.'),
+        title: const Text('Konfirmasi'),
+        content: const Text('Apakah Anda yakin ingin mengakhiri kuis?'),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Tutup dialog
             },
-            child: const Text('OK'),
-          )
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Tutup dialog
+              // Jika pengguna mengonfirmasi, hitung skor dan simpan hasil
+              int score = calculateScore();
+              saveResultsToFirestore(score);
+
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Kuis Selesai'),
+                  content: Text('Skor Anda: $score'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('OK'),
+                    )
+                  ],
+                ),
+              );
+            },
+            child: const Text('Ya, Akhiri Kuis'),
+          ),
         ],
       ),
     );
+  }
+
+  int calculateScore() {
+    int score = 0;
+    int totalQuestions = questions.length; // Hitung jumlah total pertanyaan
+
+    for (int i = 0; i < totalQuestions; i++) {
+      if (selectedAnswers[i] != null &&
+          selectedAnswers[i] == questions[i]['correctAnswerIndex']) {
+        score += 100 ~/
+            totalQuestions; // Tambahkan poin berdasarkan jumlah pertanyaan
+      }
+    }
+
+    return score; // Kembalikan skor akhir
+  }
+
+  void saveResultsToFirestore(int score) async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      String userId = currentUser.uid;
+
+      CollectionReference studentsCollection =
+          FirebaseFirestore.instance.collection('Students');
+
+      await studentsCollection.doc(userId).collection('QuizAttempts').add({
+        'score': score,
+        'timestamp': FieldValue.serverTimestamp(),
+      }).then((value) {
+        print("Quiz attempt data saved successfully");
+        // Redirect to another page after saving data
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  DaftarQuizPage()), // Replace AnotherPage with your target page
+        );
+      }).catchError((error) {
+        print("Failed to save quiz attempt data: $error");
+      });
+    } else {
+      print("No user is currently signed in.");
+    }
   }
 
   void nextQuestion() {
@@ -116,140 +240,111 @@ class QuizMainPageState extends State<QuizMainPage> {
     var currentQuestion = questions[currentQuestionIndex];
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Menyembunyikan tinggi AppBar default
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: const Text("Quiz"), // Menambahkan judul pada AppBar
+        backgroundColor:
+            const Color.fromARGB(255, 253, 240, 69), // Warna kuning
+        elevation: 4, // Menambahkan sedikit elevasi untuk efek bayangan
       ),
       body: Stack(
-        children: [
-          Column(
-            children: <Widget>[
-              // Header berbentuk setengah lingkaran dengan teks
-              Stack(
-                children: [
-                  Container(
-                    height: 150,
-                    decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(150),
-                        bottomRight: Radius.circular(150),
-                      ),
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(16.0), // Padding di seluruh body
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Soal ${currentQuestionIndex + 1} / ${questions.length}',
+                      style: const TextStyle(fontSize: 16),
                     ),
-                  ),
-                  Center(
-                    child: Container(
-                      height: 110,
-                      alignment: Alignment.center,
-                      child: const Text(
-                        "Daftar Quiz",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                    Text(
+                      'Waktu: $totalTime detik',
+                      style: const TextStyle(fontSize: 16, color: Colors.red),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10), // Mengurangi jarak
+                Text(
+                  currentQuestion['question'],
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10), // Mengurangi jarak
+                ...currentQuestion['options'].asMap().entries.map<Widget>(
+                  (entry) {
+                    int index = entry.key;
+                    String option = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0), // Tambahkan padding vertikal
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              optionColors[index % optionColors.length],
+                          foregroundColor: Colors.white, // Set text color
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              // Bagian utama Quiz
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Soal ${currentQuestionIndex + 1} / ${questions.length}',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                          Text(
-                            'Waktu: $totalTime detik',
-                            style: const TextStyle(
-                                fontSize: 16, color: Colors.red),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        currentQuestion['question'],
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 20),
-                      ...currentQuestion['options'].asMap().entries.map<Widget>(
-                        (entry) {
-                          int index = entry.key;
-                          String option = entry.value;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0), // Tambahkan padding vertikal
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    optionColors[index % optionColors.length],
-                                foregroundColor: Colors.white, // Set text color
-                              ),
-                              onPressed: () {
-                                // Add logic for option selection
-                              },
-                              child: Text(option),
-                            ),
-                          );
+                        onPressed: () {
+                          setState(() {
+                            selectedAnswers[currentQuestionIndex] =
+                                index; // Simpan jawaban yang dipilih
+                          });
+                          nextQuestion(); // Pindah ke soal berikutnya setelah memilih jawaban
                         },
-                      ).toList(),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          if (currentQuestionIndex >
-                              0) // Tampilkan tombol "Previous" hanya jika bukan soal pertama
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Colors.white, // Warna latar belakang putih
-                                foregroundColor:
-                                    Colors.black, // Warna teks hitam
-                              ),
-                              onPressed: previousQuestion,
-                              child: const Text('Previous'),
-                            ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: currentQuestionIndex <
-                                      questions.length - 1
-                                  ? Colors.white // Tombol "Next" berwarna putih
-                                  : const Color.fromARGB(255, 253, 240,
-                                      69), // Tombol "Finish Attempt" berwarna kuning
-                              foregroundColor: Colors.black, // Warna teks hitam
-                            ),
-                            onPressed: () {
-                              if (currentQuestionIndex < questions.length - 1) {
-                                nextQuestion();
-                              } else {
-                                timer
-                                    .cancel(); // Hentikan timer saat menyelesaikan kuis
-                                endQuiz(); // Tampilkan dialog penyelesaian
-                              }
-                            },
-                            child: Text(
-                              currentQuestionIndex < questions.length - 1
-                                  ? 'Next'
-                                  : 'Finish Attempt',
-                            ),
-                          ),
-                        ],
+                        child: Text(option),
                       ),
-                    ],
+                    );
+                  },
+                ).toList(),
+                const SizedBox(
+                    height: 10), // Mengurangi jarak di bawah pilihan jawaban
+              ],
+            ),
+          ),
+          // Baris untuk tombol Next dan Previous
+          Positioned(
+            bottom: 16, // Jarak dari bawah
+            left: 16,
+            right: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (currentQuestionIndex >
+                    0) // Tampilkan tombol "Previous" hanya jika bukan soal pertama
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          Colors.white, // Warna latar belakang putih
+                      foregroundColor: Colors.black, // Warna teks hitam
+                    ),
+                    onPressed: previousQuestion,
+                    child: const Text('Previous'),
+                  ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: currentQuestionIndex < questions.length - 1
+                        ? Colors.white // Tombol "Next" berwarna putih
+                        : const Color.fromARGB(255, 253, 240,
+                            69), // Tombol "Finish Attempt" berwarna kuning
+                    foregroundColor: Colors.black, // Warna teks hitam
+                  ),
+                  onPressed: () {
+                    if (currentQuestionIndex < questions.length - 1) {
+                      nextQuestion();
+                    } else {
+                      timer.cancel(); // Hentikan timer saat menyelesaikan kuis
+                      endQuiz(); // Tampilkan dialog penyelesaian
+                    }
+                  },
+                  child: Text(
+                    currentQuestionIndex < questions.length - 1
+                        ? 'Next'
+                        : 'Finish Attempt',
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
