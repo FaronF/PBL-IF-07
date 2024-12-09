@@ -73,7 +73,7 @@ class _TeacherPageState extends State<TeacherPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProfileGuruPage(),
+                          builder: (context) => const ProfileGuruPage(),
                         ),
                       );
                     },

@@ -286,7 +286,7 @@ class _TambahPengajarPageState extends State<TambahPengajarPage> {
           'Tambah Pengajar',
           style: TextStyle(color: Colors.black), // Teks hitam
         ),
-        backgroundColor: Colors.lightBlue,
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
         iconTheme: const IconThemeData(color: Colors.black), // Ikon hitam
       ),
       body: SingleChildScrollView(
@@ -338,7 +338,7 @@ class _TambahPengajarPageState extends State<TambahPengajarPage> {
                 child: ElevatedButton(
                   onPressed: tambahPengajar,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue,
+                    backgroundColor: const Color.fromARGB(255, 253, 240, 69),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
