@@ -15,6 +15,10 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
   // Reference to Firestore collection
   final CollectionReference tasksCollection =
       FirebaseFirestore.instance.collection('Tasks');
+  final CollectionReference classesCollection =
+      FirebaseFirestore.instance.collection('Kelas'); // Koleksi kelas
+
+  String? selectedClass; // Variabel untuk menyimpan kelas yang dipilih
 
   // Fungsi untuk menghapus tugas dari Firebase Firestore
   Future<void> deleteTask(String taskId) async {
@@ -92,9 +96,9 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
       DateTime? currentDueTo}) {
     final formKey = GlobalKey<FormState>();
     String title = currentTitle ?? '';
-    String className = currentClass ?? '';
     String description = currentDescription ?? '';
     DateTime dueTo = currentDueTo ?? DateTime.now();
+    selectedClass = currentClass; // Set kelas yang dipilih
 
     showDialog(
       context: context,
@@ -119,17 +123,43 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                       return null;
                     },
                   ),
-                  TextFormField(
-                    initialValue: className,
-                    decoration: const InputDecoration(labelText: 'Kelas'),
-                    onChanged: (value) {
-                      className = value;
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Kelas tidak boleh kosong';
+                  // Dropdown untuk memilih kelas
+                  FutureBuilder<QuerySnapshot>(
+                    future: classesCollection.get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
                       }
-                      return null;
+
+                      if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      }
+
+                      final classes = snapshot.data!.docs;
+
+                      return DropdownButtonFormField<String>(
+                        value: selectedClass,
+                        decoration: const InputDecoration(labelText: 'kelas'),
+                        items: classes.map((doc) {
+                          return DropdownMenuItem<String>(
+                            value: doc[
+                                'kelas'], // Ganti 'name' dengan field yang sesuai
+                            child: Text(doc[
+                                'kelas']), // Ganti 'name' dengan field yang sesuai
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedClass = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Kelas tidak boleh kosong';
+                          }
+                          return null;
+                        },
+                      );
                     },
                   ),
                   TextFormField(
@@ -174,8 +204,8 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                 if (formKey.currentState!.validate()) {
                   if (taskId == null) {
                     // Add task and capture taskId
-                    String newTaskId =
-                        await addTask(title, className, description, dueTo);
+                    String newTaskId = await addTask(
+                        title, selectedClass!, description, dueTo);
 
                     // Show a confirmation message
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -185,7 +215,8 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                     );
                   } else {
                     // Update task
-                    updateTask(taskId, title, className, description, dueTo);
+                    updateTask(
+                        taskId, title, selectedClass!, description, dueTo);
                     // Show a confirmation message for update
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Tugas berhasil diedit')),
@@ -280,8 +311,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
           const Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding:
-                  EdgeInsets.only(top: 40.0), // Mengatur jarak dari atas
+              padding: EdgeInsets.only(top: 40.0), // Mengatur jarak dari atas
               child: Text(
                 'Kelola Tugas',
                 style: TextStyle(
@@ -360,14 +390,15 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
-                      style:
-                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Text(className, style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 4),
                   Text(description, style: const TextStyle(fontSize: 14)),
                   const SizedBox(height: 4),
-                  Text('Due: $formattedDueTo', style: const TextStyle(fontSize: 14)),
+                  Text('Due: $formattedDueTo',
+                      style: const TextStyle(fontSize: 14)),
                 ],
               ),
             ),

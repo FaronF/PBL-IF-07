@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'quiz_main.dart'; // Make sure this imports your QuizMainPage
 
 class DaftarQuizPage extends StatefulWidget {
@@ -90,6 +91,8 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
 
                       final quizDocs = snapshot.data!.docs;
 
+                      final userId = FirebaseAuth.instance.currentUser?.uid;
+
                       return ListView.builder(
                         itemCount: quizDocs.length,
                         itemBuilder: (context, index) {
@@ -101,7 +104,8 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
                             time: quiz['time'] ?? 'No Time',
                             status: quiz['status'] ?? 'Unknown',
                             password: quiz['password'] ?? 'Need password',
-                            quizData: quiz, // Pass the entire quiz data
+                            userId: userId ??
+                                'defaultUser Id', // Use a default or handle null case
                           );
                         },
                       );
@@ -146,8 +150,8 @@ class QuizCard extends StatelessWidget {
   final String date;
   final String time;
   final String status;
-  final String password; // Add password field
-  final Map<String, dynamic> quizData; // Add quiz data field
+  final String password; // Field password
+  final String userId; // ID pengguna
 
   const QuizCard({
     super.key,
@@ -156,14 +160,14 @@ class QuizCard extends StatelessWidget {
     required this.date,
     required this.time,
     required this.status,
-    required this.password, // Initialize password
-    required this.quizData, // Initialize quiz data
+    required this.password, // Inisialisasi password
+    required this.userId, // Inisialisasi ID pengguna
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _showPasswordDialog(context),
+      onTap: () => _checkQuizAttempt(context),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         padding: const EdgeInsets.all(16.0),
@@ -217,45 +221,37 @@ class QuizCard extends StatelessWidget {
     );
   }
 
-  void _showPasswordDialog(BuildContext context) {
-    final TextEditingController passwordController = TextEditingController();
+  Future<void> _checkQuizAttempt(BuildContext context) async {
+    final quizAttempts = await FirebaseFirestore.instance
+        .collection('Students')
+        .doc(userId)
+        .collection('QuizAttempts')
+        .get();
 
+    if (quizAttempts.docs.isNotEmpty) {
+      // Ambil nilai terbaru
+      final latestAttempt = quizAttempts.docs.last;
+      final score = latestAttempt['score'];
+
+      // Tampilkan popup nilai
+      _showScorePopup(context, score);
+    } else {
+      // Tampilkan dialog password hanya jika tidak ada upaya kuis sebelumnya
+      _showPasswordDialog(context);
+    }
+  }
+
+  void _showScorePopup(BuildContext context, int score) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Enter Password'),
-          content: TextField(
-            controller: passwordController,
-            obscureText: true,
-            decoration: const InputDecoration(hintText: "Password"),
-          ),
+          title: Text('Quiz Selesai'),
+          content: Text('Nilai kamu: $score'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (passwordController.text == password) {
-                  // Password is correct, proceed to the quiz
-                  Navigator.of(context).pop();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QuizMainPage(), // Pass quiz data
-                    ),
-                  );
-                } else {
-                  // Show error message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Incorrect Password')),
-                  );
-                }
-              },
-              child: const Text('Submit'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
             ),
           ],
         );
@@ -263,16 +259,62 @@ class QuizCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Dibuka':
-        return Colors.black;
-      case 'Ditutup':
-        return Colors.red;
-      case 'Selesai':
-        return Colors.green;
-      default:
-        return Colors.white;
-    }
+  void _showPasswordDialog(BuildContext context) {
+    final TextEditingController passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Enter Password'),
+          content: TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: InputDecoration(hintText: 'Password'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (passwordController.text == password) {
+                  Navigator.of(context).pop();
+                  _startQuiz(context);
+                } else {
+                  // Show error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Incorrect password')),
+                  );
+                }
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _startQuiz(BuildContext context) {
+    // Logic to start the quiz
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => QuizMainPage()),
+    );
+  }
+}
+
+Color _getStatusColor(String status) {
+  switch (status) {
+    case 'Dibuka':
+      return Colors.black;
+    case 'Ditutup':
+      return Colors.red;
+    case 'Selesai':
+      return Colors.green;
+    default:
+      return Colors.white;
   }
 }

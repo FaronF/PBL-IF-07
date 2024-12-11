@@ -21,15 +21,12 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
     // Navigasi ke halaman yang sesuai
     switch (index) {
       case 0:
-        // Navigasi ke halaman Home
         Navigator.pushNamed(context, '/adminpage');
         break;
       case 1:
-        // Navigasi ke halaman Kelola Akademik
         Navigator.pushNamed(context, '/kelolapengguna');
         break;
       case 2:
-        // Navigasi ke halaman Materi
         Navigator.pushNamed(context, '/kelolapengajar');
         break;
     }
@@ -37,32 +34,25 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
 
   Future<void> hapusPengguna(String id, String email, String password) async {
     try {
-      // Menghapus akun pengguna dari Firebase Authentication
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Hapus pengguna dari Firebase Authentication
       await userCredential.user!.delete();
-
-      // Menghapus data siswa dari Firestore
       await FirebaseFirestore.instance.collection('Students').doc(id).delete();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pengguna berhasil dihapus')),
       );
-      debugPrint('Pengguna berhasil dihapus');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal menghapus pengguna: $e')),
       );
-      debugPrint('Gagal menghapus pengguna: $e');
     }
   }
 
-  // Fungsi untuk menampilkan dialog konfirmasi
   void showDeleteConfirmationDialog(String id, String email, String password) {
     showDialog(
       context: context,
@@ -75,15 +65,14 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
             TextButton(
               child: const Text('Batal'),
               onPressed: () {
-                Navigator.of(context).pop(); // Menutup dialog
+                Navigator.of(context).pop();
               },
             ),
             TextButton(
               child: const Text('Hapus', style: TextStyle(color: Colors.red)),
               onPressed: () {
-                hapusPengguna(id, email,
-                    password); // Memanggil fungsi hapus pengguna dengan semua argumen
-                Navigator.of(context).pop(); // Menutup dialog
+                hapusPengguna(id, email, password);
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -96,7 +85,7 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Mengatur tinggi toolbar
+        toolbarHeight: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -104,11 +93,10 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
         children: [
           Column(
             children: <Widget>[
-              // Header setengah lingkaran
               Container(
                 height: 150,
                 decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 253, 240, 69), // Warna header
+                  color: Color.fromARGB(255, 253, 240, 69),
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(150),
                     bottomRight: Radius.circular(150),
@@ -116,7 +104,6 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
                 ),
               ),
               const SizedBox(height: 10),
-
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -141,11 +128,9 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
                       itemBuilder: (context, index) {
                         final student =
                             students[index].data() as Map<String, dynamic>;
-                        final studentId = students[index].id; // Ambil ID siswa
-                        final email = student[
-                            'email']; // Ambil email siswa (pastikan ini ada di data)
-                        final password = student[
-                            'password']; // Ambil password siswa (pastikan ini ada di data)
+                        final studentId = students[index].id;
+                        final email = student['email'];
+                        final password = student['password'];
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -155,14 +140,33 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
                                 Text(student['nama'] ?? 'Nama tidak tersedia'),
                             subtitle: Text('Kelas: ${student['kelas'] ?? '-'}\n'
                                 'NISN: ${student['nisn'] ?? '-'}'),
-                            trailing: IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  // Memanggil fungsi dengan argumen yang benar
-                                  showDeleteConfirmationDialog(
-                                      studentId, email, password);
-                                }),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.blue),
+                                  onPressed: () {
+                                    // Navigasi ke halaman edit pengguna
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EditPenggunaPage(
+                                            studentId: studentId),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () {
+                                    showDeleteConfirmationDialog(
+                                        studentId, email, password);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -172,11 +176,10 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
               )
             ],
           ),
-          // Teks di tengah atas
           const Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: EdgeInsets.only(top: 40.0), // Meng atur jarak dari atas
+              padding: EdgeInsets.only(top: 40.0),
               child: Text(
                 'Kelola Pengguna',
                 style: TextStyle(
@@ -237,17 +240,17 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController namaController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController kelasController = TextEditingController();
   final TextEditingController nisnController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  String gender = 'Laki-laki';
+  String? selectedKelas;
+  bool _isPasswordVisible =
+      false; // Variabel untuk mengontrol visibilitas password
 
   Future<void> tambahPengguna() async {
     if (_formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
@@ -257,9 +260,8 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
         await FirebaseFirestore.instance.collection('Students').doc(uid).set({
           'nama': namaController.text.trim(),
           'email': emailController.text.trim(),
-          'kelas': kelasController.text.trim(),
+          'kelas': selectedKelas,
           'nisn': nisnController.text.trim(),
-          'gender': gender,
           'password': passwordController.text.trim(),
         });
 
@@ -281,10 +283,10 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
       appBar: AppBar(
         title: const Text(
           'Tambah Pengguna',
-          style: TextStyle(color: Colors.black), // Teks hitam
+          style: TextStyle(color: Colors.black),
         ),
         backgroundColor: const Color.fromARGB(255, 253, 240, 69),
-        iconTheme: const IconThemeData(color: Colors.black), // Ikon hitam
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -306,10 +308,48 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 15),
-              buildTextField(
-                controller: kelasController,
-                label: 'Kelas',
-                icon: Icons.class_,
+              StreamBuilder<QuerySnapshot>(
+                stream:
+                    FirebaseFirestore.instance.collection('Kelas').snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(
+                        child: Text('Terjadi kesalahan: ${snapshot.error}'));
+                  }
+
+                  final kelasList = snapshot.data?.docs
+                          .map((doc) => doc['kelas'] as String)
+                          .toList() ??
+                      [];
+
+                  return DropdownButtonFormField<String>(
+                    value: selectedKelas,
+                    decoration: InputDecoration(
+                      labelText: 'Kelas',
+                      border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon:
+                          const Icon(Icons.class_, color: Colors.lightBlue),
+                    ),
+                    hint: const Text('Pilih Kelas'),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedKelas = newValue;
+                      });
+                    },
+                    items:
+                        kelasList.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  );
+                },
               ),
               const SizedBox(height: 15),
               buildTextField(
@@ -322,32 +362,16 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
                 controller: passwordController,
                 label: 'Password',
                 icon: Icons.lock,
-                obscureText: true,
-              ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: RadioListTile(
-                      value: 'Laki-laki',
-                      groupValue: gender,
-                      title: const Text('Laki-laki'),
-                      onChanged: (value) {
-                        setState(() => gender = value!);
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: RadioListTile(
-                      value: 'Perempuan',
-                      groupValue: gender,
-                      title: const Text('Perempuan'),
-                      onChanged: (value) {
-                        setState(() => gender = value!);
-                      },
-                    ),
-                  ),
-                ],
+                obscureText:
+                    !_isPasswordVisible, // Menggunakan variabel untuk mengontrol visibilitas
+                showPasswordToggle:
+                    true, // Menambahkan parameter untuk toggle password
+                onToggle: () {
+                  setState(() {
+                    _isPasswordVisible =
+                        !_isPasswordVisible; // Mengubah status visibilitas
+                  });
+                },
               ),
               const SizedBox(height: 30),
               Center(
@@ -367,7 +391,7 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
                     'Simpan',
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.black, // Teks hitam
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -385,6 +409,9 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
     required IconData icon,
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
+    bool showPasswordToggle =
+        false, // Menambahkan parameter untuk toggle password
+    VoidCallback? onToggle, // Callback untuk toggle
   }) {
     return TextFormField(
       controller: controller,
@@ -393,6 +420,15 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: Colors.lightBlue),
+        suffixIcon: showPasswordToggle
+            ? IconButton(
+                icon: Icon(
+                  obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.lightBlue,
+                ),
+                onPressed: onToggle, // Memanggil callback saat ikon diklik
+              )
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.lightBlue),
@@ -402,8 +438,192 @@ class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
           borderSide: const BorderSide(color: Colors.lightBlue),
         ),
       ),
-      validator: (value) =>
-          value!.isEmpty ? '$label tidak boleh kosong' : null,
+      validator: (value) => value!.isEmpty ? '$label tidak boleh kosong' : null,
+    );
+  }
+}
+
+class EditPenggunaPage extends StatefulWidget {
+  final String studentId;
+
+  const EditPenggunaPage({Key? key, required this.studentId}) : super(key: key);
+
+  @override
+  _EditPenggunaPageState createState() => _EditPenggunaPageState();
+}
+
+class _EditPenggunaPageState extends State<EditPenggunaPage> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController namaController = TextEditingController();
+  final TextEditingController nisnController = TextEditingController();
+  String? selectedKelas;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStudentData();
+  }
+
+  Future<void> _loadStudentData() async {
+    DocumentSnapshot studentDoc = await FirebaseFirestore.instance
+        .collection('Students')
+        .doc(widget.studentId)
+        .get();
+    final studentData = studentDoc.data() as Map<String, dynamic>;
+
+    namaController.text = studentData['nama'];
+    nisnController.text = studentData['nisn'];
+    selectedKelas = studentData['kelas'];
+  }
+
+  Future<void> updatePengguna() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('Students')
+            .doc(widget.studentId)
+            .update({
+          'nama': namaController.text.trim(),
+          'kelas': selectedKelas,
+          'nisn': nisnController.text.trim(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pengguna berhasil diperbarui')),
+        );
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memperbarui pengguna: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Edit Pengguna',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildTextField(
+                controller: namaController,
+                label: 'Nama',
+                icon: Icons.person,
+              ),
+              const SizedBox(height: 15),
+              StreamBuilder<QuerySnapshot>(
+                stream:
+                    FirebaseFirestore.instance.collection('Kelas').snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(
+                        child: Text('Terjadi kesalahan: ${snapshot.error}'));
+                  }
+
+                  final kelasList = snapshot.data?.docs
+                          .map((doc) => doc['kelas'] as String)
+                          .toList() ??
+                      [];
+
+                  return DropdownButtonFormField<String>(
+                    value: selectedKelas,
+                    decoration: InputDecoration(
+                      labelText: 'Kelas',
+                      border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon:
+                          const Icon(Icons.class_, color: Colors.lightBlue),
+                    ),
+                    hint: const Text('Pilih Kelas'),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedKelas = newValue;
+                      });
+                    },
+                    items:
+                        kelasList.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: nisnController,
+                label: 'NISN',
+                icon: Icons.badge,
+              ),
+              const SizedBox(height: 30),
+              Center(
+                child: ElevatedButton(
+                  onPressed: updatePengguna,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 15,
+                    ),
+                  ),
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.white,
+        prefixIcon: Icon(icon, color: Colors.lightBlue),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Field ini tidak boleh kosong';
+        }
+        return null;
+      },
     );
   }
 }

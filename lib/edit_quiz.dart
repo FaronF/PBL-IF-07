@@ -35,6 +35,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
   late String status;
   late String password;
   List<Map<String, dynamic>> questions = [];
+  List<String> kelasList = []; // Variabel untuk menyimpan daftar kelas
 
   @override
   void initState() {
@@ -46,6 +47,17 @@ class _EditQuizPageState extends State<EditQuizPage> {
     status = widget.initialStatus;
     password = widget.initialPassword;
     questions = List.from(widget.initialQuestions);
+    _fetchKelas(); // Memanggil fungsi untuk mengambil data kelas
+  }
+
+  void _fetchKelas() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('Kelas').get();
+    setState(() {
+      kelasList = snapshot.docs
+          .map((doc) => doc['kelas'] as String)
+          .toList(); // Mengambil field 'kelas'
+    });
   }
 
   void _updateQuiz() async {
@@ -133,24 +145,50 @@ class _EditQuizPageState extends State<EditQuizPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              const SizedBox(height: 10), // Memberi jarak dari atas
               TextField(
-                decoration: const InputDecoration(labelText: 'Judul Quiz'),
+                decoration: const InputDecoration(
+                  labelText: 'Judul Quiz',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
                 onChanged: (value) {
                   title = value;
                 },
                 controller: TextEditingController(text: title),
               ),
               const SizedBox(height: 16),
-              TextField(
-                decoration: const InputDecoration(labelText: 'Kelas'),
-                onChanged: (value) {
-                  kelas = value;
+              DropdownButtonFormField<String>(
+                value: kelas.isNotEmpty ? kelas : null,
+                decoration: const InputDecoration(
+                  labelText: 'Kelas',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                hint: const Text('Pilih Kelas'),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    kelas = newValue!;
+                  });
                 },
-                controller: TextEditingController(text: kelas),
+                isExpanded: true,
+                items: kelasList.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 16),
               TextField(
-                decoration: const InputDecoration(labelText: 'Tanggal'),
+                decoration: const InputDecoration(
+                  labelText: 'Tanggal',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
                 onChanged: (value) {
                   date = value;
                 },
@@ -158,7 +196,12 @@ class _EditQuizPageState extends State<EditQuizPage> {
               ),
               const SizedBox(height: 16),
               TextField(
-                decoration: const InputDecoration(labelText: 'Waktu'),
+                decoration: const InputDecoration(
+                  labelText: 'Waktu',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
                 onChanged: (value) {
                   time = value;
                 },
@@ -166,20 +209,32 @@ class _EditQuizPageState extends State<EditQuizPage> {
               ),
               const SizedBox(height: 16),
               TextField(
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
                 onChanged: (value) {
                   password = value;
                 },
                 controller: TextEditingController(text: password),
               ),
               const SizedBox(height: 16),
-              DropdownButton<String>(
+              DropdownButtonFormField<String>(
                 value: status,
+                decoration: const InputDecoration(
+                  labelText: 'Status',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
                 onChanged: (String? newValue) {
                   setState(() {
                     status = newValue!;
                   });
                 },
+                isExpanded: true,
                 items: <String>['Dibuka', 'Ditutup']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(

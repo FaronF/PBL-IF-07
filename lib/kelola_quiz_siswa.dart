@@ -269,6 +269,26 @@ class _AddQuizPageState extends State<AddQuizPage> {
   String password = ''; // Tambahkan field password
   String status = 'Dibuka'; // Default status
   List<Map<String, dynamic>> questions = [];
+  List<String> kelasOptions = []; // List untuk menyimpan opsi kelas
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchKelasOptions(); // Fetch kelas options on init
+  }
+
+  Future<void> _fetchKelasOptions() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('Kelas').get();
+      setState(() {
+        kelasOptions =
+            querySnapshot.docs.map((doc) => doc['kelas'] as String).toList();
+      });
+    } catch (e) {
+      print('Error fetching kelas options: $e');
+    }
+  }
 
   void _addQuestion() {
     setState(() {
@@ -352,16 +372,29 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    TextField(
+                    // Dropdown untuk Kelas
+                    DropdownButtonFormField<String>(
+                      value: kelas.isNotEmpty ? kelas : null,
                       decoration: const InputDecoration(
                         labelText: 'Kelas',
                         border: OutlineInputBorder(),
                         filled: true,
                         fillColor: Colors.white,
                       ),
-                      onChanged: (value) {
-                        kelas = value;
+                      hint: const Text('Pilih Kelas'),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          kelas = newValue!;
+                        });
                       },
+                      isExpanded: true, // Agar dropdown mengisi lebar
+                      items: kelasOptions
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
                     ),
                     const SizedBox(height: 16),
                     TextField(
@@ -387,8 +420,8 @@ class _AddQuizPageState extends State<AddQuizPage> {
                         time = value;
                       },
                     ),
-                    // Input untuk Password
                     const SizedBox(height: 16),
+                    // Input untuk Password
                     TextField(
                       decoration: const InputDecoration(
                         labelText: 'Password',
@@ -402,13 +435,20 @@ class _AddQuizPageState extends State<AddQuizPage> {
                     ),
                     const SizedBox(height: 16),
                     // Dropdown untuk Status
-                    DropdownButton<String>(
+                    DropdownButtonFormField<String>(
                       value: status,
+                      decoration: const InputDecoration(
+                        labelText: 'Status',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
                       onChanged: (String? newValue) {
                         setState(() {
                           status = newValue!;
                         });
                       },
+                      isExpanded: true,
                       items: <String>['Dibuka', 'Ditutup']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
@@ -671,16 +711,7 @@ class QuizCard extends StatelessWidget {
                           .get()
                           .then((DocumentSnapshot documentSnapshot) {
                         if (documentSnapshot.exists) {
-                          // Hapus variabel questions jika tidak digunakan
                           onEdit(title, kelas, date, time, quizId);
-
-                          onEdit(
-                            title,
-                            kelas,
-                            date,
-                            time,
-                            quizId,
-                          );
                         }
                       });
                     },

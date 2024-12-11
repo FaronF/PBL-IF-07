@@ -81,8 +81,7 @@ class KelolaPengajarPageState extends State<KelolaPengajarPage> {
             TextButton(
               child: const Text('Hapus', style: TextStyle(color: Colors.red)),
               onPressed: () {
-                hapusPengajar(id, email,
-                    password); // Memanggil fungsi hapus pengguna dengan semua argumen
+                hapusPengajar(id, email, password);
                 Navigator.of(context).pop(); // Menutup dialog
               },
             ),
@@ -154,11 +153,24 @@ class KelolaPengajarPageState extends State<KelolaPengajarPage> {
                             title:
                                 Text(teacher['nama'] ?? 'Nama tidak tersedia'),
                             subtitle: Text('NUPTK: ${teacher['nuptk'] ?? '-'}\n'
-                                'Mata Pelajaran: ${teacher['mapel'] ?? '-'}\n'
-                                'Kategori Kelas: ${teacher['kelas'] ?? '-'}'),
+                                'Mapel: ${teacher['mapel'] ?? '-'}\n'
+                                'Kelas: ${teacher['kelas'] ?? '-'}'),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.blue),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              EditPengajarPage(
+                                                  teacherId: teacherId),
+                                        ),
+                                      );
+                                    }),
                                 IconButton(
                                     icon: const Icon(Icons.delete,
                                         color: Colors.red),
@@ -243,14 +255,44 @@ class _TambahPengajarPageState extends State<TambahPengajarPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nuptkController = TextEditingController();
-  final TextEditingController mapelController = TextEditingController();
-  final TextEditingController kelasController = TextEditingController();
+
+  String? selectedMapel;
+  String? selectedKelas;
+  List<String> mapelList = [];
+  List<String> kelasList = [];
+
+  // State untuk visibilitas password
+  bool _isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMapelAndKelas();
+  }
+
+  Future<void> _loadMapelAndKelas() async {
+    mapelList = await _getMapelList();
+    kelasList = await _getKelasList();
+    setState(() {}); // Memperbarui UI setelah data dimuat
+  }
+
+  Future<List<String>> _getMapelList() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('Mapel').get();
+    return snapshot.docs.map((doc) => doc['mapel'] as String).toList();
+  }
+
+  Future<List<String>> _getKelasList() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('Kelas').get();
+    return snapshot.docs.map((doc) => doc['kelas'] as String).toList();
+  }
 
   Future<void> tambahPengajar() async {
     if (_formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
@@ -262,8 +304,8 @@ class _TambahPengajarPageState extends State<TambahPengajarPage> {
           'email': emailController.text.trim(),
           'password': passwordController.text.trim(),
           'nuptk': nuptkController.text.trim(),
-          'mapel': mapelController.text.trim(),
-          'kelas': kelasController.text.trim(),
+          'mapel': selectedMapel,
+          'kelas': selectedKelas,
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -309,11 +351,11 @@ class _TambahPengajarPageState extends State<TambahPengajarPage> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 15),
-              buildTextField(
+              buildPasswordField(
                 controller: passwordController,
                 label: 'Password',
                 icon: Icons.lock,
-                obscureText: true,
+                obscureText: !_isPasswordVisible,
               ),
               const SizedBox(height: 15),
               buildTextField(
@@ -322,16 +364,50 @@ class _TambahPengajarPageState extends State<TambahPengajarPage> {
                 icon: Icons.badge,
               ),
               const SizedBox(height: 15),
-              buildTextField(
-                controller: mapelController,
-                label: 'Mata Pelajaran',
-                icon: Icons.book,
+              DropdownButtonFormField<String>(
+                value: selectedMapel,
+                decoration: InputDecoration(
+                  labelText: 'Mata Pelajaran',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.book, color: Colors.lightBlue),
+                ),
+                hint: const Text('Pilih Mata Pelajaran'),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedMapel = newValue;
+                  });
+                },
+                items: mapelList.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 15),
-              buildTextField(
-                controller: kelasController,
-                label: 'Kategori Kelas',
-                icon: Icons.class_,
+              DropdownButtonFormField<String>(
+                value: selectedKelas,
+                decoration: InputDecoration(
+                  labelText: 'Kategori Kelas',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.class_, color: Colors.lightBlue),
+                ),
+                hint: const Text('Pilih Kelas'),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedKelas = newValue;
+                  });
+                },
+                items: kelasList.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 30),
               Center(
@@ -386,8 +462,280 @@ class _TambahPengajarPageState extends State<TambahPengajarPage> {
           borderSide: const BorderSide(color: Colors.lightBlue),
         ),
       ),
-      validator: (value) =>
-          value!.isEmpty ? '$label tidak boleh kosong' : null,
+      validator: (value) => value!.isEmpty ? '$label tidak boleh kosong' : null,
+    );
+  }
+
+  Widget buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.lightBlue),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            color: Colors.lightBlue,
+          ),
+          onPressed: () {
+            setState(() {
+              _isPasswordVisible = !_isPasswordVisible;
+            });
+          },
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.lightBlue),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.lightBlue),
+        ),
+      ),
+      validator: (value) => value!.isEmpty ? '$label tidak boleh kosong' : null,
+    );
+  }
+}
+
+class EditPengajarPage extends StatefulWidget {
+  final String teacherId;
+
+  const EditPengajarPage({Key? key, required this.teacherId}) : super(key: key);
+
+  @override
+  _EditPengajarPageState createState() => _EditPengajarPageState();
+}
+
+class _EditPengajarPageState extends State<EditPengajarPage> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController namaController = TextEditingController();
+  final TextEditingController nuptkController = TextEditingController();
+  String? selectedMapel;
+  String? selectedKelas;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTeacherData();
+  }
+
+  Future<void> _loadTeacherData() async {
+    DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
+        .collection('Teachers')
+        .doc(widget.teacherId)
+        .get();
+    final teacherData = teacherDoc.data() as Map<String, dynamic>;
+
+    namaController.text = teacherData['nama'];
+    nuptkController.text = teacherData['nuptk'];
+    selectedMapel = teacherData['mapel'];
+    selectedKelas = teacherData['kelas'];
+  }
+
+  Future<void> updatePengajar() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('Teachers')
+            .doc(widget.teacherId)
+            .update({
+          'nama': namaController.text.trim(),
+          'nuptk': nuptkController.text.trim(),
+          'mapel': selectedMapel,
+          'kelas': selectedKelas,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pengajar berhasil diperbarui')),
+        );
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memperbarui pengajar: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Edit Pengajar',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildTextField(
+                controller: namaController,
+                label: 'Nama',
+                icon: Icons.person,
+              ),
+              const SizedBox(height: 15),
+              buildTextField(
+                controller: nuptkController,
+                label: 'NUPTK',
+                icon: Icons.badge,
+              ),
+              const SizedBox(height: 15),
+              // FutureBuilder untuk Mata Pelajaran
+              FutureBuilder<List<String>>(
+                future: _getMapelList(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  }
+                  final mapelList = snapshot.data ?? [];
+                  return DropdownButtonFormField<String>(
+                    value: selectedMapel,
+                    decoration: InputDecoration(
+                      labelText: 'Mata Pelajaran',
+                      border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon:
+                          const Icon(Icons.book, color: Colors.lightBlue),
+                    ),
+                    hint: const Text('Pilih Mata Pelajaran'),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedMapel = newValue;
+                      });
+                    },
+                    items:
+                        mapelList.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+              const SizedBox(height: 15),
+              // FutureBuilder untuk Kelas
+              FutureBuilder<List<String>>(
+                future: _getKelasList(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  }
+
+                  final kelasList = snapshot.data ?? [];
+                  return DropdownButtonFormField<String>(
+                    value: selectedKelas,
+                    decoration: InputDecoration(
+                      labelText: 'Kategori Kelas',
+                      border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon:
+                          const Icon(Icons.class_, color: Colors.lightBlue),
+                    ),
+                    hint: const Text('Pilih Kelas'),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedKelas = newValue;
+                      });
+                    },
+                    items:
+                        kelasList.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+              const SizedBox(height: 30),
+              Center(
+                child: ElevatedButton(
+                  onPressed: updatePengajar,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 15,
+                    ),
+                  ),
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<List<String>> _getMapelList() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('Mapel').get();
+    return snapshot.docs.map((doc) => doc['mapel'] as String).toList();
+  }
+
+  Future<List<String>> _getKelasList() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('Kelas').get();
+    return snapshot.docs.map((doc) => doc['kelas'] as String).toList();
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.lightBlue),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.lightBlue),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.lightBlue),
+        ),
+      ),
+      validator: (value) => value!.isEmpty ? '$label tidak boleh kosong' : null,
     );
   }
 }
