@@ -184,8 +184,7 @@ class KelolaPenggunaPageState extends State<KelolaPenggunaPage> {
                 'Kelola Pengguna',
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  fontWeight: FontWeight.bold, // Poppins Bold
                 ),
               ),
             ),
@@ -233,10 +232,10 @@ class TambahPenggunaPage extends StatefulWidget {
   const TambahPenggunaPage({Key? key}) : super(key: key);
 
   @override
-  _TambahPenggunaPageState createState() => _TambahPenggunaPageState();
+  TambahPenggunaPageState createState() => TambahPenggunaPageState();
 }
 
-class _TambahPenggunaPageState extends State<TambahPenggunaPage> {
+class TambahPenggunaPageState extends State<TambahPenggunaPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController namaController = TextEditingController();
   final TextEditingController emailController = TextEditingController();

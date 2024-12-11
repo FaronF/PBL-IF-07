@@ -17,6 +17,7 @@ class LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixi
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -118,13 +119,12 @@ class LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Mengatur tinggi toolbar
+        toolbarHeight: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Column(
         children: <Widget>[
-          // Header dengan animasi memudar
           FadeTransition(
             opacity: _fadeAnimation,
             child: Container(
@@ -132,15 +132,15 @@ class LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixi
               decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 253, 240, 69),
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(150),
-                  bottomRight: Radius.circular(150),
+                  bottomLeft: Radius.circular(190),
+                  bottomRight: Radius.circular(190),
                 ),
               ),
               child: Stack(
                 children: <Widget>[
                   Positioned(
                     top: -30,
-                    left: 15,
+                    left: 30,
                     width: 200,
                     height: 200,
                     child: Container(
@@ -219,7 +219,7 @@ class LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixi
       IconData icon, bool isPassword) {
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: isPassword && !_isPasswordVisible,
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.black),
         labelText: label,
@@ -232,6 +232,21 @@ class LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixi
         ),
         contentPadding:
             const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  _isPasswordVisible
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                  color: Colors.black,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+              )
+            : null,
       ),
       style: const TextStyle(color: Colors.black),
       keyboardType:

@@ -246,10 +246,10 @@ class TambahPengajarPage extends StatefulWidget {
   const TambahPengajarPage({Key? key}) : super(key: key);
 
   @override
-  _TambahPengajarPageState createState() => _TambahPengajarPageState();
+  TambahPengajarPageState createState() => TambahPengajarPageState();
 }
 
-class _TambahPengajarPageState extends State<TambahPengajarPage> {
+class TambahPengajarPageState extends State<TambahPengajarPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController namaController = TextEditingController();
   final TextEditingController emailController = TextEditingController();

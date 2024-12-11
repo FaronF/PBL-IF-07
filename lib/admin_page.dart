@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'kelola_materi_page.dart'; // Import halaman Materi
 import 'kelola_akademik_page.dart'; // Import halaman Manage Tasks
@@ -26,21 +27,21 @@ class _AdminPageState extends State<AdminPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Konfirmasi Logout'),
-          content: const Text('Apakah Anda yakin ingin keluar?'),
+          title: Text('Konfirmasi Logout', style: GoogleFonts.poppins()),
+          content: Text('Apakah Anda yakin ingin keluar?', style: GoogleFonts.poppins()),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog tanpa logout
               },
-              child: const Text('Batal'),
+              child: Text('Batal', style: GoogleFonts.poppins()),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog
                 _logout(); // Panggil fungsi logout
               },
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+              child: Text('Logout', style: GoogleFonts.poppins(color: Colors.red)),
             ),
           ],
         );
@@ -48,7 +49,6 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  // Fungsi untuk logout
   void _logout() {
     FirebaseAuth.instance.signOut(); // Lakukan proses sign out
     Navigator.pushReplacementNamed(
@@ -73,21 +73,20 @@ class _AdminPageState extends State<AdminPage> {
       ),
       body: Column(
         children: <Widget>[
-          // Header setengah lingkaran
           Container(
             height: 150,
             decoration: const BoxDecoration(
               color: Color.fromARGB(255, 253, 240, 69),
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(150),
-                bottomRight: Radius.circular(150),
+                bottomLeft: Radius.circular(190),
+                bottomRight: Radius.circular(190),
               ),
             ),
             child: Stack(
               children: <Widget>[
                 Positioned(
                   top: -30,
-                  left: 15,
+                  left: 30,
                   width: 200,
                   height: 200,
                   child: Container(
@@ -117,8 +116,6 @@ class _AdminPageState extends State<AdminPage> {
             ),
           ),
           const SizedBox(height: 10),
-
-          // Konten Utama
           Expanded(
             child: _pages[_selectedIndex],
           ),
@@ -171,10 +168,7 @@ class HomeContent extends StatefulWidget {
 }
 
 class _HomeContentState extends State<HomeContent> {
-  // Daftar hover untuk setiap kartu
   final List<bool> _isHovered = List.generate(5, (_) => false);
-
-  // Daftar gambar untuk setiap kartu
   final List<String> _images = [
     'assets/TPA_ua.png',
     'assets/Logo-TK.png',
@@ -199,25 +193,25 @@ class _HomeContentState extends State<HomeContent> {
               ),
             ),
             const SizedBox(height: 20),
-            const Center(
+            Center(
               child: Text(
                 'YAYASAN ULIL ALBAB BATAM',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 10),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 'Merupakan Lembaga Pendidikan Islam Rujukan di Provinsi Kepulauan Riau...',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: GoogleFonts.poppins(fontSize: 16),
               ),
             ),
             const SizedBox(height: 30),
-            const Text(
+            Text(
               "Jenjang Pendidikan",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             GridView.builder(
@@ -291,7 +285,7 @@ class _HomeContentState extends State<HomeContent> {
                   flex: 1,
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),

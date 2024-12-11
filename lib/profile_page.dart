@@ -112,15 +112,15 @@ class EditProfilePageState extends State<ProfilePage> {
             decoration: const BoxDecoration(
               color: Color.fromARGB(255, 253, 240, 69),
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(150),
-                bottomRight: Radius.circular(150),
+                bottomLeft: Radius.circular(190),
+                bottomRight: Radius.circular(190),
               ),
             ),
             child: Stack(
               children: <Widget>[
                 Positioned(
                   top: -30,
-                  left: 15,
+                  left: 30,
                   width: 200,
                   height: 200,
                   child: Container(

@@ -54,6 +54,7 @@ class MyApp extends StatelessWidget {
       title: 'Learning PBL IF-07',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: 'Poppins', // Mengatur font menjadi Poppins
       ),
       debugShowCheckedModeBanner: false,
       initialRoute: '/login', // Set the initial route
