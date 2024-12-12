@@ -5,7 +5,10 @@ import 'package:tester/feedback_page.dart';
 import 'dart:async';
 
 class QuizMainPage extends StatefulWidget {
-  const QuizMainPage({super.key});
+  final String quizId;
+
+  const QuizMainPage({super.key, required this.quizId});
+
   @override
   QuizMainPageState createState() => QuizMainPageState();
 }
@@ -17,6 +20,8 @@ class QuizMainPageState extends State<QuizMainPage> {
   List<Map<String, dynamic>> questions = [];
   List<int?> selectedAnswers = []; // List to store selected answers
   String studentId = ""; // Initialize studentId as an empty string
+  bool isLoading = true; // Flag untuk menunjukkan apakah data sedang di-load
+  String _quizId = ''; // Variabel untuk menyimpan nilai quizId
 
   final List<Color> optionColors = [
     Colors.blue[400]!,
@@ -25,12 +30,22 @@ class QuizMainPageState extends State<QuizMainPage> {
     Colors.pink[700]!,
   ];
 
+  void selectQuizId() async {
+    // Fungsi untuk memilih quizId secara dinamis
+    // Contoh: dari database, dari pengguna, dll.
+    _quizId = widget.quizId; // Ambil nilai quizId dari widget
+    fetchQuestions(_quizId); // Fetch questions from Firestore
+  }
+
   @override
   void initState() {
     super.initState();
     fetchStudentId(); // Fetch student ID from Firestore
-    fetchQuestions(); // Fetch questions from Firestore
-    startTimer();
+    selectQuizId(); // Pilih quizId secara dinamis
+    // Tambahkan delay untuk memastikan bahwa fetchQuestions selesai sebelum startTimer
+    Future.delayed(const Duration(milliseconds: 500), () {
+      startTimer();
+    });
   }
 
   void fetchStudentId() async {
@@ -62,14 +77,16 @@ class QuizMainPageState extends State<QuizMainPage> {
     }
   }
 
-  void fetchQuestions() async {
+  void fetchQuestions(String quizId) async {
     try {
-      QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('quiz').get();
+      print('Fetching questions...');
+      DocumentSnapshot snapshot =
+          await FirebaseFirestore.instance.collection('quiz').doc(quizId).get();
+      print('Questions fetched.');
       List<Map<String, dynamic>> fetchedQuestions = [];
 
-      for (var doc in snapshot.docs) {
-        var data = doc.data() as Map<String, dynamic>;
+      if (snapshot.exists) {
+        var data = snapshot.data() as Map<String, dynamic>;
 
         // Check if 'questions' is an array
         if (data['questions'] is List) {
@@ -97,6 +114,7 @@ class QuizMainPageState extends State<QuizMainPage> {
         questions = fetchedQuestions; // Update the state with fetched questions
         selectedAnswers = List<int?>.filled(
             questions.length, null); // Initialize selected answers
+        isLoading = false; // Set isLoading ke false setelah data di-load
       });
     } catch (e) {
       print("Error fetching questions: $e");
@@ -110,13 +128,13 @@ class QuizMainPageState extends State<QuizMainPage> {
           totalTime--;
         } else {
           timer.cancel();
-          endQuiz();
+          endQuiz(_quizId);
         }
       });
     });
   }
 
-  void endQuiz() {
+  void endQuiz(String quizId) {
     // Tampilkan dialog konfirmasi sebelum mengakhiri kuis
     showDialog(
       context: context,
@@ -135,7 +153,7 @@ class QuizMainPageState extends State<QuizMainPage> {
               Navigator.pop(context); // Tutup dialog
               // Jika pengguna mengonfirmasi, hitung skor dan simpan hasil
               int score = calculateScore();
-              saveResultsToFirestore(score);
+              saveResultsToFirestore(score, quizId);
 
               showDialog(
                 context: context,
@@ -175,7 +193,7 @@ class QuizMainPageState extends State<QuizMainPage> {
     return score; // Kembalikan skor akhir
   }
 
-  void saveResultsToFirestore(int score) async {
+  void saveResultsToFirestore(int score, String quizId) async {
     User? currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser != null) {
@@ -185,6 +203,7 @@ class QuizMainPageState extends State<QuizMainPage> {
           FirebaseFirestore.instance.collection('Students');
 
       await studentsCollection.doc(userId).collection('QuizAttempts').add({
+        'quizId': quizId,
         'score': score,
         'timestamp': FieldValue.serverTimestamp(),
       }).then((value) {
@@ -210,7 +229,7 @@ class QuizMainPageState extends State<QuizMainPage> {
         currentQuestionIndex++;
       } else {
         timer.cancel();
-        endQuiz();
+        endQuiz(_quizId);
       }
     });
   }
@@ -272,7 +291,7 @@ class QuizMainPageState extends State<QuizMainPage> {
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 10), // Mengurangi jarak
+                  const SizedBox(height: 10),
                   ...currentQuestion['options'].asMap().entries.map<Widget>(
                     (entry) {
                       int index = entry.key;
@@ -358,7 +377,7 @@ class QuizMainPageState extends State<QuizMainPage> {
                         } else {
                           timer
                               .cancel(); // Hentikan timer saat menyelesaikan kuis
-                          endQuiz(); // Tampilkan dialog penyelesaian
+                          endQuiz(_quizId);
                         }
                       }
                     },

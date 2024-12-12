@@ -8,7 +8,8 @@ class KelolaMateriPage extends StatefulWidget {
 }
 
 class _KelolaMateriPageState extends State<KelolaMateriPage> {
-  int _selectedIndex = 2; // Index untuk BottomNavigationBar (default ke 'Materi')
+  int _selectedIndex =
+      2; // Index untuk BottomNavigationBar (default ke 'Materi')
 
   void _onItemTapped(int index) {
     setState(() {
@@ -70,19 +71,22 @@ class _KelolaMateriPageState extends State<KelolaMateriPage> {
               ),
               const SizedBox(height: 10),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start, // Merapat ke atas
-                    children: [
-                      const SizedBox(height: 20), // Padding atas
-                      _buildMateriBox(context, "Matematika"),
-                      const SizedBox(height: 20), // Jarak antar box
-                      _buildMateriBox(context, "Biologi"),
-                      const SizedBox(height: 20), // Jarak antar box
-                      _buildMateriBox(context, "PKN"),
-                      const SizedBox(height: 20), // Jarak antar box
-                      _buildMateriBox(context, "Fisika"),
-                    ],
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // Merapat ke tengah
+                      children: [
+                        const SizedBox(height: 20), // Padding atas
+                        _buildMateriBox(context, "Matematika"),
+                        const SizedBox(height: 20), // Jarak antar box
+                        _buildMateriBox(context, "Biologi"),
+                        const SizedBox(height: 20), // Jarak antar box
+                        _buildMateriBox(context, "PKN"),
+                        const SizedBox(height: 20), // Jarak antar box
+                        _buildMateriBox(context, "Fisika"),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -166,7 +170,8 @@ class KelasPage extends StatelessWidget {
       body: Center(
         child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start, // Mengubah agar rapat ke atas
+            mainAxisAlignment:
+                MainAxisAlignment.start, // Mengubah agar rapat ke atas
             children: List.generate(3, (index) {
               int kelasNumber = index + 10; // Kelas 10, 11, 12
               return _buildKelasBox(kelasNumber);

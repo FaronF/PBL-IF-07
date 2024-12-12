@@ -105,7 +105,8 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
                             status: quiz['status'] ?? 'Unknown',
                             password: quiz['password'] ?? 'Need password',
                             userId: userId ??
-                                'defaultUser Id', // Use a default or handle null case
+                                'defaultUser  Id', // Use a default or handle null case
+                            quizId: quizDocs[index].id, // Tambahkan quizId
                           );
                         },
                       );
@@ -150,8 +151,9 @@ class QuizCard extends StatelessWidget {
   final String date;
   final String time;
   final String status;
-  final String password; // Field password
-  final String userId; // ID pengguna
+  final String password;
+  final String userId;
+  final String quizId;
 
   const QuizCard({
     super.key,
@@ -160,8 +162,9 @@ class QuizCard extends StatelessWidget {
     required this.date,
     required this.time,
     required this.status,
-    required this.password, // Inisialisasi password
-    required this.userId, // Inisialisasi ID pengguna
+    required this.password,
+    required this.userId,
+    required this.quizId,
   });
 
   @override
@@ -226,6 +229,7 @@ class QuizCard extends StatelessWidget {
         .collection('Students')
         .doc(userId)
         .collection('QuizAttempts')
+        .where('quizId', isEqualTo: quizId)
         .get();
 
     if (quizAttempts.docs.isNotEmpty) {
@@ -297,24 +301,24 @@ class QuizCard extends StatelessWidget {
     );
   }
 
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Dibuka':
+        return Colors.black;
+      case 'Ditutup':
+        return Colors.red;
+      case 'Selesai':
+        return Colors.green;
+      default:
+        return Colors.white;
+    }
+  }
+
   void _startQuiz(BuildContext context) {
     // Logic to start the quiz
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => QuizMainPage()),
+      MaterialPageRoute(builder: (context) => QuizMainPage(quizId: quizId)),
     );
-  }
-}
-
-Color _getStatusColor(String status) {
-  switch (status) {
-    case 'Dibuka':
-      return Colors.black;
-    case 'Ditutup':
-      return Colors.red;
-    case 'Selesai':
-      return Colors.green;
-    default:
-      return Colors.white;
   }
 }

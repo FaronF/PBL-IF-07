@@ -69,7 +69,7 @@ class MyApp extends StatelessWidget {
         '/daftar_quiz': (context) => const DaftarQuizPage(),
         '/quiz_siswa': (context) => const QuizPage(),
         '/materi': (context) => const MateriPage(),
-        '/quiz_main': (context) => const QuizMainPage(),
+        '/quiz_main': (context) => const QuizMainPage(quizId: 'quizIdAnda'),
 
         //Halaman Guru
         '/teacherpage': (context) => const TeacherPage(),

@@ -72,65 +72,45 @@ class _QuizPageState extends State<QuizPage> {
               ),
               const SizedBox(height: 10),
               Expanded(
-                child: PageView(
-                  children: [
-                    SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildDashboardBox(
-                              context,
-                              'assets/images/background2.png',
-                              'Tugas',
-                              '/daftar_tugas',
-                              height: 140,
-                              width: 250,
+                child: Center(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width *
+                        0.8, // Lebar konten 80% dari lebar layar
+                    child: Center(
+                      child: PageView(
+                        children: [
+                          SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _buildDashboardBox(
+                                    context,
+                                    'assets/images/background2.png',
+                                    'Tugas',
+                                    '/daftar_tugas',
+                                    height: 140,
+                                    width: 250,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  _buildDashboardBox(
+                                    context,
+                                    'assets/images/background3.png',
+                                    'Quiz',
+                                    '/daftar_quiz',
+                                    height: 140,
+                                    width: 250,
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 20),
-                            _buildDashboardBox(
-                              context,
-                              'assets/images/background3.png',
-                              'Quiz',
-                              '/daftar_quiz',
-                              height: 140,
-                              width: 250,
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildDashboardBox(
-                              context,
-                              'assets/images/background3.png',
-                              'Quiz',
-                              '/quiz',
-                              height: 100,
-                              width: 250,
-                            ),
-                            const SizedBox(height: 50),
-                            _buildDashboardBox(
-                              context,
-                              'assets/images/background4.png',
-                              'Leaderboard',
-                              '/leaderboard',
-                              height: 100,
-                              width: 250,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],

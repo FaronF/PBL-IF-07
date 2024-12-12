@@ -103,7 +103,8 @@ class DaftarSiswaPageState extends State<DaftarSiswaPage> {
                           prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
-                            borderSide: const BorderSide(color: Colors.blueAccent),
+                            borderSide:
+                                const BorderSide(color: Colors.blueAccent),
                           ),
                         ),
                       ),
@@ -142,7 +143,6 @@ class DaftarSiswaPageState extends State<DaftarSiswaPage> {
                           trailing: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(siswa['gender'] ?? 'Gender tidak tersedia'),
                               Text(siswa['kelas'] ?? 'Kelas tidak tersedia'),
                             ],
                           ),
