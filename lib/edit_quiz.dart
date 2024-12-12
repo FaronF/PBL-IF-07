@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditQuizPage extends StatefulWidget {
@@ -37,6 +38,12 @@ class _EditQuizPageState extends State<EditQuizPage> {
   List<Map<String, dynamic>> questions = [];
   List<String> kelasList = []; // Variabel untuk menyimpan daftar kelas
 
+  // Controllers untuk TextField
+  final TextEditingController dateController = TextEditingController();
+  final TextEditingController timeController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +55,12 @@ class _EditQuizPageState extends State<EditQuizPage> {
     password = widget.initialPassword;
     questions = List.from(widget.initialQuestions);
     _fetchKelas(); // Memanggil fungsi untuk mengambil data kelas
+
+    // Set initial values for controllers
+    titleController.text = title;
+    dateController.text = date;
+    timeController.text = time;
+    passwordController.text = password;
   }
 
   void _fetchKelas() async {
@@ -58,6 +71,35 @@ class _EditQuizPageState extends State<EditQuizPage> {
           .map((doc) => doc['kelas'] as String)
           .toList(); // Mengambil field 'kelas'
     });
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null) {
+      setState(() {
+        date = DateFormat('dd MMMM yyyy')
+            .format(pickedDate); // Format tanggal menjadi dd-MMMM-yyyy
+        dateController.text = date; // Update controller
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (pickedTime != null) {
+      setState(() {
+        time = pickedTime.format(context); // Simpan waktu yang dipilih
+        timeController.text = time; // Update controller
+      });
+    }
   }
 
   void _updateQuiz() async {
@@ -135,8 +177,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushNamed(context,
-                '/kelolaquizsiswa'); // Navigasi ke halaman yang diinginkan
+            Navigator.pushNamed(context, '/kelolaquizsiswa');
           },
         ),
       ),
@@ -156,7 +197,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
                 onChanged: (value) {
                   title = value;
                 },
-                controller: TextEditingController(text: title),
+                controller: titleController,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -182,32 +223,49 @@ class _EditQuizPageState extends State<EditQuizPage> {
                 }).toList(),
               ),
               const SizedBox(height: 16),
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Tanggal',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
+
+              // Tombol untuk memilih tanggal
+              GestureDetector(
+                onTap: () => _selectDate(context),
+                child: AbsorbPointer(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Tanggal',
+                      border: const OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: date.isEmpty ? 'Pilih Tanggal' : date,
+                      suffixIcon: const Icon(
+                          Icons.calendar_today), // Ikon kalender di kanan
+                    ),
+                    controller: dateController, // Menggunakan controller
+                  ),
                 ),
-                onChanged: (value) {
-                  date = value;
-                },
-                controller: TextEditingController(text: date),
               ),
               const SizedBox(height: 16),
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Waktu',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
+
+              // Tombol untuk memilih waktu
+              GestureDetector(
+                onTap: () => _selectTime(context),
+                child: AbsorbPointer(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Waktu',
+                      border: const OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: time.isEmpty
+                          ? 'Format: HH:MM'
+                          : time, // Petunjuk format waktu
+                      suffixIcon:
+                          const Icon(Icons.access_time), // Ikon jam di kanan
+                    ),
+                    controller: timeController, // Menggunakan controller
+                  ),
                 ),
-                onChanged: (value) {
-                  time = value;
-                },
-                controller: TextEditingController(text: time),
               ),
               const SizedBox(height: 16),
+
               TextField(
                 decoration: const InputDecoration(
                   labelText: 'Password',
@@ -218,9 +276,10 @@ class _EditQuizPageState extends State<EditQuizPage> {
                 onChanged: (value) {
                   password = value;
                 },
-                controller: TextEditingController(text: password),
+                controller: passwordController, // Menggunakan controller
               ),
               const SizedBox(height: 16),
+
               DropdownButtonFormField<String>(
                 value: status,
                 decoration: const InputDecoration(
@@ -244,6 +303,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
                 }).toList(),
               ),
               const SizedBox(height: 16),
+
               const Text('Soal dan Jawaban:',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
@@ -261,7 +321,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
                         TextField(
                           decoration: InputDecoration(
                             labelText: 'Soal ${questionIndex + 1}',
-                            border: OutlineInputBorder(),
+                            border: const OutlineInputBorder(),
                           ),
                           onChanged: (value) {
                             question['question'] = value;
@@ -282,7 +342,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
                                 child: TextField(
                                   decoration: InputDecoration(
                                     labelText: 'Opsi ${answerIndex + 1}',
-                                    border: OutlineInputBorder(),
+                                    border: const OutlineInputBorder(),
                                   ),
                                   onChanged: (value) {
                                     answer['text'] = value;

@@ -20,10 +20,48 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
 
   String? selectedClass; // Variabel untuk menyimpan kelas yang dipilih
 
+  DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = TimeOfDay.now();
+
+  // Controller untuk tanggal dan waktu
+  final TextEditingController dateController = TextEditingController();
+  final TextEditingController timeController = TextEditingController();
+
+  // Fungsi untuk memilih tanggal
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked; // Update selectedDate
+        dateController.text = DateFormat('dd MMMM yyyy')
+            .format(selectedDate); // Update controller
+      });
+    }
+  }
+
+  // Fungsi untuk memilih waktu
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: selectedTime,
+    );
+    if (picked != null && picked != selectedTime) {
+      setState(() {
+        selectedTime = picked; // Update selectedTime
+        timeController.text = selectedTime.format(context); // Update controller
+      });
+    }
+  }
+
   // Fungsi untuk menghapus tugas dari Firebase Firestore
   Future<void> deleteTask(String taskId) async {
     try {
-      await FirebaseFirestore.instance.collection('Tasks').doc(taskId).delete();
+      await tasksCollection.doc(taskId).delete();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Tugas berhasil dihapus')),
       );
@@ -66,24 +104,26 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
 
   // Function to add a new task
   Future<String> addTask(String title, String className, String description,
-      DateTime dueTo) async {
+      String date, String time) async {
     DocumentReference docRef = await tasksCollection.add({
       'title': title,
       'class': className,
       'description': description,
-      'due_to': Timestamp.fromDate(dueTo),
+      'date': date, // Simpan tanggal sebagai string
+      'time': time, // Simpan waktu sebagai string
     });
     return docRef.id; // Return the generated taskId
   }
 
   // Function to update a task
   Future<void> updateTask(String taskId, String title, String className,
-      String description, DateTime dueTo) {
+      String description, String date, String time) async {
     return tasksCollection.doc(taskId).update({
       'title': title,
       'class': className,
       'description': description,
-      'due_to': Timestamp.fromDate(dueTo),
+      'date': date, // Simpan tanggal sebagai string
+      'time': time, // Simpan waktu sebagai string
     });
   }
 
@@ -93,12 +133,26 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
       String? currentTitle,
       String? currentClass,
       String? currentDescription,
-      DateTime? currentDueTo}) {
+      String? currentDate,
+      String? currentTime}) {
     final formKey = GlobalKey<FormState>();
     String title = currentTitle ?? '';
     String description = currentDescription ?? '';
-    DateTime dueTo = currentDueTo ?? DateTime.now();
-    selectedClass = currentClass; // Set kelas yang dipilih
+
+    // Inisialisasi tanggal dan waktu
+    selectedDate = currentDate != null
+        ? DateFormat('dd MMMM yyyy')
+            .parse(currentDate) // Parse string to DateTime
+        : DateTime.now(); // Set selectedDate to now if currentDate is null
+
+    selectedTime = currentTime != null
+        ? TimeOfDay.fromDateTime(
+            DateFormat('HH:mm').parse(currentTime)) // Parse string to TimeOfDay
+        : TimeOfDay.now(); // Set selectedTime to now if currentTime is null
+
+    // Update controller dengan nilai awal
+    dateController.text = DateFormat('dd MMMM yyyy').format(selectedDate);
+    timeController.text = selectedTime.format(context);
 
     showDialog(
       context: context,
@@ -139,13 +193,11 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
 
                       return DropdownButtonFormField<String>(
                         value: selectedClass,
-                        decoration: const InputDecoration(labelText: 'kelas'),
+                        decoration: const InputDecoration(labelText: 'Kelas'),
                         items: classes.map((doc) {
                           return DropdownMenuItem<String>(
-                            value: doc[
-                                'kelas'], // Ganti 'name' dengan field yang sesuai
-                            child: Text(doc[
-                                'kelas']), // Ganti 'name' dengan field yang sesuai
+                            value: doc['kelas'],
+                            child: Text(doc['kelas']),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -165,6 +217,9 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                   TextFormField(
                     initialValue: description,
                     decoration: const InputDecoration(labelText: 'Deskripsi'),
+                    minLines: 3, // Atur jumlah baris minimal
+                    maxLines:
+                        null, // Biarkan pengguna menambahkan baris sebanyak yang diinginkan
                     onChanged: (value) {
                       description = value;
                     },
@@ -175,18 +230,28 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                       return null;
                     },
                   ),
+                  // Field untuk tanggal
                   TextFormField(
-                    initialValue: DateFormat('dd-MM-yyyy HH:mm').format(dueTo),
-                    decoration: const InputDecoration(labelText: 'Deadline'),
-                    onChanged: (value) {
-                      dueTo = DateFormat('dd-MM-yyyy HH:mm').parse(value);
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Jatuh tempo tidak boleh kosong';
-                      }
-                      return null;
-                    },
+                    controller: dateController,
+                    decoration: InputDecoration(
+                      labelText: 'Tanggal',
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () => _selectDate(context),
+                      ),
+                    ),
+                    readOnly: true, // Membuat field ini hanya bisa dibaca
+                  ),
+                  TextFormField(
+                    controller: timeController,
+                    decoration: InputDecoration(
+                      labelText: 'Waktu',
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.access_time),
+                        onPressed: () => _selectTime(context),
+                      ),
+                    ),
+                    readOnly: true, // Membuat field ini hanya bisa dibaca
                   ),
                 ],
               ),
@@ -202,30 +267,46 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
             TextButton(
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
-                  if (taskId == null) {
-                    // Add task and capture taskId
-                    String newTaskId = await addTask(
-                        title, selectedClass!, description, dueTo);
+                  String dateString =
+                      DateFormat('dd MMMM yyyy').format(selectedDate);
+                  String timeString = selectedTime.format(context);
 
-                    // Show a confirmation message
+                  if (taskId == null) {
+                    // Tambah tugas dan ambil taskId
+                    String newTaskId = await addTask(
+                      title,
+                      selectedClass!,
+                      description,
+                      dateString, // Kirim tanggal sebagai string
+                      timeString, // Kirim waktu sebagai string
+                    );
+                    // Tampilkan pesan konfirmasi
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(
-                              'Tugas berhasil ditambahkan dengan ID: $newTaskId')),
+                        content: Text(
+                            'Tugas berhasil ditambahkan dengan ID: $newTaskId'),
+                      ),
                     );
                   } else {
-                    // Update task
-                    updateTask(
-                        taskId, title, selectedClass!, description, dueTo);
-                    // Show a confirmation message for update
+                    // Perbarui tugas
+                    await updateTask(
+                      taskId,
+                      title,
+                      selectedClass!,
+                      description,
+                      dateString, // Kirim tanggal sebagai string
+                      timeString, // Kirim waktu sebagai string
+                    );
+                    // Tampilkan pesan konfirmasi
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Tugas berhasil diedit')),
+                      const SnackBar(
+                          content: Text('Tugas berhasil diperbarui')),
                     );
                   }
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Tutup dialog setelah menyimpan
                 }
               },
-              child: Text(taskId == null ? 'Tambah' : 'Update'),
+              child: const Text('Simpan'),
             ),
           ],
         );
@@ -284,17 +365,14 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                       itemBuilder: (context, index) {
                         var task = tasks[index];
 
-                        // Ambil due_to sebagai Timestamp dan ubah menjadi DateTime
-                        Timestamp dueToTimestamp = task['due_to'];
-                        DateTime dueTo = dueToTimestamp.toDate();
-
                         return Column(children: [
                           _buildContentCard(
                             task.id, // taskId
                             task['title'], // Judul Tugas
                             task['class'], // Kelas
                             task['description'], // Deskripsi
-                            dueTo, // Tanggal jatuh tempo yang di-convert dari Timestamp
+                            task['date'], // Tanggal jatuh tempo sebagai string
+                            task['time'], // Waktu jatuh tempo sebagai string
                           ),
                           const SizedBox(
                               height:
@@ -367,15 +445,13 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
           showTaskForm();
         },
         backgroundColor: const Color.fromARGB(255, 253, 240, 69),
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
   Widget _buildContentCard(String taskId, String title, String className,
-      String description, DateTime dueTo) {
-    String formattedDueTo = DateFormat('dd-MM-yyyy HH:mm').format(dueTo);
-
+      String description, String dueDate, String dueTime) {
     return Card(
       color: Colors.yellow[100],
       shape: RoundedRectangleBorder(
@@ -397,7 +473,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                   const SizedBox(height: 4),
                   Text(description, style: const TextStyle(fontSize: 14)),
                   const SizedBox(height: 4),
-                  Text('Due: $formattedDueTo',
+                  Text('Due: $dueDate $dueTime',
                       style: const TextStyle(fontSize: 14)),
                 ],
               ),
@@ -411,7 +487,8 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                   currentTitle: title,
                   currentClass: className,
                   currentDescription: description,
-                  currentDueTo: dueTo,
+                  currentDate: dueDate, // Kirim dueDate sebagai string
+                  currentTime: dueTime, // Kirim dueTime sebagai string
                 );
               },
             ),

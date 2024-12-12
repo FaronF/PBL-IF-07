@@ -31,7 +31,7 @@ class _MateriPageState extends State<MateriPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Menyembunyikan tinggi AppBar default
+        toolbarHeight: 0, // Mengatur tinggi toolbar
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -39,7 +39,7 @@ class _MateriPageState extends State<MateriPage> {
         children: [
           Column(
             children: <Widget>[
-              // Header berbentuk setengah lingkaran dengan teks
+              // Header setengah lingkaran dengan teks
               Stack(
                 children: [
                   Container(
@@ -57,7 +57,7 @@ class _MateriPageState extends State<MateriPage> {
                       height: 150,
                       alignment: Alignment.center,
                       child: const Text(
-                        "Halaman Materi",
+                        "Kelola Materi",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -68,22 +68,24 @@ class _MateriPageState extends State<MateriPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10), // Spasi antara header dan konten
+              const SizedBox(height: 10),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment:
-                        MainAxisAlignment.start, // Mengubah untuk merapat ke atas
-                    children: [
-                      const SizedBox(height: 20), // Padding atas
-                      _buildMateriBox(context, "Matematika"),
-                      const SizedBox(height: 20), // Jarak antar box
-                      _buildMateriBox(context, "Biologi"),
-                      const SizedBox(height: 20), // Jarak antar box
-                      _buildMateriBox(context, "PKN"),
-                      const SizedBox(height: 20), // Jarak antar box
-                      _buildMateriBox(context, "Fisika"),
-                    ],
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // Merapat ke tengah
+                      children: [
+                        const SizedBox(height: 20), // Padding atas
+                        _buildMateriBox(context, "Matematika"),
+                        const SizedBox(height: 20), // Jarak antar box
+                        _buildMateriBox(context, "Biologi"),
+                        const SizedBox(height: 20), // Jarak antar box
+                        _buildMateriBox(context, "PKN"),
+                        const SizedBox(height: 20), // Jarak antar box
+                        _buildMateriBox(context, "Fisika"),
+                      ],
+                    ),
                   ),
                 ),
               ),

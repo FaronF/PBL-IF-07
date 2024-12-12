@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_quiz.dart';
 
@@ -271,6 +272,12 @@ class _AddQuizPageState extends State<AddQuizPage> {
   List<Map<String, dynamic>> questions = [];
   List<String> kelasOptions = []; // List untuk menyimpan opsi kelas
 
+  // Controllers untuk TextField
+  final TextEditingController dateController = TextEditingController();
+  final TextEditingController timeController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -287,6 +294,35 @@ class _AddQuizPageState extends State<AddQuizPage> {
       });
     } catch (e) {
       print('Error fetching kelas options: $e');
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null) {
+      setState(() {
+        date = DateFormat('dd MMMM yyyy')
+            .format(pickedDate); // Format tanggal menjadi dd-MMMM-yyyy
+        dateController.text = date; // Update controller
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (pickedTime != null) {
+      setState(() {
+        time = pickedTime.format(context); // Simpan waktu yang dipilih
+        timeController.text = time; // Update controller
+      });
     }
   }
 
@@ -370,6 +406,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       onChanged: (value) {
                         title = value;
                       },
+                      controller: titleController,
                     ),
                     const SizedBox(height: 16),
                     // Dropdown untuk Kelas
@@ -397,28 +434,41 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Tanggal',
-                        border: OutlineInputBorder(),
-                        filled: true,
-                        fillColor: Colors.white,
+                    // Tombol untuk memilih tanggal
+                    GestureDetector(
+                      onTap: () => _selectDate(context),
+                      child: AbsorbPointer(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            labelText: 'Tanggal',
+                            border: const OutlineInputBorder(),
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: date.isEmpty ? 'Pilih Tanggal' : date,
+                            suffixIcon: const Icon(
+                                Icons.calendar_today), // Ikon kalender di kanan
+                          ),
+                          controller: dateController, // Menggunakan controller
+                        ),
                       ),
-                      onChanged: (value) {
-                        date = value;
-                      },
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Waktu',
-                        border: OutlineInputBorder(),
-                        filled: true,
-                        fillColor: Colors.white,
+                    GestureDetector(
+                      onTap: () => _selectTime(context),
+                      child: AbsorbPointer(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            labelText: 'Waktu',
+                            border: const OutlineInputBorder(),
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: 'Format: HH:MM', // Petunjuk format waktu
+                            suffixIcon: const Icon(
+                                Icons.access_time), // Ikon jam di kanan
+                          ),
+                          controller: timeController, // Menggunakan controller
+                        ),
                       ),
-                      onChanged: (value) {
-                        time = value;
-                      },
                     ),
                     const SizedBox(height: 16),
                     // Input untuk Password
