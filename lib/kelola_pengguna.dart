@@ -242,11 +242,15 @@ class TambahPenggunaPageState extends State<TambahPenggunaPage> {
   final TextEditingController nisnController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   String? selectedKelas;
-  bool _isPasswordVisible =
-      false; // Variabel untuk mengontrol visibilitas password
+  bool _isPasswordVisible = false;
+  bool _isLoading = false; // Variabel untuk mengontrol animasi loading
 
   Future<void> tambahPengguna() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true; // Menampilkan animasi loading
+      });
+
       try {
         UserCredential userCredential =
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -272,6 +276,10 @@ class TambahPenggunaPageState extends State<TambahPenggunaPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menambahkan pengguna: $e')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false; // Menyembunyikan animasi loading
+        });
       }
     }
   }
@@ -375,7 +383,7 @@ class TambahPenggunaPageState extends State<TambahPenggunaPage> {
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
-                  onPressed: tambahPengguna,
+                  onPressed: _isLoading ? null : tambahPengguna,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 253, 240, 69),
                     shape: RoundedRectangleBorder(
@@ -386,13 +394,22 @@ class TambahPenggunaPageState extends State<TambahPenggunaPage> {
                       vertical: 15,
                     ),
                   ),
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black,
+                          ),
+                        )
+                      : const Text(
+                          'Tambah',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.black,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -408,9 +425,8 @@ class TambahPenggunaPageState extends State<TambahPenggunaPage> {
     required IconData icon,
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
-    bool showPasswordToggle =
-        false, // Menambahkan parameter untuk toggle password
-    VoidCallback? onToggle, // Callback untuk toggle
+    bool showPasswordToggle = false,
+    VoidCallback? onToggle,
   }) {
     return TextFormField(
       controller: controller,
@@ -425,7 +441,7 @@ class TambahPenggunaPageState extends State<TambahPenggunaPage> {
                   obscureText ? Icons.visibility_off : Icons.visibility,
                   color: Colors.lightBlue,
                 ),
-                onPressed: onToggle, // Memanggil callback saat ikon diklik
+                onPressed: onToggle,
               )
             : null,
         border: OutlineInputBorder(
@@ -456,6 +472,7 @@ class _EditPenggunaPageState extends State<EditPenggunaPage> {
   final TextEditingController namaController = TextEditingController();
   final TextEditingController nisnController = TextEditingController();
   String? selectedKelas;
+  bool _isLoading = false; // State untuk animasi loading
 
   @override
   void initState() {
@@ -477,6 +494,10 @@ class _EditPenggunaPageState extends State<EditPenggunaPage> {
 
   Future<void> updatePengguna() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true; // Mulai animasi loading
+      });
+
       try {
         await FirebaseFirestore.instance
             .collection('Students')
@@ -495,6 +516,10 @@ class _EditPenggunaPageState extends State<EditPenggunaPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal memperbarui pengguna: $e')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false; // Hentikan animasi loading
+        });
       }
     }
   }
@@ -575,7 +600,7 @@ class _EditPenggunaPageState extends State<EditPenggunaPage> {
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
-                  onPressed: updatePengguna,
+                  onPressed: _isLoading ? null : updatePengguna,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 253, 240, 69),
                     shape: RoundedRectangleBorder(
@@ -586,14 +611,25 @@ class _EditPenggunaPageState extends State<EditPenggunaPage> {
                       vertical: 15,
                     ),
                   ),
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.black,
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'Simpan',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
                 ),
               ),
             ],

@@ -261,8 +261,9 @@ class TambahPengajarPageState extends State<TambahPengajarPage> {
   List<String> mapelList = [];
   List<String> kelasList = [];
 
-  // State untuk visibilitas password
+  // State untuk visibilitas password dan loading
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -290,6 +291,10 @@ class TambahPengajarPageState extends State<TambahPengajarPage> {
 
   Future<void> tambahPengajar() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       try {
         UserCredential userCredential =
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -316,6 +321,10 @@ class TambahPengajarPageState extends State<TambahPengajarPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menambahkan pengajar: $e')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -411,26 +420,29 @@ class TambahPengajarPageState extends State<TambahPengajarPage> {
               ),
               const SizedBox(height: 30),
               Center(
-                child: ElevatedButton(
-                  onPressed: tambahPengajar,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 253, 240, 69),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
-                  ),
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black, // Teks hitam
-                    ),
-                  ),
-                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: tambahPengajar,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 253, 240, 69),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 15,
+                          ),
+                        ),
+                        child: const Text(
+                          'Tambah',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.black, // Teks hitam
+                          ),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -518,6 +530,7 @@ class _EditPengajarPageState extends State<EditPengajarPage> {
   final TextEditingController nuptkController = TextEditingController();
   String? selectedMapel;
   String? selectedKelas;
+  bool isLoading = false; // Tambahkan variabel isLoading
 
   @override
   void initState() {
@@ -540,6 +553,9 @@ class _EditPengajarPageState extends State<EditPengajarPage> {
 
   Future<void> updatePengajar() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = true; // Tampilkan loading
+      });
       try {
         await FirebaseFirestore.instance
             .collection('Teachers')
@@ -559,6 +575,10 @@ class _EditPengajarPageState extends State<EditPengajarPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal memperbarui pengajar: $e')),
         );
+      } finally {
+        setState(() {
+          isLoading = false; // Sembunyikan loading
+        });
       }
     }
   }
@@ -672,7 +692,7 @@ class _EditPengajarPageState extends State<EditPengajarPage> {
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
-                  onPressed: updatePengajar,
+                  onPressed: isLoading ? null : updatePengajar, // Nonaktifkan tombol jika sedang loading
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 253, 240, 69),
                     shape: RoundedRectangleBorder(
@@ -683,14 +703,23 @@ class _EditPengajarPageState extends State<EditPengajarPage> {
                       vertical: 15,
                     ),
                   ),
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2.0,
+                          ),
+                        )
+                      : const Text(
+                          'Simpan',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
                 ),
               ),
             ],
