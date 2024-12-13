@@ -273,6 +273,7 @@ class PdfUploadScreenState extends State<PdfUploadScreen> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
+      withData: true, // Pastikan ini diset ke true untuk mendapatkan bytes file
     );
 
     if (result != null) {

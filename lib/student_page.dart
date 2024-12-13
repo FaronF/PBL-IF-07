@@ -170,7 +170,11 @@ class _HomeContentState extends State<HomeContent> {
             const Center(
               child: Text(
                 'YAYASAN ULIL ALBAB BATAM',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins',
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -179,13 +183,20 @@ class _HomeContentState extends State<HomeContent> {
               child: Text(
                 'Merupakan Lembaga Pendidikan Islam Rujukan di Provinsi Kepulauan Riau, alhamdulillah saat ini masih diberi amanah mengelola jenjang Pendidikan Tingkat TKIT, SDIT, SMPIT Dan SMAIT.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Poppins',
+                ),
               ),
             ),
             const SizedBox(height: 30),
             const Text(
               "Jenjang Pendidikan",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+              ),
             ),
             const SizedBox(height: 20),
             GridView.builder(
@@ -221,11 +232,11 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-    Widget _buildCard({
-      required int index,
-      required String image,
-      required String title,
-    }) {
+  Widget _buildCard({
+    required int index,
+    required String image,
+    required String title,
+  }) {
     return MouseRegion(
       onEnter: (_) {
         setState(() {
@@ -266,6 +277,7 @@ class _HomeContentState extends State<HomeContent> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
                     ),
                     textAlign: TextAlign.center,
                   ),

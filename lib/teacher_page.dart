@@ -96,47 +96,47 @@ class _TeacherPageState extends State<TeacherPage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.school),
-          label: 'Kelola Akademik',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chrome_reader_mode_rounded),
-          label: 'Materi',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.group),
-          label: 'Student List',
-        ),
-      ],
-      currentIndex: _selectedIndex,
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            Navigator.pushReplacementNamed(context, '/teacherpage');
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/kelolaakademik');
-            break;
-          case 2:
-            Navigator.pushReplacementNamed(context, '/kelolamateri');
-            break;
-          case 3:
-            Navigator.pushReplacementNamed(context, '/daftarsiswa');
-            break;
-        }
-      },
-      backgroundColor: const Color.fromARGB(255, 253, 240, 69),
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.black,
-      selectedFontSize: 14,
-      type: BottomNavigationBarType.fixed,
-    ),
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school),
+            label: 'Kelola Akademik',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chrome_reader_mode_rounded),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Student List',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/teacherpage');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/kelolaakademik');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/kelolamateri');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/daftarsiswa');
+              break;
+          }
+        },
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        type: BottomNavigationBarType.fixed,
+      ),
     );
   }
 }
@@ -180,22 +180,22 @@ class _HomeContentState extends State<HomeContent> {
             const Center(
               child: Text(
                 'YAYASAN ULIL ALBAB BATAM',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
               ),
             ),
             const SizedBox(height: 10),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                'Merupakan Lembaga Pendidikan Islam Rujukan di Provinsi Kepulauan Riau...',
+                'Merupakan Lembaga Pendidikan Islam Rujukan di Provinsi Kepulauan Riau, alhamdulillah saat ini masih diberi amanah mengelola jenjang Pendidikan Tingkat TKIT, SDIT, SMPIT Dan SMAIT.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, fontFamily: 'Poppins'),
               ),
             ),
             const SizedBox(height: 30),
             const Text(
               "Jenjang Pendidikan",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
             ),
             const SizedBox(height: 20),
             GridView.builder(
@@ -232,46 +232,47 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildCard(
-    {required int index, required String image, required String title}) {
-  return MouseRegion(
-    onEnter: (_) {
-      setState(() {
-        _isHovered[index] = true;
-      });
-    },
-    onExit: (_) {
-      setState(() {
-        _isHovered[index] = false;
-      });
-    },
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      transform: Matrix4.translationValues(0, _isHovered[index] ? -10 : 0, 0),
-      child: Card(
-        elevation: _isHovered[index] ? 10 : 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                flex: 3,
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundImage: AssetImage(image),
+      {required int index, required String image, required String title}) {
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() {
+          _isHovered[index] = true;
+        });
+      },
+      onExit: (_) {
+        setState(() {
+          _isHovered[index] = false;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        transform: Matrix4.translationValues(0, _isHovered[index] ? -10 : 0, 0),
+        child: Card(
+          elevation: _isHovered[index] ? 10 : 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundImage: AssetImage(image),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                flex: 1,
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(height: 10),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
                     ),
                     textAlign: TextAlign.center,
                   ),

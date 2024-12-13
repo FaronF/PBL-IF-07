@@ -203,7 +203,7 @@ class _HomeContentState extends State<HomeContent> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                'Merupakan Lembaga Pendidikan Islam Rujukan di Provinsi Kepulauan Riau...',
+                'Merupakan Lembaga Pendidikan Islam Rujukan di Provinsi Kepulauan Riau, alhamdulillah saat ini masih diberi amanah mengelola jenjang Pendidikan Tingkat TKIT, SDIT, SMPIT Dan SMAIT.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(fontSize: 16),
               ),
