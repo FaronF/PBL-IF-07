@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'materi_page.dart'; // Import halaman Materi
 import 'quiz_page.dart'; // Import halaman Quiz
 import 'profile_page.dart'; // Import halaman Profile
@@ -27,104 +28,110 @@ class _StudentPageState extends State<StudentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 0, // Mengatur tinggi toolbar
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false, // Menghapus label debug
+      theme: ThemeData(
+        textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      body: Column(
-        children: <Widget>[
-          // Header setengah lingkaran
-          Container(
-            height: 150,
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 253, 240, 69),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(190),
-                bottomRight: Radius.circular(190),
+      home: Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 0, // Mengatur tinggi toolbar
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Column(
+          children: <Widget>[
+            // Header setengah lingkaran
+            Container(
+              height: 150,
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 253, 240, 69),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(190),
+                  bottomRight: Radius.circular(190),
+                ),
               ),
-            ),
-            child: Stack(
-              children: <Widget>[
-                Positioned(
-                  top: -30,
-                  left: 30,
-                  width: 200,
-                  height: 200,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/logo-ulilalbab.png'),
-                        fit: BoxFit.contain,
+              child: Stack(
+                children: <Widget>[
+                  Positioned(
+                    top: -30,
+                    left: 30,
+                    width: 200,
+                    height: 200,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/logo-ulilalbab.png'),
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 40,
-                  right: 25,
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfilePage(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.person,
-                      size: 40,
-                      color: Color.fromARGB(255, 0, 0, 0),
+                  Positioned(
+                    top: 40,
+                    right: 25,
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProfilePage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.person,
+                        size: 40,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-          // Konten Utama
-          Expanded(
-            child: _pages[_selectedIndex],
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Materi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.quiz),
-            label: 'Quiz',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(context, '/studentpage');
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/materi');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/quiz_siswa');
-              break;
-          }
-        },
-        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.black,
-        selectedFontSize: 14,
-        type: BottomNavigationBarType.fixed,
+            // Konten Utama
+            Expanded(
+              child: _pages[_selectedIndex],
+            ),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.book),
+              label: 'Materi',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.quiz),
+              label: 'Quiz',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          onTap: (index) {
+            switch (index) {
+              case 0:
+                Navigator.pushReplacementNamed(context, '/studentpage');
+                break;
+              case 1:
+                Navigator.pushReplacementNamed(context, '/materi');
+                break;
+              case 2:
+                Navigator.pushReplacementNamed(context, '/quiz_siswa');
+                break;
+            }
+          },
+          backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.black,
+          selectedFontSize: 14,
+          type: BottomNavigationBarType.fixed,
+        ),
       ),
     );
   }
@@ -232,11 +239,8 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildCard({
-    required int index,
-    required String image,
-    required String title,
-  }) {
+  Widget _buildCard(
+      {required int index, required String image, required String title}) {
     return MouseRegion(
       onEnter: (_) {
         setState(() {
@@ -260,13 +264,15 @@ class _HomeContentState extends State<HomeContent> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   flex: 3,
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage(image),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8), // Bentuk persegi
+                    child: Image.asset(
+                      image,
+                      fit: BoxFit.cover, // Agar gambar memenuhi area
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),

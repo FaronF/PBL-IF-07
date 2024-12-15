@@ -535,44 +535,45 @@ class _AddQuizPageState extends State<AddQuizPage> {
                                   const SizedBox(height: 8),
                                   // Menampilkan jawaban
                                   ...question['answers']
-                                      .asMap()
-                                      .entries
-                                      .map((answerEntry) {
-                                    int answerIndex = answerEntry.key;
-                                    Map<String, dynamic> answer =
-                                        answerEntry.value;
-                                    return Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextField(
-                                            decoration: InputDecoration(
-                                              labelText:
-                                                  'Opsi ${answerIndex + 1}',
-                                              border: OutlineInputBorder(),
-                                            ),
-                                            onChanged: (value) {
-                                              answer['text'] = value;
-                                            },
+                                    .asMap()
+                                    .entries
+                                    .map((answerEntry) {
+                                      int answerIndex = answerEntry.key;
+                                      Map<String, dynamic> answer = answerEntry.value;
+                                      return Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: TextField(
+                                                  decoration: InputDecoration(
+                                                    labelText: 'Opsi ${answerIndex + 1}',
+                                                    border: OutlineInputBorder(),
+                                                  ),
+                                                  onChanged: (value) {
+                                                    answer['text'] = value;
+                                                  },
+                                                ),
+                                              ),
+                                              Radio(
+                                                value: answerIndex,
+                                                groupValue: question['correctAnswer'],
+                                                onChanged: (value) {
+                                                  _setCorrectAnswer(questionIndex, answerIndex);
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete),
+                                                onPressed: () {
+                                                  _removeAnswer(questionIndex, answerIndex);
+                                                },
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                        Radio(
-                                          value: answerIndex,
-                                          groupValue: question['correctAnswer'],
-                                          onChanged: (value) {
-                                            _setCorrectAnswer(
-                                                questionIndex, answerIndex);
-                                          },
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () {
-                                            _removeAnswer(
-                                                questionIndex, answerIndex);
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  }).toList(),
+                                          const SizedBox(height: 10), // Jarak antar opsi
+                                        ],
+                                      );
+                                    }).toList(),
                                   const SizedBox(height: 8),
                                   const SizedBox(height: 8),
                                   Row(
