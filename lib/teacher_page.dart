@@ -259,9 +259,12 @@ class _HomeContentState extends State<HomeContent> {
               children: [
                 Expanded(
                   flex: 3,
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage(image),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8), // Bentuk persegi
+                    child: Image.asset(
+                      image,
+                      fit: BoxFit.cover, // Agar gambar memenuhi area
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),

@@ -75,7 +75,7 @@ class _QuizPageState extends State<QuizPage> {
                 child: Center(
                   child: Container(
                     width: MediaQuery.of(context).size.width *
-                        0.8, // Lebar konten 80% dari lebar layar
+                        0.9, // Lebar konten 90% dari lebar layar
                     child: Center(
                       child: PageView(
                         children: [
@@ -84,15 +84,14 @@ class _QuizPageState extends State<QuizPage> {
                               padding: const EdgeInsets.all(12.0),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   _buildDashboardBox(
                                     context,
                                     'assets/images/background2.png',
                                     'Tugas',
                                     '/daftar_tugas',
-                                    height: 140,
-                                    width: 250,
+                                    width: MediaQuery.of(context).size.width * 0.9,
                                   ),
                                   const SizedBox(height: 20),
                                   _buildDashboardBox(
@@ -100,8 +99,7 @@ class _QuizPageState extends State<QuizPage> {
                                     'assets/images/background3.png',
                                     'Quiz',
                                     '/daftar_quiz',
-                                    height: 140,
-                                    width: 250,
+                                    width: MediaQuery.of(context).size.width * 0.9,
                                   ),
                                 ],
                               ),
@@ -150,54 +148,50 @@ class _QuizPageState extends State<QuizPage> {
       onTap: () {
         Navigator.pushNamed(context, routeName);
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Container(
-            height: height,
-            width: width,
-            decoration: BoxDecoration(
+      child: Container(
+        height: height,
+        width: width, // Responsive width
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              offset: Offset(0, 4),
+              blurRadius: 8.0,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  offset: Offset(0, 4),
-                  blurRadius: 8.0,
-                ),
-              ],
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ),
             ),
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: Image.asset(
-                    imagePath,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.black45.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
-                    decoration: BoxDecoration(
-                      color: Colors.black45.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

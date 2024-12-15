@@ -275,9 +275,12 @@ class _HomeContentState extends State<HomeContent> {
               children: [
                 Expanded(
                   flex: 3,
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage(image),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8), // Bentuk persegi
+                    child: Image.asset(
+                      image,
+                      fit: BoxFit.cover, // Agar gambar memenuhi area
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -285,9 +288,10 @@ class _HomeContentState extends State<HomeContent> {
                   flex: 1,
                   child: Text(
                     title,
-                    style: GoogleFonts.poppins(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
                     ),
                     textAlign: TextAlign.center,
                   ),

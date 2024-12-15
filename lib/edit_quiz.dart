@@ -329,37 +329,42 @@ class _EditQuizPageState extends State<EditQuizPage> {
                           controller:
                               TextEditingController(text: question['question']),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 16),
                         ...question['answers']
                             .asMap()
                             .entries
                             .map((answerEntry) {
                           int answerIndex = answerEntry.key;
                           Map<String, dynamic> answer = answerEntry.value;
-                          return Row(
+                          return Column(
                             children: [
-                              Expanded(
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Opsi ${answerIndex + 1}',
-                                    border: const OutlineInputBorder(),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      decoration: InputDecoration(
+                                        labelText: 'Opsi ${answerIndex + 1}',
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                      onChanged: (value) {
+                                        answer['text'] = value;
+                                      },
+                                      controller: TextEditingController(
+                                          text: answer['text']),
+                                    ),
                                   ),
-                                  onChanged: (value) {
-                                    answer['text'] = value;
-                                  },
-                                  controller: TextEditingController(
-                                      text: answer['text']),
-                                ),
+                                  Radio(
+                                    value: answerIndex,
+                                    groupValue: question['correctAnswer'],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        question['correctAnswer'] = answerIndex;
+                                      });
+                                    },
+                                  ),
+                                ],
                               ),
-                              Radio(
-                                value: answerIndex,
-                                groupValue: question['correctAnswer'],
-                                onChanged: (value) {
-                                  setState(() {
-                                    question['correctAnswer'] = answerIndex;
-                                  });
-                                },
-                              ),
+                              const SizedBox(height: 10), // Menambahkan jarak antar opsi
                             ],
                           );
                         }).toList(),
