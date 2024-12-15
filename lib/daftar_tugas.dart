@@ -179,7 +179,8 @@ class TaskItem extends StatelessWidget {
   final String taskClass;
   final String deadline;
 
-  const TaskItem({super.key, 
+  const TaskItem({
+    super.key,
     required this.taskId,
     required this.title,
     required this.description,
@@ -257,7 +258,8 @@ class PdfUploadScreen extends StatefulWidget {
   final String taskTitle;
   final String taskId;
 
-  const PdfUploadScreen({super.key, required this.taskTitle, required this.taskId});
+  const PdfUploadScreen(
+      {super.key, required this.taskTitle, required this.taskId});
 
   @override
   PdfUploadScreenState createState() => PdfUploadScreenState();
@@ -286,8 +288,14 @@ class PdfUploadScreenState extends State<PdfUploadScreen> {
     }
   }
 
+  bool isLoading = false;
+
   Future<void> uploadPdf() async {
     if (selectedFileBytes != null) {
+      setState(() {
+        isLoading = true; // Aktifkan loading
+      });
+
       try {
         // Menggunakan selectedFileName untuk menentukan path file
         String filePath =
@@ -308,12 +316,11 @@ class PdfUploadScreenState extends State<PdfUploadScreen> {
 
           // Menyimpan selectedFileName sebagai taskTitle
           await submissions.add({
-            'taskTitle':
-                selectedFileName, // Menggunakan nama file asli sebagai taskTitle
+            'taskTitle': selectedFileName,
             'submissionDate': Timestamp.now(),
             'fileUrl': downloadUrl,
             'status': 'submitted',
-            'taskId': widget.taskId, // Include the taskId here
+            'taskId': widget.taskId,
           });
 
           setState(() {
@@ -321,17 +328,26 @@ class PdfUploadScreenState extends State<PdfUploadScreen> {
             uploadedFileName = selectedFileName;
             selectedFileName = null;
             selectedFileBytes = null;
+            isLoading = false; // Nonaktifkan loading
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('File uploaded successfully!')),
           );
         } else {
+          setState(() {
+            isLoading = false; // Nonaktifkan loading
+          });
+
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User  is not authenticated.')),
+            const SnackBar(content: Text('User is not authenticated.')),
           );
         }
       } catch (e) {
+        setState(() {
+          isLoading = false; // Nonaktifkan loading
+        });
+
         print("Error uploading file: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Upload failed: $e')),
@@ -390,7 +406,8 @@ class PdfUploadScreenState extends State<PdfUploadScreen> {
 
     // Check if the user is authenticated
     if (studentId == null) {
-      return const Center(child: Text('User  is not authenticated. Please log in.'));
+      return const Center(
+          child: Text('User  is not authenticated. Please log in.'));
     }
 
     return Scaffold(
@@ -447,7 +464,8 @@ class PdfUploadScreenState extends State<PdfUploadScreen> {
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
-                              return const Center(child: CircularProgressIndicator());
+                              return const Center(
+                                  child: CircularProgressIndicator());
                             }
 
                             if (!snapshot.hasData ||
@@ -466,16 +484,30 @@ class PdfUploadScreenState extends State<PdfUploadScreen> {
                                             ),
                                             const SizedBox(height: 10),
                                             ElevatedButton.icon(
-                                              onPressed: uploadPdf,
-                                              icon: const Icon(Icons.send),
-                                              label: const Text(
-                                                'Kirim',
-                                                style: TextStyle(fontSize: 16),
+                                              onPressed: isLoading
+                                                  ? null
+                                                  : uploadPdf, // Disable tombol saat loading
+                                              icon: isLoading
+                                                  ? const SizedBox(
+                                                      width: 20,
+                                                      height: 20,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ))
+                                                  : const Icon(Icons.send),
+                                              label: Text(
+                                                isLoading
+                                                    ? 'Mengunggah...'
+                                                    : 'Kirim',
+                                                style: const TextStyle(
+                                                    fontSize: 16),
                                               ),
                                               style: ElevatedButton.styleFrom(
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 24,
-                                                    vertical: 12),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 24,
+                                                        vertical: 12),
                                                 backgroundColor:
                                                     const Color.fromARGB(
                                                         255, 255, 251, 40),

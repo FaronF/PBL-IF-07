@@ -10,18 +10,29 @@ class ProfileGuruPage extends StatefulWidget {
 }
 
 class EditProfileGuruPageState extends State<ProfileGuruPage> {
-  final TextEditingController _namaController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  bool _isPasswordVisible = false;
+  String _name = '';
+  String _email = '';
+  String _nisn = '';
+  String _kelas = '';
+  String _mapel = '';
 
   @override
   void initState() {
     super.initState();
     _getUserProfile(); // Ambil data pengguna saat inisialisasi
+  }
+
+  Future<void> _reauthenticateUser(String email, String password) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final credential =
+          EmailAuthProvider.credential(email: email, password: password);
+      await user.reauthenticateWithCredential(credential);
+    }
   }
 
   Future<void> _getUserProfile() async {
@@ -32,13 +43,16 @@ class EditProfileGuruPageState extends State<ProfileGuruPage> {
 
       if (userProfile.exists) {
         setState(() {
-          _namaController.text = userProfile['nama'];
-          _emailController.text = userProfile['email'];
+          _name = userProfile['nama'];
+          _email = userProfile['email'];
+          _nisn = userProfile['nuptk'];
+          _kelas = userProfile['kelas'];
+          _mapel = userProfile['mapel'];
           _passwordController.text = userProfile['password'];
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User profile not found')),
+          const SnackBar(content: Text('User  profile not found')),
         );
       }
     } else {
@@ -48,17 +62,121 @@ class EditProfileGuruPageState extends State<ProfileGuruPage> {
     }
   }
 
-  Future<void> _saveProfile() async {
-    final User? user = _auth.currentUser;
-    if (user != null) {
-      await _firestore.collection('Teachers').doc(user.uid).update({
-        'nama': _namaController.text,
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      });
+  Future<void> showChangePasswordModal() async {
+    final TextEditingController newPasswordController = TextEditingController();
+    final TextEditingController confirmPasswordController =
+        TextEditingController();
+    final TextEditingController currentPasswordController =
+        TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Ubah Password'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                TextField(
+                  controller: currentPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Password Saat Ini',
+                    labelStyle: const TextStyle(color: Color(0xFF000000)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                  obscureText: true, // Hides the text input
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: newPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Password Baru',
+                    labelStyle: const TextStyle(color: Color(0xFF000000)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                  obscureText: true, // Hides the text input
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: confirmPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Konfirmasi Password',
+                    labelStyle: const TextStyle(color: Color(0xFF000000)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                  obscureText: true, // Hides the text input
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Batal', style: TextStyle(color: Colors.black)),
+            ),
+            TextButton(
+                onPressed: () {
+                  if (newPasswordController.text ==
+                      confirmPasswordController.text) {
+                    // Ambil email dari current user
+                    String email = FirebaseAuth.instance.currentUser!.email!;
+                    _updatePassword(
+                      newPasswordController.text,
+                      email,
+                      currentPasswordController.text,
+                    );
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Password tidak cocok')),
+                    );
+                  }
+                },
+                child: const Text('Simpan')),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _updatePassword(
+      String newPassword, String email, String currentPassword) async {
+    try {
+      // Reauthenticate user
+      await _reauthenticateUser(email, currentPassword);
+
+      // Mengubah password di Firebase Authentication
+      await FirebaseAuth.instance.currentUser!.updatePassword(newPassword);
+
+      // Mengambil user ID
+      final User? user = FirebaseAuth.instance.currentUser;
+
+      // Memperbarui password di Firestore
+      if (user != null) {
+        await _firestore.collection('Teachers').doc(user.uid).update({
+          'password':
+              newPassword, // Pastikan field ini sesuai dengan struktur Firestore Anda
+        });
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+        const SnackBar(content: Text('Password berhasil diubah')),
+      );
+    } catch (e) {
+      print('Error updating password: $e'); // Menampilkan kesalahan di konsol
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengubah password: ${e.toString()}')),
       );
     }
   }
@@ -159,27 +277,19 @@ class EditProfileGuruPageState extends State<ProfileGuruPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   children: [
-                    _buildTextField(_namaController, 'Nama'),
+                    _buildDisplayField('Nama', _name),
                     const SizedBox(height: 16),
-                    _buildTextField(_emailController, 'Email'),
+                    _buildDisplayField('Email', _email),
+                    const SizedBox(height: 16),
+                    _buildDisplayField('NUPTK', _nisn),
+                    const SizedBox(height: 16),
+                    _buildDisplayField('Kelas', _kelas),
+                    const SizedBox(height: 16),
+                    _buildDisplayField('Mata Pelajaran', _mapel),
                     const SizedBox(height: 16),
                     _buildTextField(_passwordController, 'Password',
-                        isPassword: true),
-                    const SizedBox(height: 30),
-                    ElevatedButton.icon(
-                      onPressed: _saveProfile,
-                      icon: const Icon(Icons.save),
-                      label: const Text('Simpan'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 16),
-                        backgroundColor:
-                            const Color.fromARGB(255, 211, 204, 204),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                      ),
-                    ),
+                        isPassword: true, onEdit: showChangePasswordModal),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -188,26 +298,14 @@ class EditProfileGuruPageState extends State<ProfileGuruPage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/teacherpage');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/kelolaakademik');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/kelolamateri');
-          } else if (index == 3) {
-            Navigator.pushReplacementNamed(context, '/daftarsiswa');
-          }
-        },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
-            label: 'Manage Tasks',
+            icon: Icon(Icons.school),
+            label: 'Kelola Akademik',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chrome_reader_mode_rounded),
@@ -218,41 +316,90 @@ class EditProfileGuruPageState extends State<ProfileGuruPage> {
             label: 'Student List',
           ),
         ],
-        backgroundColor: const Color.fromARGB(255, 255, 234, 0),
-        selectedItemColor: Colors.black,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/teacherpage');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/kelolaakademik');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/kelolamateri');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/daftarsiswa');
+              break;
+          }
+        },
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
         unselectedItemColor: Colors.black,
         selectedFontSize: 14,
-        unselectedFontSize: 12,
         type: BottomNavigationBarType.fixed,
       ),
     );
   }
+}
 
-  Widget _buildTextField(TextEditingController controller, String label,
-      {bool isPassword = false}) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword ? !_isPasswordVisible : false,
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
+Widget _buildDisplayField(String label, String value) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      const SizedBox(height: 8),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade400),
           borderRadius: BorderRadius.circular(10.0),
         ),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-              )
-            : null,
+        child: Text(
+          value,
+          style: const TextStyle(fontSize: 14, color: Colors.black87),
+        ),
       ),
-    );
-  }
+    ],
+  );
+}
+
+Widget _buildTextField(TextEditingController controller, String label,
+    {bool isPassword = false, VoidCallback? onEdit}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      const SizedBox(height: 8),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              isPassword ? '********' : controller.text,
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: onEdit,
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
 }

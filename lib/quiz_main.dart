@@ -127,11 +127,30 @@ class QuizMainPageState extends State<QuizMainPage> {
         if (totalTime > 0) {
           totalTime--;
         } else {
+          // Langsung hentikan timer
           timer.cancel();
-          endQuiz(_quizId);
+
+          // Langsung selesaikan quiz tanpa konfirmasi
+          autoFinishQuiz();
         }
       });
     });
+  }
+
+  void autoFinishQuiz() {
+    // Hitung skor berdasarkan jawaban yang sudah dipilih
+    int score = calculateScore();
+
+    // Simpan hasil ke Firestore
+    saveResultsToFirestore(score, _quizId);
+
+    // Navigasi langsung ke halaman feedback
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FeedbackPage(score: score),
+      ),
+    );
   }
 
   void endQuiz(String quizId) {
@@ -242,6 +261,75 @@ class QuizMainPageState extends State<QuizMainPage> {
     });
   }
 
+  void showQuestionList() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          // Tambahkan Center
+          child: AlertDialog(
+            title: const Text('Daftar Soal', textAlign: TextAlign.center),
+            content: Container(
+              width:
+                  MediaQuery.of(context).size.width * 0.8, // Atur lebar dialog
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center, // Tambahkan ini
+                  children: List.generate(questions.length, (index) {
+                    return Center(
+                      // Tambahkan Center pada setiap ListTile
+                      child: Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        child: ListTile(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          horizontalTitleGap: 10,
+                          leading: CircleAvatar(
+                            backgroundColor: selectedAnswers[index] != null
+                                ? Colors.green
+                                : Colors.red,
+                            child: Text('${index + 1}'),
+                          ),
+                          title: Text(
+                            'Soal ${index + 1}',
+                            textAlign: TextAlign.center,
+                          ),
+                          trailing: selectedAnswers[index] != null
+                              ? const Icon(Icons.check, color: Colors.green)
+                              : const Icon(Icons.clear, color: Colors.red),
+                          onTap: () {
+                            Navigator.of(context).pop(); // Tutup dialog
+                            setState(() {
+                              currentQuestionIndex =
+                                  index; // Pindah ke soal yang dipilih
+                            });
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              Center(
+                // Tambahkan Center pada actions
+                child: TextButton(
+                  child: const Text('Tutup'),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Tutup dialog
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     timer.cancel();
@@ -258,139 +346,181 @@ class QuizMainPageState extends State<QuizMainPage> {
 
     var currentQuestion = questions[currentQuestionIndex];
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Quiz"), // Menambahkan judul pada AppBar
-          backgroundColor:
-              const Color.fromARGB(255, 253, 240, 69), // Warna kuning
-          elevation: 4, // Menambahkan sedikit elevasi untuk efek bayangan
-        ),
-        body: Stack(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(16.0), // Padding di seluruh body
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Menambahkan indikator jawaban
-                      Text(
-                        'Soal ${currentQuestionIndex + 1} / ${questions.length} ${selectedAnswers[currentQuestionIndex] != null ? '✓' : '✗'}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Waktu: $totalTime detik',
-                        style: const TextStyle(fontSize: 16, color: Colors.red),
-                      ),
-                    ],
+      appBar: AppBar(
+        title: const Text("Quiz"),
+        backgroundColor: const Color.fromARGB(255, 250, 235, 21),
+        elevation: 4,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Soal ${currentQuestionIndex + 1} / ${questions.length} ${selectedAnswers[currentQuestionIndex] != null ? '✓' : '✗'}',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  'Waktu: $totalTime detik',
+                  style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
-                  const SizedBox(height: 10), // Mengurangi jarak
-                  Text(
-                    currentQuestion['question'],
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  ...currentQuestion['options'].asMap().entries.map<Widget>(
-                    (entry) {
-                      int index = entry.key;
-                      String option = entry.value;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0), // Tambahkan padding vertikal
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                optionColors[index % optionColors.length],
-                            foregroundColor: Colors.white, // Set text color
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              selectedAnswers[currentQuestionIndex] =
-                                  index; // Simpan jawaban yang dipilih
-                            });
-                            nextQuestion(); // Pindah ke soal berikutnya setelah memilih jawaban
-                          },
-                          child: Text(option),
-                        ),
-                      );
-                    },
-                  ).toList(),
-                  const SizedBox(
-                      height: 10), // Mengurangi jarak di bawah pilihan jawaban
                 ],
               ),
+              child: Text(
+                currentQuestion['question'],
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
             ),
-            // Baris untuk tombol Next dan Previous
-            Positioned(
-              bottom: 16, // Jarak dari bawah
-              left: 16,
-              right: 16,
-              child: Row(
-                mainAxisAlignment: currentQuestionIndex == 0
-                    ? MainAxisAlignment
-                        .end // Posisi tombol Next di kanan untuk soal pertama
-                    : MainAxisAlignment.spaceBetween,
-                children: [
-                  if (currentQuestionIndex >
-                      0) // Tampilkan tombol "Previous" hanya jika bukan soal pertama
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Colors.white, // Warna latar belakang putih
-                        foregroundColor: Colors.black, // Warna teks hitam
-                      ),
-                      onPressed: previousQuestion,
-                      child: const Text('Previous'),
-                    ),
-                  ElevatedButton(
+            const SizedBox(height: 20),
+            ...currentQuestion['options'].asMap().entries.map<Widget>(
+              (entry) {
+                int index = entry.key;
+                String option = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: currentQuestionIndex <
-                              questions.length - 1
-                          ? Colors.white // Tombol "Next" berwarna putih
-                          : const Color.fromARGB(255, 253, 240,
-                              69), // Tombol "Finish Attempt" berwarna kuning
-                      foregroundColor: Colors.black, // Warna teks hitam
+                      backgroundColor:
+                          optionColors[index % optionColors.length],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     onPressed: () {
-                      if (currentQuestionIndex < questions.length - 1) {
-                        nextQuestion();
-                      } else {
-                        // Cek apakah semua jawaban telah dipilih
-                        bool allAnswered = true;
-                        for (var answer in selectedAnswers) {
-                          if (answer == null) {
-                            allAnswered = false;
-                            break;
-                          }
-                        }
-
-                        if (!allAnswered) {
-                          // Jika ada soal yang belum dijawab, tampilkan pesan kesalahan
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Anda harus menjawab semua soal sebelum menyelesaikan kuis!'),
-                            ),
-                          );
-                        } else {
-                          timer
-                              .cancel(); // Hentikan timer saat menyelesaikan kuis
-                          endQuiz(_quizId);
-                        }
-                      }
+                      setState(() {
+                        selectedAnswers[currentQuestionIndex] = index;
+                      });
+                      nextQuestion();
                     },
                     child: Text(
-                      currentQuestionIndex < questions.length - 1
-                          ? 'Next'
-                          : 'Finish Attempt',
+                      option,
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
-                ],
-              ),
-            ),
+                );
+              },
+            ).toList(),
+            const SizedBox(height: 80), // Memberikan ruang di bawah konten
           ],
-        ));
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: const Color.fromARGB(255, 196, 194, 179),
+        child: SizedBox(
+          height: 60, // Tetapkan tinggi yang konsisten
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Tombol Previous (selalu ada di posisi yang sama)
+              SizedBox(
+                width: 60, // Lebar tetap
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, size: 24),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.all(12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: currentQuestionIndex > 0 ? previousQuestion : null,
+                ),
+              ),
+
+              const SizedBox(width: 16), // Spacer
+
+              // Tombol List Soal (selalu di tengah)
+              SizedBox(
+                width: 60, // Lebar tetap
+                child: IconButton(
+                  icon: const Icon(Icons.list, size: 24),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.all(12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: showQuestionList,
+                ),
+              ),
+
+              const SizedBox(width: 16), // Spacer
+
+              // Tombol Next/Finish (selalu ada di posisi yang sama)
+              SizedBox(
+                width: 60, // Lebar tetap
+                child: IconButton(
+                  icon: Icon(
+                      currentQuestionIndex < questions.length - 1
+                          ? Icons.arrow_forward_ios
+                          : Icons.check,
+                      size: 24),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.all(12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (currentQuestionIndex < questions.length - 1) {
+                      nextQuestion();
+                    } else {
+                      bool allAnswered = true;
+                      for (var answer in selectedAnswers) {
+                        if (answer == null) {
+                          allAnswered = false;
+                          break;
+                        }
+                      }
+
+                      if (!allAnswered) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Anda harus menjawab semua soal sebelum menyelesaikan kuis!'),
+                          ),
+                        );
+                      } else {
+                        timer.cancel();
+                        endQuiz(_quizId);
+                      }
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
