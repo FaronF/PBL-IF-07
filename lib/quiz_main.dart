@@ -15,7 +15,7 @@ class QuizMainPage extends StatefulWidget {
 
 class QuizMainPageState extends State<QuizMainPage> {
   int currentQuestionIndex = 0;
-  int totalTime = 60; // Total time in seconds for the entire quiz
+  int totalTime = 0; // Total time in seconds for the entire quiz
   late Timer timer;
   List<Map<String, dynamic>> questions = [];
   List<int?> selectedAnswers = []; // List to store selected answers
@@ -88,6 +88,14 @@ class QuizMainPageState extends State<QuizMainPage> {
       if (snapshot.exists) {
         var data = snapshot.data() as Map<String, dynamic>;
 
+        // Ambil waktu dari field 'duration' dan konversi ke detik
+        String duration =
+            data['duration'] ?? '00:01'; // Default ke 00:01 jika tidak ada
+        List<String> timeParts = duration.split(':');
+        int hours = int.parse(timeParts[0]);
+        int minutes = int.parse(timeParts[1]);
+        totalTime = (hours * 3600) + (minutes * 60); // Konversi ke detik
+
         // Check if 'questions' is an array
         if (data['questions'] is List) {
           for (var question in data['questions']) {
@@ -96,14 +104,12 @@ class QuizMainPageState extends State<QuizMainPage> {
                   question['question'] ?? 'Pertanyaan tidak tersedia';
               List<Map<String, dynamic>> answers =
                   List<Map<String, dynamic>>.from(question['answers'] ?? []);
-              int correctAnswerIndex = question['correctAnswer'] ??
-                  -1; // Using -1 as default if not available
+              int correctAnswerIndex = question['correctAnswer'] ?? -1;
 
               fetchedQuestions.add({
                 "question": questionText,
                 "options": answers.map((answer) => answer['text']).toList(),
-                "correctAnswerIndex":
-                    correctAnswerIndex, // Store the index of the correct answer
+                "correctAnswerIndex": correctAnswerIndex,
               });
             }
           }
@@ -111,10 +117,9 @@ class QuizMainPageState extends State<QuizMainPage> {
       }
 
       setState(() {
-        questions = fetchedQuestions; // Update the state with fetched questions
-        selectedAnswers = List<int?>.filled(
-            questions.length, null); // Initialize selected answers
-        isLoading = false; // Set isLoading ke false setelah data di-load
+        questions = fetchedQuestions;
+        selectedAnswers = List<int?>.filled(questions.length, null);
+        isLoading = false;
       });
     } catch (e) {
       print("Error fetching questions: $e");
@@ -127,14 +132,22 @@ class QuizMainPageState extends State<QuizMainPage> {
         if (totalTime > 0) {
           totalTime--;
         } else {
-          // Langsung hentikan timer
-          timer.cancel();
-
-          // Langsung selesaikan quiz tanpa konfirmasi
-          autoFinishQuiz();
+          timer.cancel(); // Hentikan timer
+          autoFinishQuiz(); // Panggil fungsi untuk menyelesaikan kuis
         }
       });
     });
+  }
+
+  String formatDuration(int totalSeconds) {
+    if (totalSeconds < 60) {
+      return '$totalSeconds detik'; // Tampilkan dalam detik
+    } else {
+      int hours = totalSeconds ~/ 3600;
+      int minutes = (totalSeconds % 3600) ~/ 60;
+      int seconds = totalSeconds % 60;
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'; // Format hh:mm:ss
+    }
   }
 
   void autoFinishQuiz() {
@@ -365,7 +378,7 @@ class QuizMainPageState extends State<QuizMainPage> {
                       fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  'Waktu: $totalTime detik',
+                  'Waktu: ${formatDuration(totalTime)}', // Menampilkan waktu dalam format hh:mm
                   style: const TextStyle(
                       fontSize: 16,
                       color: Colors.red,

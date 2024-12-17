@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'edit_quiz.dart';
 
 class KelolaQuizSiswa extends StatefulWidget {
@@ -117,6 +118,7 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
               initialTime: quizData['time'] ?? '',
               initialPassword: quizData['password'] ?? '', // Pastikan ini ada
               initialStatus: quizData['status'] ?? '',
+              initialDuration: quizData['duration'] ?? '', // Ambil durasi
               initialQuestions: questions,
             ),
           ),
@@ -271,12 +273,21 @@ class _AddQuizPageState extends State<AddQuizPage> {
   String status = 'Dibuka'; // Default status
   List<Map<String, dynamic>> questions = [];
   List<String> kelasOptions = []; // List untuk menyimpan opsi kelas
+  String duration = ''; // Field untuk durasi
 
   // Controllers untuk TextField
   final TextEditingController dateController = TextEditingController();
   final TextEditingController timeController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController hourController =
+      TextEditingController(); // Controller untuk jam
+  final TextEditingController minuteController =
+      TextEditingController(); // Controller untuk menit
+
+  // Variabel untuk jam dan menit
+  int selectedHour = 0;
+  int selectedMinute = 0;
 
   @override
   void initState() {
@@ -324,6 +335,13 @@ class _AddQuizPageState extends State<AddQuizPage> {
         timeController.text = time; // Update controller
       });
     }
+  }
+
+  void updateDuration() {
+    String hours = hourController.text.isNotEmpty ? hourController.text : '00';
+    String minutes =
+        minuteController.text.isNotEmpty ? minuteController.text : '00';
+    duration = '${hours}:${minutes}'; // Format durasi menjadi 01j:30m
   }
 
   void _addQuestion() {
@@ -471,6 +489,65 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    // Input untuk Durasi
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: hourController,
+                            decoration: const InputDecoration(
+                              labelText: 'Jam (hh)',
+                              border: OutlineInputBorder(),
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(
+                                  2), // Batasi panjang input
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                // Update durasi saat jam diubah
+                                updateDuration();
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: minuteController,
+                            decoration: const InputDecoration(
+                              labelText: 'Menit (mm)',
+                              border: OutlineInputBorder(),
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(
+                                  2), // Batasi panjang input
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                // Update durasi saat menit diubah
+                                updateDuration();
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Durasi Quiz: ${duration.isNotEmpty ? duration : ''}', // Menampilkan durasi yang dipilih
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
                     // Input untuk Password
                     TextField(
                       decoration: const InputDecoration(
@@ -535,45 +612,51 @@ class _AddQuizPageState extends State<AddQuizPage> {
                                   const SizedBox(height: 8),
                                   // Menampilkan jawaban
                                   ...question['answers']
-                                    .asMap()
-                                    .entries
-                                    .map((answerEntry) {
-                                      int answerIndex = answerEntry.key;
-                                      Map<String, dynamic> answer = answerEntry.value;
-                                      return Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: TextField(
-                                                  decoration: InputDecoration(
-                                                    labelText: 'Opsi ${answerIndex + 1}',
-                                                    border: OutlineInputBorder(),
-                                                  ),
-                                                  onChanged: (value) {
-                                                    answer['text'] = value;
-                                                  },
+                                      .asMap()
+                                      .entries
+                                      .map((answerEntry) {
+                                    int answerIndex = answerEntry.key;
+                                    Map<String, dynamic> answer =
+                                        answerEntry.value;
+                                    return Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: TextField(
+                                                decoration: InputDecoration(
+                                                  labelText:
+                                                      'Opsi ${answerIndex + 1}',
+                                                  border: OutlineInputBorder(),
                                                 ),
-                                              ),
-                                              Radio(
-                                                value: answerIndex,
-                                                groupValue: question['correctAnswer'],
                                                 onChanged: (value) {
-                                                  _setCorrectAnswer(questionIndex, answerIndex);
+                                                  answer['text'] = value;
                                                 },
                                               ),
-                                              IconButton(
-                                                icon: const Icon(Icons.delete),
-                                                onPressed: () {
-                                                  _removeAnswer(questionIndex, answerIndex);
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 10), // Jarak antar opsi
-                                        ],
-                                      );
-                                    }).toList(),
+                                            ),
+                                            Radio(
+                                              value: answerIndex,
+                                              groupValue:
+                                                  question['correctAnswer'],
+                                              onChanged: (value) {
+                                                _setCorrectAnswer(
+                                                    questionIndex, answerIndex);
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.delete),
+                                              onPressed: () {
+                                                _removeAnswer(
+                                                    questionIndex, answerIndex);
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                            height: 10), // Jarak antar opsi
+                                      ],
+                                    );
+                                  }).toList(),
                                   const SizedBox(height: 8),
                                   const SizedBox(height: 8),
                                   Row(
@@ -629,6 +712,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
                             'time': time,
                             'questions': questions,
                             'status': status, // Simpan status
+                            'duration': duration,
                             'password': password, // Simpan password
                           });
                           Navigator.of(context)

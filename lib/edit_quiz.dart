@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 class EditQuizPage extends StatefulWidget {
   final String quizId;
@@ -10,6 +11,7 @@ class EditQuizPage extends StatefulWidget {
   final String initialTime;
   final String initialStatus;
   final String initialPassword;
+  final String initialDuration;
   final List<Map<String, dynamic>> initialQuestions;
 
   const EditQuizPage({
@@ -21,6 +23,7 @@ class EditQuizPage extends StatefulWidget {
     required this.initialTime,
     required this.initialStatus,
     required this.initialPassword,
+    required this.initialDuration,
     required this.initialQuestions,
   }) : super(key: key);
 
@@ -35,6 +38,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
   late String time;
   late String status;
   late String password;
+  late String duration;
   List<Map<String, dynamic>> questions = [];
   List<String> kelasList = []; // Variabel untuk menyimpan daftar kelas
 
@@ -43,6 +47,10 @@ class _EditQuizPageState extends State<EditQuizPage> {
   final TextEditingController timeController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController hourController =
+      TextEditingController(); // Controller untuk jam
+  final TextEditingController minuteController =
+      TextEditingController(); // Controller untuk menit
 
   @override
   void initState() {
@@ -53,14 +61,24 @@ class _EditQuizPageState extends State<EditQuizPage> {
     time = widget.initialTime;
     status = widget.initialStatus;
     password = widget.initialPassword;
+    duration = widget.initialDuration; // Inisialisasi durasi
     questions = List.from(widget.initialQuestions);
     _fetchKelas(); // Memanggil fungsi untuk mengambil data kelas
 
-    // Set initial values for controllers
+// Set initial values for controllers
     titleController.text = title;
     dateController.text = date;
     timeController.text = time;
     passwordController.text = password;
+
+    // Set initial values for hour and minute controllers
+    if (duration.isNotEmpty) {
+      final parts = duration.split(':');
+      if (parts.length == 2) {
+        hourController.text = parts[0].replaceAll('j', ''); // Ambil jam
+        minuteController.text = parts[1].replaceAll('m', ''); // Ambil menit
+      }
+    }
   }
 
   void _fetchKelas() async {
@@ -102,11 +120,20 @@ class _EditQuizPageState extends State<EditQuizPage> {
     }
   }
 
+  void updateDuration() {
+    String hours = hourController.text.isNotEmpty ? hourController.text : '00';
+    String minutes =
+        minuteController.text.isNotEmpty ? minuteController.text : '00';
+    duration =
+        '${hours}j:${minutes}m'; // Format durasi menjadi 01j:30m untuk tampilan
+  }
+
   void _updateQuiz() async {
     if (title.isNotEmpty &&
         kelas.isNotEmpty &&
         date.isNotEmpty &&
         time.isNotEmpty &&
+        duration.isNotEmpty &&
         password.isNotEmpty) {
       bool? confirm = await showDialog(
         context: context,
@@ -143,6 +170,8 @@ class _EditQuizPageState extends State<EditQuizPage> {
           'time': time,
           'status': status,
           'password': password,
+          'duration':
+              '${hourController.text}:${minuteController.text}', // Simpan durasi
           'questions': questions,
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -266,6 +295,62 @@ class _EditQuizPageState extends State<EditQuizPage> {
               ),
               const SizedBox(height: 16),
 
+              // Field untuk Durasi
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: hourController,
+                      decoration: const InputDecoration(
+                        labelText: 'Jam (hh)',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(2),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          updateDuration(); // Update durasi saat jam diubah
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: minuteController,
+                      decoration: const InputDecoration(
+                        labelText: 'Menit (mm)',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(2),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          updateDuration(); // Update durasi saat menit diubah
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Durasi Quiz: ${duration.isNotEmpty ? duration : ''}', // Menampilkan durasi yang dipilih
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+
               TextField(
                 decoration: const InputDecoration(
                   labelText: 'Password',
@@ -364,7 +449,8 @@ class _EditQuizPageState extends State<EditQuizPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10), // Menambahkan jarak antar opsi
+                              const SizedBox(
+                                  height: 10), // Menambahkan jarak antar opsi
                             ],
                           );
                         }).toList(),
