@@ -1,34 +1,31 @@
 import 'package:flutter/material.dart';
 
-class QuizPage extends StatefulWidget {
-  const QuizPage({super.key});
+class KelolaPenilaianPage extends StatefulWidget {
+  const KelolaPenilaianPage({super.key});
 
   @override
-  State<QuizPage> createState() => _QuizPageState();
+  State<KelolaPenilaianPage> createState() => _KelolaPenilaianPageState();
 }
 
-class _QuizPageState extends State<QuizPage> {
-  int _selectedIndex = 2; // Track the selected tab index
+class _KelolaPenilaianPageState extends State<KelolaPenilaianPage> {
+  int _selectedIndex = 1; // Track the selected tab index
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    // Handle navigation based on the selected tab
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/studentpage');
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/materi');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/quiz_siswa');
-        break;
+    // Navigasi berdasarkan index
+    if (index == 0) {
+      Navigator.pushReplacementNamed(context, '/teacherpage');
+    } else if (index == 1) {
+      Navigator.pushReplacementNamed(context, '/kelolaakademik');
+    } else if (index == 2) {
+      Navigator.pushReplacementNamed(context, '/kelolamateri');
+    } else if (index == 3) {
+      Navigator.pushReplacementNamed(context, '/daftarsiswa');
     }
   }
-
 @override
 Widget build(BuildContext context) {
   return Scaffold(
@@ -72,71 +69,76 @@ Widget build(BuildContext context) {
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.1), // 5% dari tinggi layar
             Expanded(
-              child: Center(
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  child: PageView(
-                    children: [
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              _buildDashboardBox(
-                                context,
-                                'assets/images/background2.png',
-                                'Tugas',
-                                '/daftar_tugas',
-                                width: MediaQuery.of(context).size.width * 0.9,
-                              ),
-                              const SizedBox(height: 20),
-                              _buildDashboardBox(
-                                context,
-                                'assets/images/background3.png',
-                                'Quiz',
-                                '/daftar_quiz',
-                                width: MediaQuery.of(context).size.width * 0.9,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+  child: Center(
+    child: Container(
+      width: MediaQuery.of(context).size.width * 0.9,
+      child: PageView(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildDashboardBox(
+                    context,
+                    'assets/images/background2.png',
+                    'Tugas',
+                    '/kelolapenilaiansiswa',
+                    width: MediaQuery.of(context).size.width * 0.9,
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  _buildDashboardBox(
+                    context,
+                    'assets/images/background3.png',
+                    'Quiz',
+                    '/',
+                    width: MediaQuery.of(context).size.width * 0.9,
+                  ),
+                ],
               ),
             ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
           ],
         ),
       ],
     ),
     bottomNavigationBar: BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.book),
-          label: 'Materi',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.quiz),
-          label: 'Quiz',
-        ),
-      ],
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
-      backgroundColor: const Color.fromARGB(255, 253, 240, 69),
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.black,
-      selectedFontSize: 14,
-      type: BottomNavigationBarType.fixed,
-    ),
-  );
-}
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school),
+            label: 'Kelola Akademik',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chrome_reader_mode_rounded),
+            label: 'Materi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Student List',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14,
+        type: BottomNavigationBarType.fixed,
+      ),
+    );
+  }
+
 
   Widget _buildDashboardBox(
       BuildContext context, String imagePath, String title, String routeName,

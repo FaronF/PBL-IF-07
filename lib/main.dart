@@ -18,6 +18,7 @@ import 'kelola_materi_page.dart';
 import 'kelola_akademik_page.dart';
 import 'kelola_tugas_siswa.dart';
 import 'kelola_quiz_siswa.dart';
+import 'kelola_penilaian_page.dart';
 import 'kelola_penilaian_siswa.dart';
 import 'profile_guru.dart';
 import 'profile_admin.dart';
@@ -80,6 +81,7 @@ class MyApp extends StatelessWidget {
         '/kelolatugassiswa': (context) => const KelolaTugasSiswa(),
         '/kelolaquizsiswa': (context) => const KelolaQuizSiswa(),
         '/kelolapenilaiansiswa': (context) => const KelolaPenilaianSiswa(),
+        '/kelolapenilaian': (context) => const KelolaPenilaianPage(),
 
         // Halaman Admin
         '/adminpage': (context) => const AdminPage(),

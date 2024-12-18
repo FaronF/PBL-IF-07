@@ -51,7 +51,7 @@ class KelolaAkademikPageState extends State<KelolaAkademikPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.1), // 5% dari tinggi layar
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
@@ -64,7 +64,7 @@ class KelolaAkademikPageState extends State<KelolaAkademikPage> {
                           context,
                           'Kelola Tugas',
                           '/kelolatugassiswa',
-                          height: 60,
+                          height: 70,
                           width: 140,
                         ),
                         const SizedBox(height: 20),
@@ -72,7 +72,7 @@ class KelolaAkademikPageState extends State<KelolaAkademikPage> {
                           context,
                           'Kelola Quiz',
                           '/kelolaquizsiswa',
-                          height: 60,
+                          height: 70,
                           width: 140,
                         ),
                         const SizedBox(height: 20),
@@ -80,15 +80,15 @@ class KelolaAkademikPageState extends State<KelolaAkademikPage> {
                           context,
                           'Kelola Konten Pelajaran',
                           '/kelola_konten_pelajaran',
-                          height: 60,
+                          height: 70,
                           width: 140,
                         ),
                         const SizedBox(height: 20),
                         _buildDashboardBox(
                           context,
                           'Kelola Penilaian',
-                          '/kelolapenilaiansiswa',
-                          height: 60,
+                          '/kelolapenilaian',
+                          height: 70,
                           width: 140,
                         ),
                       ],
