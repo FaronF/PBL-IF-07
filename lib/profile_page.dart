@@ -18,11 +18,14 @@ class EditProfilePageState extends State<ProfilePage> {
   String _email = '';
   String _nisn = '';
   String _kelas = '';
+  List<String> _kelasList = []; // Daftar kelas
+  String? _selectedKelas; // Kelas yang dipilih
 
   @override
   void initState() {
     super.initState();
     _getUserProfile(); // Ambil data pengguna saat inisialisasi
+    _getKelasList(); // Ambil daftar kelas
   }
 
   Future<void> _reauthenticateUser(String email, String password) async {
@@ -32,6 +35,19 @@ class EditProfilePageState extends State<ProfilePage> {
           EmailAuthProvider.credential(email: email, password: password);
       await user.reauthenticateWithCredential(credential);
     }
+  }
+
+  Future<void> _getKelasList() async {
+    QuerySnapshot snapshot = await _firestore.collection('Kelas').get();
+    List<String> kelasList = [];
+    for (var doc in snapshot.docs) {
+      kelasList.add(doc['kelas']); // Asumsikan field 'kelas' ada di dokumen
+    }
+    setState(() {
+      _kelasList = kelasList;
+      _selectedKelas =
+          _kelas; // Set kelas yang dipilih ke kelas pengguna saat ini
+    });
   }
 
   Future<void> _getUserProfile() async {
@@ -146,6 +162,21 @@ class EditProfilePageState extends State<ProfilePage> {
         );
       },
     );
+  }
+
+  Future<void> _updateKelas(String newKelas) async {
+    final User? user = _auth.currentUser;
+    if (user != null) {
+      await _firestore.collection('Students').doc(user.uid).update({
+        'kelas': newKelas,
+      });
+      setState(() {
+        _kelas = newKelas; // Update kelas di state
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kelas berhasil diperbarui')),
+      );
+    }
   }
 
   Future<void> _updatePassword(
@@ -281,11 +312,11 @@ class EditProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 16),
                     _buildDisplayField('NISN', _nisn),
                     const SizedBox(height: 16),
-                    _buildDisplayField('Kelas', _kelas),
+                    _buildDropdownField(),
                     const SizedBox(height: 16),
                     _buildTextField(_passwordController, 'Password',
                         isPassword: true, onEdit: showChangePasswordModal),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -347,6 +378,49 @@ class EditProfilePageState extends State<ProfilePage> {
           child: Text(
             value,
             style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Kelas',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.grey.shade400),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedKelas,
+              isExpanded: true,
+              hint: const Text('Pilih Kelas'),
+              items: _kelasList.map((String kelas) {
+                return DropdownMenuItem<String>(
+                  value: kelas,
+                  child: Text(kelas),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedKelas = newValue;
+                });
+                if (newValue != null) {
+                  _updateKelas(newValue);
+                }
+              },
+            ),
           ),
         ),
       ],
