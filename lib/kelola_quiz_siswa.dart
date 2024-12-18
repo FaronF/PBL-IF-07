@@ -285,6 +285,8 @@ class _AddQuizPageState extends State<AddQuizPage> {
   final TextEditingController minuteController =
       TextEditingController(); // Controller untuk menit
 
+  String durationError = '';
+
   // Variabel untuk jam dan menit
   int selectedHour = 0;
   int selectedMinute = 0;
@@ -337,11 +339,20 @@ class _AddQuizPageState extends State<AddQuizPage> {
     }
   }
 
-  void updateDuration() {
+  bool updateDuration() {
     String hours = hourController.text.isNotEmpty ? hourController.text : '00';
     String minutes =
         minuteController.text.isNotEmpty ? minuteController.text : '00';
-    duration = '${hours}:${minutes}'; // Format durasi menjadi 01j:30m
+
+    // Validasi durasi
+    if (hours.length == 2 && minutes.length == 2) {
+      duration = '$hours:$minutes'; // Format durasi menjadi hh:mm
+      durationError = ''; // Reset error
+      return true; // Durasi valid
+    } else {
+      durationError = 'Format durasi harus hh:mm (4 angka)';
+      return false; // Durasi tidak valid
+    }
   }
 
   void _addQuestion() {
@@ -542,10 +553,15 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
+                    if (durationError.isNotEmpty)
+                      Text(
+                        durationError,
+                        style: TextStyle(color: Colors.red),
+                      ),
                     Text(
-                      'Durasi Quiz: ${duration.isNotEmpty ? duration : ''}', // Menampilkan durasi yang dipilih
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      'Durasi Quiz: ${duration.isNotEmpty ? duration : ''}',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     // Input untuk Password
@@ -697,6 +713,17 @@ class _AddQuizPageState extends State<AddQuizPage> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () async {
+                        // Panggil updateDuration dan simpan hasilnya
+                        bool isDurationValid = updateDuration();
+
+                        // Jika durasi tidak valid, tampilkan pesan kesalahan dan hentikan eksekusi
+                        if (!isDurationValid) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(durationError)),
+                          );
+                          return; // Hentikan eksekusi jika durasi tidak valid
+                        }
+
                         if (title.isNotEmpty &&
                             kelas.isNotEmpty &&
                             date.isNotEmpty &&

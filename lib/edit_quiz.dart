@@ -52,6 +52,8 @@ class _EditQuizPageState extends State<EditQuizPage> {
   final TextEditingController minuteController =
       TextEditingController(); // Controller untuk menit
 
+  String durationError = '';
+
   @override
   void initState() {
     super.initState();
@@ -120,15 +122,34 @@ class _EditQuizPageState extends State<EditQuizPage> {
     }
   }
 
-  void updateDuration() {
+  bool updateDuration() {
     String hours = hourController.text.isNotEmpty ? hourController.text : '00';
     String minutes =
         minuteController.text.isNotEmpty ? minuteController.text : '00';
-    duration =
-        '${hours}j:${minutes}m'; // Format durasi menjadi 01j:30m untuk tampilan
+
+    // Validasi durasi
+    if (hours.length == 2 && minutes.length == 2) {
+      duration = '$hours:$minutes'; // Format durasi menjadi hh:mm
+      durationError = ''; // Reset error
+      return true; // Durasi valid
+    } else {
+      durationError = 'Format durasi harus hh:mm (4 angka)';
+      return false; // Durasi tidak valid
+    }
   }
 
   void _updateQuiz() async {
+    // Panggil updateDuration dan simpan hasilnya
+    bool isDurationValid = updateDuration();
+
+    // Jika durasi tidak valid, tampilkan pesan kesalahan dan hentikan eksekusi
+    if (!isDurationValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(durationError)),
+      );
+      return; // Hentikan eksekusi jika durasi tidak valid
+    }
+
     if (title.isNotEmpty &&
         kelas.isNotEmpty &&
         date.isNotEmpty &&
@@ -170,8 +191,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
           'time': time,
           'status': status,
           'password': password,
-          'duration':
-              '${hourController.text}:${minuteController.text}', // Simpan durasi
+          'duration': duration, // Simpan durasi dalam format hh:mm
           'questions': questions,
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -314,7 +334,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
                       ],
                       onChanged: (value) {
                         setState(() {
-                          updateDuration(); // Update durasi saat jam diubah
+                          updateDuration();
                         });
                       },
                     ),
@@ -336,7 +356,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
                       ],
                       onChanged: (value) {
                         setState(() {
-                          updateDuration(); // Update durasi saat menit diubah
+                          updateDuration();
                         });
                       },
                     ),
@@ -344,8 +364,13 @@ class _EditQuizPageState extends State<EditQuizPage> {
                 ],
               ),
               const SizedBox(height: 16),
+              if (durationError.isNotEmpty)
+                Text(
+                  durationError,
+                  style: TextStyle(color: Colors.red),
+                ),
               Text(
-                'Durasi Quiz: ${duration.isNotEmpty ? duration : ''}', // Menampilkan durasi yang dipilih
+                'Durasi Quiz: ${duration.isNotEmpty ? duration : ''}',
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
