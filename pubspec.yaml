@@ -53,6 +53,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.0
   flutter_test:
     sdk: flutter
 
@@ -87,6 +88,7 @@ flutter:
     - assets/Logo-TK.png
     - assets/TPA_ua.png
     - assets/login1.png
+    - assets/logoquiziffy.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -138,3 +140,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/logoquiziffy.png"
