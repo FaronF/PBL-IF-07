@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 class Tasks {
   final String taskId;
   final String title;
@@ -238,7 +239,9 @@ class SubmissionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Submissions for Task $taskId'),
+        title: const Text(
+            'Kelola Penilaian'), // Change title to "Kelola Penilaian"
+        backgroundColor: Colors.yellow, // Set AppBar background color to yellow
       ),
       body: FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
         future: FirebaseFirestore.instance
@@ -264,22 +267,25 @@ class SubmissionsPage extends StatelessWidget {
                   studentDoc.reference.collection('submissions');
 
               // Mengambil submissions berdasarkan taskId
-              final submissionSnapshot = await submissionsRef
-                  .where('taskId', isEqualTo: taskId)
-                  .get();
+              final submissionSnapshot =
+                  await submissionsRef.where('taskId', isEqualTo: taskId).get();
 
-              return submissionSnapshot.docs.map((doc) => {
-                'data': doc.data(),
-                'id': doc.id, // Menyimpan ID dokumen
-              }).toList();
+              return submissionSnapshot.docs
+                  .map((doc) => {
+                        'data': doc.data(),
+                        'id': doc.id, // Menyimpan ID dokumen
+                      })
+                  .toList();
             })),
             builder: (context, submissionSnapshot) {
-              if (submissionSnapshot.connectionState == ConnectionState.waiting) {
+              if (submissionSnapshot.connectionState ==
+                  ConnectionState.waiting) {
                 // Tampilkan loading indicator saat mengambil data submissions
                 return const Center(child: CircularProgressIndicator());
               }
               if (submissionSnapshot.hasError) {
-                return Center(child: Text('Error: ${submissionSnapshot.error}'));
+                return Center(
+                    child: Text('Error: ${submissionSnapshot.error}'));
               }
 
               // Data submissions untuk setiap siswa
@@ -300,10 +306,12 @@ class SubmissionsPage extends StatelessWidget {
                             children: [
                               for (var submission in submissionDocs)
                                 SizedBox(
-                                  width: double.infinity, // Make it take the full width
+                                  width: double
+                                      .infinity, // Make it take the full width
                                   child: Card(
                                     elevation: 4,
-                                    margin: const EdgeInsets.symmetric(vertical: 8),
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 8),
                                     child: Padding(
                                       padding: const EdgeInsets.all(16.0),
                                       child: Row(
@@ -314,30 +322,38 @@ class SubmissionsPage extends StatelessWidget {
                                             child: Row(
                                               children: [
                                                 const Icon(Icons.picture_as_pdf,
-                                                    color: Colors.red), // PDF icon
+                                                    color:
+                                                        Colors.red), // PDF icon
                                                 const SizedBox(width: 8),
                                                 Expanded(
                                                   child: Text(
-                                                    submission['data']['taskTitle'] ??
+                                                    submission['data']
+                                                            ['taskTitle'] ??
                                                         'File', // Menampilkan task Title
                                                     style: const TextStyle(
-                                                        fontWeight: FontWeight.bold),
-                                                    overflow: TextOverflow.ellipsis, // Menambahkan overflow
-                                                    maxLines: 1, // Membatasi jumlah baris
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    overflow: TextOverflow
+                                                        .ellipsis, // Menambahkan overflow
+                                                    maxLines:
+                                                        1, // Membatasi jumlah baris
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.file_download),
+                                            icon:
+                                                const Icon(Icons.file_download),
                                             onPressed: () async {
                                               // Launch the URL as a download
                                               await launch(
                                                 submission['data']['fileUrl'],
                                                 headers: <String, String>{
-                                                  'content-type': 'application/pdf', // or 'application/octet-stream'
-                                                  'content-disposition': 'attachment',
+                                                  'content-type':
+                                                      'application/pdf', // or 'application/octet-stream'
+                                                  'content-disposition':
+                                                      'attachment',
                                                 },
                                               );
                                             },
@@ -347,21 +363,28 @@ class SubmissionsPage extends StatelessWidget {
                                             width: 60,
                                             child: TextField(
                                               controller: TextEditingController(
-                                                text: submission['data'].containsKey('grade')
-                                                    ? submission['data']['grade']?.toString() ?? ''
+                                                text: submission['data']
+                                                        .containsKey('grade')
+                                                    ? submission['data']
+                                                                ['grade']
+                                                            ?.toString() ??
+                                                        ''
                                                     : '', // Menggunakan containsKey untuk memeriksa keberadaan field
                                               ),
                                               decoration: const InputDecoration(
                                                 labelText: 'Nilai',
                                                 border: OutlineInputBorder(),
                                               ),
-                                              keyboardType: TextInputType.number,
+                                              keyboardType:
+                                                  TextInputType.number,
                                               onSubmitted: (value) async {
                                                 // Save the grade to Firestore
-                                                if (submission['data'].isNotEmpty) {
+                                                if (submission['data']
+                                                    .isNotEmpty) {
                                                   await studentDoc.reference
                                                       .collection('submissions')
-                                                      .doc(submission['id']) // Menggunakan ID dari dokumen
+                                                      .doc(submission[
+                                                          'id']) // Menggunakan ID dari dokumen
                                                       .update({'grade': value});
                                                   ScaffoldMessenger.of(context)
                                                       .showSnackBar(

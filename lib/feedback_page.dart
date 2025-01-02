@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'daftar_quiz.dart'; // Pastikan untuk mengimpor halaman DaftarQuizPage
+import 'mapel_quiz.dart';
 
 class FeedbackPage extends StatelessWidget {
   final int score;
+  final String quizId; // Tambahkan quizId untuk menyimpan feedback terkait kuis
 
-  const FeedbackPage({Key? key, required this.score}) : super(key: key);
+  const FeedbackPage({Key? key, required this.score, required this.quizId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,6 @@ class FeedbackPage extends StatelessWidget {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        // Tambahkan SingleChildScrollView di sini
         child: Stack(
           children: [
             Column(
@@ -75,46 +76,64 @@ class FeedbackPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors
+                        .yellow, // Mengatur warna latar belakang tombol menjadi kuning
+                    foregroundColor: Colors
+                        .black, // Mengatur warna teks tombol menjadi hitam
+                  ),
                   onPressed: () async {
                     String feedback = feedbackController.text;
 
-                    // Save feedback to Firestore
+                    // Validasi feedback
+                    if (feedback.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Feedback tidak boleh kosong!'),
+                        ),
+                      );
+                      return; // Hentikan eksekusi jika feedback kosong
+                    } else if (feedback.length > 30) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Feedback tidak boleh lebih dari 30 karakter!'),
+                        ),
+                      );
+                      return; // Hentikan eksekusi jika feedback terlalu panjang
+                    }
+
+                    // Simpan feedback ke Firestore di QuizAttempts
                     User? currentUser = FirebaseAuth.instance.currentUser;
                     if (currentUser != null) {
                       String userId = currentUser.uid;
 
-                      await FirebaseFirestore.instance
+                      // Referensi ke dokumen
+                      DocumentReference docRef = FirebaseFirestore.instance
                           .collection('Students')
                           .doc(userId)
-                          .collection('Feedbacks') // Ganti ke koleksi Feedbacks
-                          .doc() // Create a new document
-                          .set({
-                        'feedback': feedback, // Hanya simpan field feedback
-                      }).then((_) {
-                        // Show a success message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('Umpan balik berhasil disimpan!')),
-                        );
-                        // Navigate to DaftarQuizPage after saving feedback
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => DaftarQuizPage()),
-                        );
-                      }).catchError((error) {
-                        print("Failed to save feedback: $error");
+                          .collection('QuizAttempts')
+                          .doc(
+                              quizId); // Gunakan quizId untuk mereferensikan dokumen
+
+                      // Perbarui dokumen dengan feedback
+                      await docRef.update({
+                        'feedback': feedback, // Simpan feedback
+                        'timestamp':
+                            FieldValue.serverTimestamp(), // Simpan timestamp
                       });
-                    } else {
-                      print("No user is currently signed in.");
+
+                      // Navigasi ke halaman MapelQuizPage setelah menyimpan feedback
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MapelQuizPage(
+                              successMessage: 'Feedback berhasil disimpan.'),
+                        ),
+                      );
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(
-                        255, 253, 240, 69), // Warna latar belakang kuning
-                    foregroundColor: Colors.black, // Warna teks tombol
-                  ),
-                  child: const Text('Submit'),
+                  child: const Text('Kirim Feedback'),
                 ),
               ],
             ),

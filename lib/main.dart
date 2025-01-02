@@ -20,9 +20,12 @@ import 'kelola_tugas_siswa.dart';
 import 'kelola_quiz_siswa.dart';
 import 'kelola_penilaian_page.dart';
 import 'kelola_penilaian_siswa.dart';
+import 'kelola_penilaian_quiz.dart';
 import 'profile_guru.dart';
 import 'profile_admin.dart';
 import 'quiz_main.dart';
+import 'mapel_tugas.dart';
+import 'mapel_quiz.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,11 +69,23 @@ class MyApp extends StatelessWidget {
         //Halaman Siswa
         '/studentpage': (context) => const StudentPage(),
         '/edit_profile': (context) => const ProfilePage(),
-        '/daftar_tugas': (context) => const DaftarTugasPage(),
         '/daftar_quiz': (context) => const DaftarQuizPage(),
         '/quiz_siswa': (context) => const QuizPage(),
         '/materi': (context) => const MateriPage(),
         '/quiz_main': (context) => const QuizMainPage(quizId: 'quizIdAnda'),
+        '/mapelquiz': (context) => const MapelQuizPage(),
+        '/mapeltugas': (context) => const MapelTugasPage(),
+        '/daftar_tugas': (context) {
+          final String? mapel =
+              ModalRoute.of(context)?.settings.arguments as String?;
+          if (mapel == null) {
+            // Tangani kasus di mana mapel adalah null
+            return const DaftarTugasPage(
+                mapel:
+                    'Default Mapel'); // Ganti dengan nilai default yang sesuai
+          }
+          return DaftarTugasPage(mapel: mapel);
+        },
 
         //Halaman Guru
         '/teacherpage': (context) => const TeacherPage(),
@@ -81,6 +96,7 @@ class MyApp extends StatelessWidget {
         '/kelolatugassiswa': (context) => const KelolaTugasSiswa(),
         '/kelolaquizsiswa': (context) => const KelolaQuizSiswa(),
         '/kelolapenilaiansiswa': (context) => const KelolaPenilaianSiswa(),
+        '/kelolapenilaianquiz': (context) => const KelolaPenilaianQuiz(),
         '/kelolapenilaian': (context) => const KelolaPenilaianPage(),
 
         // Halaman Admin

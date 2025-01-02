@@ -7,6 +7,7 @@ class EditQuizPage extends StatefulWidget {
   final String quizId;
   final String initialTitle;
   final String initialKelas;
+  final String initialMapel;
   final String initialDate;
   final String initialTime;
   final String initialStatus;
@@ -20,6 +21,7 @@ class EditQuizPage extends StatefulWidget {
     required this.initialTitle,
     required this.initialKelas,
     required this.initialDate,
+    required this.initialMapel,
     required this.initialTime,
     required this.initialStatus,
     required this.initialPassword,
@@ -34,6 +36,7 @@ class EditQuizPage extends StatefulWidget {
 class _EditQuizPageState extends State<EditQuizPage> {
   late String title;
   late String kelas;
+  late String mapel; // Add this line to declare the mapel variable
   late String date;
   late String time;
   late String status;
@@ -41,6 +44,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
   late String duration;
   List<Map<String, dynamic>> questions = [];
   List<String> kelasList = []; // Variabel untuk menyimpan daftar kelas
+  List<String> mapelList = []; // Add this line to hold the list of subjects
 
   // Controllers untuk TextField
   final TextEditingController dateController = TextEditingController();
@@ -59,6 +63,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
     super.initState();
     title = widget.initialTitle;
     kelas = widget.initialKelas;
+    mapel = widget.initialMapel;
     date = widget.initialDate;
     time = widget.initialTime;
     status = widget.initialStatus;
@@ -66,6 +71,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
     duration = widget.initialDuration; // Inisialisasi durasi
     questions = List.from(widget.initialQuestions);
     _fetchKelas(); // Memanggil fungsi untuk mengambil data kelas
+    _fetchMapel(); // Fetch mapel
 
 // Set initial values for controllers
     titleController.text = title;
@@ -81,6 +87,23 @@ class _EditQuizPageState extends State<EditQuizPage> {
         minuteController.text = parts[1].replaceAll('m', ''); // Ambil menit
       }
     }
+  }
+
+  void _fetchMapel() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('Mapel').get();
+    setState(() {
+      mapelList = snapshot.docs
+          .map((doc) => doc['mapel'] as String)
+          .toList(); // Fetch mapel
+
+      // Cek apakah mapel yang sudah ada ada dalam daftar mapel
+      if (mapelList.contains(widget.initialMapel)) {
+        mapel = widget.initialMapel; // Set mapel ke nilai yang sudah ada
+      } else {
+        mapel = ''; // Jika tidak ada, set mapel menjadi kosong
+      }
+    });
   }
 
   void _fetchKelas() async {
@@ -187,6 +210,7 @@ class _EditQuizPageState extends State<EditQuizPage> {
             .update({
           'title': title,
           'kelas': kelas,
+          'mapel': mapel,
           'date': date,
           'time': time,
           'status': status,
@@ -265,6 +289,30 @@ class _EditQuizPageState extends State<EditQuizPage> {
                 },
                 isExpanded: true,
                 items: kelasList.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              // Dropdown for selecting mapel
+              DropdownButtonFormField<String>(
+                value: mapel.isNotEmpty ? mapel : null,
+                decoration: const InputDecoration(
+                  labelText: 'Mapel',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                hint: const Text('Pilih Mapel'),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    mapel = newValue!;
+                  });
+                },
+                isExpanded: true,
+                items: mapelList.map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),

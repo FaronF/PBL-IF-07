@@ -17,8 +17,11 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
       FirebaseFirestore.instance.collection('Tasks');
   final CollectionReference classesCollection =
       FirebaseFirestore.instance.collection('Kelas'); // Koleksi kelas
+  final CollectionReference mapelCollection =
+      FirebaseFirestore.instance.collection('Mapel'); // Koleksi mapel
 
   String? selectedClass; // Variabel untuk menyimpan kelas yang dipilih
+  String? selectedMapel; // Variabel untuk menyimpan mapel yang dipilih
 
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
@@ -103,11 +106,12 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
   }
 
   // Function to add a new task
-  Future<String> addTask(String title, String className, String description,
-      String date, String time) async {
+  Future<String> addTask(String title, String className, String mapel,
+      String description, String date, String time) async {
     DocumentReference docRef = await tasksCollection.add({
       'title': title,
       'class': className,
+      'mapel': mapel, // Simpan mapel
       'description': description,
       'date': date, // Simpan tanggal sebagai string
       'time': time, // Simpan waktu sebagai string
@@ -117,10 +121,11 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
 
   // Function to update a task
   Future<void> updateTask(String taskId, String title, String className,
-      String description, String date, String time) async {
+      String mapel, String description, String date, String time) async {
     return tasksCollection.doc(taskId).update({
       'title': title,
       'class': className,
+      'mapel': mapel, // Update mapel
       'description': description,
       'date': date, // Simpan tanggal sebagai string
       'time': time, // Simpan waktu sebagai string
@@ -128,13 +133,15 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
   }
 
   // Show form for adding/editing tasks
-  void showTaskForm(
-      {String? taskId,
-      String? currentTitle,
-      String? currentClass,
-      String? currentDescription,
-      String? currentDate,
-      String? currentTime}) {
+  void showTaskForm({
+    String? taskId,
+    String? currentTitle,
+    String? currentClass,
+    String? currentMapel, // Tambahkan parameter ini
+    String? currentDescription,
+    String? currentDate,
+    String? currentTime,
+  }) {
     final formKey = GlobalKey<FormState>();
     String title = currentTitle ?? '';
     String description = currentDescription ?? '';
@@ -153,6 +160,10 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
     // Update controller dengan nilai awal
     dateController.text = DateFormat('dd MMMM yyyy').format(selectedDate);
     timeController.text = selectedTime.format(context);
+
+    // Set selectedClass dan selectedMapel untuk form edit
+    selectedClass = currentClass; // Set selectedClass
+    selectedMapel = currentMapel; // Set selectedMapel
 
     showDialog(
       context: context,
@@ -208,6 +219,45 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                         validator: (value) {
                           if (value == null) {
                             return 'Kelas tidak boleh kosong';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                  ),
+                  // Dropdown untuk memilih mapel
+                  FutureBuilder<QuerySnapshot>(
+                    future: mapelCollection.get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      }
+
+                      final mapels = snapshot.data!.docs;
+
+                      return DropdownButtonFormField<String>(
+                        value:
+                            selectedMapel, // Ini harus mencerminkan nilai saat ini
+                        decoration: const InputDecoration(labelText: 'Mapel'),
+                        items: mapels.map((doc) {
+                          return DropdownMenuItem<String>(
+                            value: doc['mapel'],
+                            child: Text(doc['mapel']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedMapel =
+                                value; // Update selectedMapel saat nilai baru dipilih
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Mapel tidak boleh kosong';
                           }
                           return null;
                         },
@@ -276,6 +326,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                     String newTaskId = await addTask(
                       title,
                       selectedClass!,
+                      selectedMapel!,
                       description,
                       dateString, // Kirim tanggal sebagai string
                       timeString, // Kirim waktu sebagai string
@@ -293,6 +344,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                       taskId,
                       title,
                       selectedClass!,
+                      selectedMapel!,
                       description,
                       dateString, // Kirim tanggal sebagai string
                       timeString, // Kirim waktu sebagai string
@@ -370,6 +422,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                             task.id, // taskId
                             task['title'], // Judul Tugas
                             task['class'], // Kelas
+                            task['mapel'],
                             task['description'], // Deskripsi
                             task['date'], // Tanggal jatuh tempo sebagai string
                             task['time'], // Waktu jatuh tempo sebagai string
@@ -451,7 +504,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
   }
 
   Widget _buildContentCard(String taskId, String title, String className,
-      String description, String dueDate, String dueTime) {
+      String mapel, String description, String dueDate, String dueTime) {
     return Card(
       color: Colors.yellow[100],
       shape: RoundedRectangleBorder(
@@ -485,6 +538,7 @@ class KelolaTugasSiswaState extends State<KelolaTugasSiswa> {
                 showTaskForm(
                   taskId: taskId,
                   currentTitle: title,
+                  currentMapel: mapel,
                   currentClass: className,
                   currentDescription: description,
                   currentDate: dueDate, // Kirim dueDate sebagai string

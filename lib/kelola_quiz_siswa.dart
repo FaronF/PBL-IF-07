@@ -115,6 +115,7 @@ class _KelolaQuizSiswaState extends State<KelolaQuizSiswa> {
               initialTitle: quizData['title'] ?? '',
               initialKelas: quizData['kelas'] ?? '',
               initialDate: quizData['date'] ?? '',
+              initialMapel: quizData['mapel'] ?? '',
               initialTime: quizData['time'] ?? '',
               initialPassword: quizData['password'] ?? '', // Pastikan ini ada
               initialStatus: quizData['status'] ?? '',
@@ -267,12 +268,14 @@ class AddQuizPage extends StatefulWidget {
 class _AddQuizPageState extends State<AddQuizPage> {
   String title = '';
   String kelas = '';
+  String mapel = ''; // Tambahkan field mapel
   String date = '';
   String time = '';
   String password = ''; // Tambahkan field password
   String status = 'Dibuka'; // Default status
   List<Map<String, dynamic>> questions = [];
   List<String> kelasOptions = []; // List untuk menyimpan opsi kelas
+  List<String> mapelOptions = []; // List untuk menyimpan opsi mapel
   String duration = ''; // Field untuk durasi
 
   // Controllers untuk TextField
@@ -295,6 +298,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
   void initState() {
     super.initState();
     _fetchKelasOptions(); // Fetch kelas options on init
+    _fetchMapelOptions(); // Fetch mapel options on init
   }
 
   Future<void> _fetchKelasOptions() async {
@@ -307,6 +311,19 @@ class _AddQuizPageState extends State<AddQuizPage> {
       });
     } catch (e) {
       print('Error fetching kelas options: $e');
+    }
+  }
+
+  Future<void> _fetchMapelOptions() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('Mapel').get();
+      setState(() {
+        mapelOptions =
+            querySnapshot.docs.map((doc) => doc['mapel'] as String).toList();
+      });
+    } catch (e) {
+      print('Error fetching mapel options: $e');
     }
   }
 
@@ -358,7 +375,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
   void _addQuestion() {
     setState(() {
       questions.add({
-        'question': '',
+        'question ': '',
         'answers': [],
         'correctAnswer': null,
       });
@@ -463,6 +480,31 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
+                    // Dropdown untuk Mapel
+                    DropdownButtonFormField<String>(
+                      value: mapel.isNotEmpty ? mapel : null,
+                      decoration: const InputDecoration(
+                        labelText: 'Mapel',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      hint: const Text('Pilih Mapel'),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          mapel = newValue!;
+                        });
+                      },
+                      isExpanded: true, // Agar dropdown mengisi lebar
+                      items: mapelOptions
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
                     // Tombol untuk memilih tanggal
                     GestureDetector(
                       onTap: () => _selectDate(context),
@@ -482,6 +524,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    // Tombol untuk memilih waktu
                     GestureDetector(
                       onTap: () => _selectTime(context),
                       child: AbsorbPointer(
@@ -491,7 +534,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
                             border: const OutlineInputBorder(),
                             filled: true,
                             fillColor: Colors.white,
-                            hintText: 'Format: HH:MM', // Petunjuk format waktu
+                            hintText: time.isEmpty ? 'Pilih Waktu' : time,
                             suffixIcon: const Icon(
                                 Icons.access_time), // Ikon jam di kanan
                           ),
@@ -575,6 +618,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
                       onChanged: (value) {
                         password = value;
                       },
+                      controller: passwordController,
                     ),
                     const SizedBox(height: 16),
                     // Dropdown untuk Status
@@ -674,7 +718,6 @@ class _AddQuizPageState extends State<AddQuizPage> {
                                     );
                                   }).toList(),
                                   const SizedBox(height: 8),
-                                  const SizedBox(height: 8),
                                   Row(
                                     children: [
                                       ElevatedButton(
@@ -726,6 +769,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
 
                         if (title.isNotEmpty &&
                             kelas.isNotEmpty &&
+                            mapel.isNotEmpty && // Pastikan mapel diisi
                             date.isNotEmpty &&
                             time.isNotEmpty &&
                             password.isNotEmpty &&
@@ -735,6 +779,7 @@ class _AddQuizPageState extends State<AddQuizPage> {
                               .add({
                             'title': title,
                             'kelas': kelas,
+                            'mapel': mapel, // Simpan mapel
                             'date': date,
                             'time': time,
                             'questions': questions,

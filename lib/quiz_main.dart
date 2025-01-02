@@ -161,7 +161,10 @@ class QuizMainPageState extends State<QuizMainPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => FeedbackPage(score: score),
+        builder: (context) => FeedbackPage(
+          score: score,
+          quizId: _quizId,
+        ),
       ),
     );
   }
@@ -231,20 +234,27 @@ class QuizMainPageState extends State<QuizMainPage> {
     if (currentUser != null) {
       String userId = currentUser.uid;
 
-      CollectionReference studentsCollection =
-          FirebaseFirestore.instance.collection('Students');
+      DocumentReference docRef = FirebaseFirestore.instance
+          .collection('Students')
+          .doc(userId)
+          .collection('QuizAttempts')
+          .doc(quizId); // Gunakan quizId sebagai ID dokumen
 
-      await studentsCollection.doc(userId).collection('QuizAttempts').add({
+      // Simpan hasil ke Firestore
+      await docRef.set({
         'quizId': quizId,
         'score': score,
         'timestamp': FieldValue.serverTimestamp(),
-      }).then((value) {
+      }, SetOptions(merge: true)).then((value) {
         print("Quiz attempt data saved successfully");
-        // Redirect to QuizResultPage after saving data
-        Navigator.push(
+        // Navigasi ke halaman feedback setelah menyimpan data
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => FeedbackPage(score: score), // Pass the score
+            builder: (context) => FeedbackPage(
+              quizId: quizId,
+              score: score,
+            ),
           ),
         );
       }).catchError((error) {

@@ -12,6 +12,14 @@ class DaftarQuizPage extends StatefulWidget {
 
 class _DaftarQuizPageState extends State<DaftarQuizPage> {
   int _selectedIndex = 2;
+  String? mapel;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Mengambil argumen mapel dari navigasi
+    mapel = ModalRoute.of(context)?.settings.arguments as String?;
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -35,49 +43,23 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0, // Menyembunyikan tinggi AppBar default
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: const Text('Daftar Quiz'),
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
       ),
       body: Stack(
         children: [
           Column(
             children: <Widget>[
-              // Header berbentuk setengah lingkaran dengan teks
-              Stack(
-                children: [
-                  Container(
-                    height: 150,
-                    decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 253, 240, 69), // Warna header
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(150),
-                        bottomRight: Radius.circular(150),
-                      ),
-                    ),
-                  ),
-                  Center(
-                    child: Container(
-                      height: 150,
-                      alignment: Alignment.center,
-                      child: const Text(
-                        "Daftar Quiz",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 10),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                    future: FirebaseFirestore.instance.collection('quiz').get(),
+                    future: FirebaseFirestore.instance
+                        .collection('quiz')
+                        .where('mapel',
+                            isEqualTo: mapel) // Filter berdasarkan mapel
+                        .get(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -91,8 +73,6 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
 
                       final quizDocs = snapshot.data!.docs;
 
-                      final userId = FirebaseAuth.instance.currentUser?.uid;
-
                       return ListView.builder(
                         itemCount: quizDocs.length,
                         itemBuilder: (context, index) {
@@ -104,9 +84,9 @@ class _DaftarQuizPageState extends State<DaftarQuizPage> {
                             time: quiz['time'] ?? 'No Time',
                             status: quiz['status'] ?? 'Unknown',
                             password: quiz['password'] ?? 'Need password',
-                            userId: userId ??
-                                'defaultUser  Id', // Use a default or handle null case
-                            quizId: quizDocs[index].id, // Tambahkan quizId
+                            userId: FirebaseAuth.instance.currentUser?.uid ??
+                                'defaultUser  Id',
+                            quizId: quizDocs[index].id,
                           );
                         },
                       );
@@ -236,26 +216,74 @@ class QuizCard extends StatelessWidget {
       // Ambil nilai terbaru
       final latestAttempt = quizAttempts.docs.last;
       final score = latestAttempt['score'];
+      final feedback = latestAttempt['feedback'] ??
+          'No feedback available'; // Ambil feedback
 
-      // Tampilkan popup nilai
-      _showScorePopup(context, score);
+      // Tampilkan popup nilai dan feedback
+      _showScorePopup(context, score, feedback);
     } else {
       // Tampilkan dialog password hanya jika tidak ada upaya kuis sebelumnya
       _showPasswordDialog(context);
     }
   }
 
-  void _showScorePopup(BuildContext context, int score) {
+  void _showScorePopup(BuildContext context, int score, String feedback) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Quiz Selesai'),
-          content: Text('Nilai kamu: $score'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15), // Rounded corners
+          ),
+          title: const Text(
+            'Quiz Selesai',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Padding(
+            padding: const EdgeInsets.symmetric(
+                vertical: 10), // Add vertical padding
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min, // Make the dialog size wrap its content
+              children: [
+                Text(
+                  'Nilai kamu: $score',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 10), // Add some space
+                Text(
+                  'Feedback:',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 5), // Add some space
+                Text(
+                  feedback,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center, // Center align the feedback text
+                ),
+              ],
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );

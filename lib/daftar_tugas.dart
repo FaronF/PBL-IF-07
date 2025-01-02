@@ -9,7 +9,9 @@ import 'package:open_file/open_file.dart';
 import 'profile_page.dart';
 
 class DaftarTugasPage extends StatelessWidget {
-  const DaftarTugasPage({super.key});
+  final String mapel;
+
+  const DaftarTugasPage({super.key, required this.mapel});
 
   @override
   Widget build(BuildContext context) {
@@ -71,34 +73,25 @@ class DaftarTugasPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: StreamBuilder<QuerySnapshot>(
-                stream:
-                    FirebaseFirestore.instance.collection('Tasks').snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('Tasks')
+                    .where('mapel',
+                        isEqualTo: mapel) // Filter berdasarkan mapel
+                    .snapshots(),
                 builder: (context, snapshot) {
-                  print("Connection State: ${snapshot.connectionState}");
-
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
                   if (snapshot.hasError) {
-                    print("Snapshot Error: ${snapshot.error}");
                     return const Center(
                       child: Text('Error fetching tasks'),
                     );
                   }
 
-                  if (!snapshot.hasData) {
-                    print("No Data in Snapshot");
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Center(child: Text('No tasks available'));
                   }
-
-                  if (snapshot.data!.docs.isEmpty) {
-                    print("No Documents in Collection");
-                    return const Center(child: Text('No tasks available'));
-                  }
-
-                  // Check if data is being received correctly
-                  print("Snapshot Data: ${snapshot.data!.docs}");
 
                   final tasks = snapshot.data!.docs;
 
@@ -114,7 +107,7 @@ class DaftarTugasPage extends StatelessWidget {
                       final Timestamp? dueToTimestamp =
                           task['due_to'] as Timestamp?;
                       final String deadline = dueToTimestamp != null
-                          ? DateFormat('dd-mm-yyyy HH:mm')
+                          ? DateFormat('dd-MM-yyyy HH:mm')
                               .format(dueToTimestamp.toDate())
                           : 'No Due Date';
 
