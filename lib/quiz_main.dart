@@ -116,11 +116,14 @@ class QuizMainPageState extends State<QuizMainPage> {
         }
       }
 
-      setState(() {
-        questions = fetchedQuestions;
-        selectedAnswers = List<int?>.filled(questions.length, null);
-        isLoading = false;
-      });
+      // Periksa apakah widget masih terpasang sebelum memanggil setState
+      if (mounted) {
+        setState(() {
+          questions = fetchedQuestions;
+          selectedAnswers = List<int?>.filled(questions.length, null);
+          isLoading = false;
+        });
+      }
     } catch (e) {
       print("Error fetching questions: $e");
     }
@@ -289,46 +292,42 @@ class QuizMainPageState extends State<QuizMainPage> {
       context: context,
       builder: (BuildContext context) {
         return Center(
-          // Tambahkan Center
           child: AlertDialog(
             title: const Text('Daftar Soal', textAlign: TextAlign.center),
             content: Container(
               width:
                   MediaQuery.of(context).size.width * 0.8, // Atur lebar dialog
               child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center, // Tambahkan ini
+                child: Wrap(
+                  spacing: 8.0, // Jarak horizontal antar tombol
+                  runSpacing: 8.0, // Jarak vertikal antar baris
                   children: List.generate(questions.length, (index) {
-                    return Center(
-                      // Tambahkan Center pada setiap ListTile
-                      child: Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        child: ListTile(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16),
-                          horizontalTitleGap: 10,
-                          leading: CircleAvatar(
-                            backgroundColor: selectedAnswers[index] != null
-                                ? Colors.green
-                                : Colors.red,
-                            child: Text('${index + 1}'),
+                    return SizedBox(
+                      width: (MediaQuery.of(context).size.width * 0.8 - 32) /
+                          5, // Lebar tombol agar 5 dalam satu baris
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedAnswers[index] != null
+                              ? Colors.yellow // Warna kuning jika sudah dijawab
+                              : Colors.grey, // Warna abu-abu jika belum dijawab
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          title: Text(
-                            'Soal ${index + 1}',
-                            textAlign: TextAlign.center,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Tutup dialog
+                          setState(() {
+                            currentQuestionIndex =
+                                index; // Pindah ke soal yang dipilih
+                          });
+                        },
+                        child: Text(
+                          '${index + 1}', // Menampilkan nomor soal
+                          style: const TextStyle(
+                            fontSize: 20,
+                            color: Colors.white, // Warna teks putih
                           ),
-                          trailing: selectedAnswers[index] != null
-                              ? const Icon(Icons.check, color: Colors.green)
-                              : const Icon(Icons.clear, color: Colors.red),
-                          onTap: () {
-                            Navigator.of(context).pop(); // Tutup dialog
-                            setState(() {
-                              currentQuestionIndex =
-                                  index; // Pindah ke soal yang dipilih
-                            });
-                          },
                         ),
                       ),
                     );
@@ -338,7 +337,6 @@ class QuizMainPageState extends State<QuizMainPage> {
             ),
             actions: <Widget>[
               Center(
-                // Tambahkan Center pada actions
                 child: TextButton(
                   child: const Text('Tutup'),
                   onPressed: () {
@@ -370,9 +368,10 @@ class QuizMainPageState extends State<QuizMainPage> {
     var currentQuestion = questions[currentQuestionIndex];
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Quiz"),
-        backgroundColor: const Color.fromARGB(255, 250, 235, 21),
+        title: const Text("Quiziffy"),
+        backgroundColor: const Color.fromARGB(255, 253, 240, 69),
         elevation: 4,
+        automaticallyImplyLeading: false, // Menghilangkan tombol kembali
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -383,7 +382,7 @@ class QuizMainPageState extends State<QuizMainPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Soal ${currentQuestionIndex + 1} / ${questions.length} ${selectedAnswers[currentQuestionIndex] != null ? '✓' : '✗'}',
+                  'Soal ${currentQuestionIndex + 1} / ${questions.length}',
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w600),
                 ),
@@ -441,7 +440,12 @@ class QuizMainPageState extends State<QuizMainPage> {
                     },
                     child: Text(
                       option,
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: selectedAnswers[currentQuestionIndex] == index
+                            ? Colors.yellow // Ganti warna teks jika dipilih
+                            : Colors.white, // Warna teks default
+                      ),
                     ),
                   ),
                 );
